@@ -1,13 +1,12 @@
 package pers.solid.mod;
 
-import com.google.common.collect.AbstractIterator;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.block.Block;
 import net.minecraft.data.family.BlockFamily;
-import net.minecraft.item.*;
-import net.minecraft.util.collection.DefaultedList;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import pers.solid.mod.mixin.BaseBlocksToFamiliesAccessor;
 
 import java.util.HashMap;
@@ -22,7 +21,6 @@ public class MixinHelper {
             BlockFamily.Variant.SLAB};
 
     public static final Map<Item, Item[]> ITEM_COMBINATIONS = new HashMap<>();
-    public static boolean allowAppendingAnyBlock = false;
 
     static {
         ITEM_COMBINATIONS.put(Items.COBBLESTONE, new Item[]{Items.MOSSY_COBBLESTONE});
@@ -34,11 +32,20 @@ public class MixinHelper {
         ITEM_COMBINATIONS.put(Items.QUARTZ_BLOCK, new Item[]{Items.SMOOTH_QUARTZ, Items.CHISELED_QUARTZ_BLOCK,
                 Items.QUARTZ_BRICKS,
                 Items.QUARTZ_PILLAR});
-        ITEM_COMBINATIONS.put(Items.OAK_SLAB,new Item[]{Items.PETRIFIED_OAK_SLAB});
-        ITEM_COMBINATIONS.put(Items.SMOOTH_STONE,new Item[]{Items.SMOOTH_STONE_SLAB});
-        ITEM_COMBINATIONS.put(Items.BOOK,new Item[]{Items.WRITABLE_BOOK});
-        ITEM_COMBINATIONS.put(Items.PAPER,new Item[]{Items.MAP});
-        ITEM_COMBINATIONS.put(Items.GOLD_NUGGET,new Item[]{Items.IRON_NUGGET});
+        ITEM_COMBINATIONS.put(Items.OAK_SLAB, new Item[]{Items.PETRIFIED_OAK_SLAB});
+        ITEM_COMBINATIONS.put(Items.SMOOTH_STONE, new Item[]{Items.SMOOTH_STONE_SLAB});
+        ITEM_COMBINATIONS.put(Items.BOOK, new Item[]{Items.WRITABLE_BOOK});
+        ITEM_COMBINATIONS.put(Items.PAPER, new Item[]{Items.MAP});
+        ITEM_COMBINATIONS.put(Items.GOLD_NUGGET, new Item[]{Items.IRON_NUGGET});
+        ITEM_COMBINATIONS.put(Items.BRICK, new Item[]{Items.NETHER_BRICK});
+        ITEM_COMBINATIONS.put(Items.WHEAT_SEEDS, new Item[]{Items.PUMPKIN_SEEDS, Items.MELON_SEEDS, Items.BEETROOT_SEEDS});
+        ITEM_COMBINATIONS.put(Items.SNOWBALL, new Item[]{Items.CLAY_BALL, Items.ENDER_PEARL, Items.ENDER_EYE});
+        ITEM_COMBINATIONS.put(Items.BOW, new Item[]{Items.CROSSBOW});
+        ITEM_COMBINATIONS.put(Items.ARROW, new Item[]{Items.TRIDENT, Items.SHIELD, Items.TOTEM_OF_UNDYING});
+        ITEM_COMBINATIONS.put(Items.GHAST_TEAR, new Item[]{Items.FERMENTED_SPIDER_EYE, Items.BLAZE_POWDER,
+                Items.MAGMA_CREAM, Items.BREWING_STAND, Items.CAULDRON, Items.GLISTERING_MELON_SLICE,
+                Items.GOLDEN_CARROT, Items.RABBIT_FOOT, Items.PHANTOM_MEMBRANE, Items.GLASS_BOTTLE, Items.DRAGON_BREATH});
+        ITEM_COMBINATIONS.put(Items.FLINT, new Item[]{Items.SNOWBALL, Items.LEATHER});
     }
 
     public static boolean isBuildingBlockContained(Block block) {
@@ -57,6 +64,14 @@ public class MixinHelper {
         return false;
     }
 
+    public static boolean isBuildingBlockContained(Item item) {
+        if (item instanceof BlockItem) {
+            return isBuildingBlockContained(((BlockItem) item).getBlock());
+        } else {
+            return false;
+        }
+    }
+
     public static boolean isCombinationLeader(Item item) {
         // 检测某个物品是否为其组合的开始物品。
         return ITEM_COMBINATIONS.containsKey(item);
@@ -65,61 +80,41 @@ public class MixinHelper {
     public static boolean isCombinationFollower(Item item) {
         // 检测某个物品是否为某个物品组合中的跟随物品。
         for (var val : ITEM_COMBINATIONS.values()) {
-            if (List.of(val).contains(item)) return true;
+            if (List.of(val).contains(item)) {
+                return true;
+            }
         }
         return false;
     }
 
-    public static void appendCombinedItems(Item item, ItemGroup group, DefaultedList<ItemStack> stacks,
-                                           CallbackInfo ci) {
-        if (isCombinationLeader(item)) {
-			var followingItems = ITEM_COMBINATIONS.get(item);
-			for (var item1 : followingItems) {
-			    allowAppendingAnyBlock = true;
-				item1.appendStacks(group,stacks);
-				allowAppendingAnyBlock = false;
-			}
-		}
-    }
-
-    public static void appendMoreBuildingBlocks(Item item, ItemGroup group, DefaultedList<ItemStack> stacks,
-                                                Block block) {
-        if (group!=ItemGroup.BUILDING_BLOCKS) return;
+    public static void applyBlockItemWithVariants(Block block, Consumer<Item> action) {
         if (BASE_BLOCKS_TO_FAMILIES.containsKey(block)) {
             BlockFamily blockFamily = BASE_BLOCKS_TO_FAMILIES.get(block);
             Map<BlockFamily.Variant, Block> variants = blockFamily.getVariants();
             for (var variant : BUILDING_BLOCK_VARIANTS) {
                 if (variants.containsKey(variant)) {
-                    Block block1 = variants.get(variant);
-                    allowAppendingAnyBlock = true;
-                    block1.asItem().appendStacks(group, stacks);
-                    allowAppendingAnyBlock = false;
-                }
-            }
-        }
-    }
-
-    public static void applyBlockWithVariants(Block block, Consumer<Block> action) {
-        if (isBuildingBlockContained(block)) return;
-        action.accept(block);
-        if (BASE_BLOCKS_TO_FAMILIES.containsKey(block)) {
-            BlockFamily blockFamily = BASE_BLOCKS_TO_FAMILIES.get(block);
-            Map<BlockFamily.Variant, Block> variants = blockFamily.getVariants();
-            for (var variant : BUILDING_BLOCK_VARIANTS) {
-                if (variants.containsKey(variant)) {
-                    Block block1 = variants.get(variant);
-                    action.accept(block1);
+                    Block variantBlock = variants.get(variant);
+                    action.accept(variantBlock.asItem());
                 }
             }
         }
     }
 
     public static void applyItemWithVariants(Item item, Consumer<Item> action) {
+        action.accept(item);
         if (item instanceof BlockItem) {
             Block block = ((BlockItem) item).getBlock();
-            applyBlockWithVariants(block,block1 -> action.accept(block1.asItem()));
-        } else {
-            action.accept(item);
+            applyBlockItemWithVariants(block, i -> applyItemWithFollowings(i, action));
+        }
+    }
+
+    public static void applyItemWithFollowings(Item item, Consumer<Item> action) {
+        applyItemWithVariants(item, action);
+        if (isCombinationLeader(item)) {
+            var followingItems = ITEM_COMBINATIONS.get(item);
+            for (var item1 : followingItems) {
+                applyItemWithFollowings(item1, action);
+            }
         }
     }
 
@@ -127,13 +122,8 @@ public class MixinHelper {
         ObjectList<Item> list = new ObjectArrayList<>();
         for (Item item : rawIdToEntry) {
             if (isCombinationFollower(item)) continue;
-            applyItemWithVariants(item,list::add);
-            if (isCombinationLeader(item)) {
-                var followingItems = ITEM_COMBINATIONS.get(item);
-                for (var item1 : followingItems) {
-                    applyItemWithVariants(item1,list::add);
-                }
-            }
+            if (isBuildingBlockContained(item)) continue;
+            applyItemWithFollowings(item, list::add);
         }
         return list.iterator();
     }
