@@ -1,9 +1,9 @@
-# Fabric Example Mod
+# 合理排序 Reasonable Sorting
 
-## Setup
+你是否发现，在创造模式下，物品栏内的物品排序方式特别乱，找到你需要的东西特别不容易？
 
-For setup instructions please see the [fabric wiki page](https://fabricmc.net/wiki/tutorial:setup) that relates to the IDE that you are using.
+本模组通过调整物品注册表迭代的顺序，来调整物品的排序方式，使得物品排序方式更为合理。由于是在物品注册表层面的修改，因此使用其他模组（如 RoughlyEnoughItems）查看物品列表时，也会看到顺序修改。
 
-## License
+目前同时进行两种排序方法：一是所有的楼梯与台阶都会紧跟其基础方块后面，这样以便于用户快速获取一个方块的基础方块和楼梯、台阶。特别地，石化橡木台阶排在橡木台阶后面，平滑石台阶排在平滑石块后面。二是手动调整物品排序，如铁粒排在金粒后面，空地图排在地图后面，又如所有的砂岩及其变种显示在一起，石英及其变种显示在一起。两种排序方法可以结合。
 
-This template is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
+目前的排序方式都是硬编码的。未来的版本中，将会可以通过 Mod Menu 模组来手动调整物品排序方式。

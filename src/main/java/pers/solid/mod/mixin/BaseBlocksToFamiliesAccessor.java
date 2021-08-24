@@ -11,7 +11,7 @@ import java.util.Map;
 @Mixin(BlockFamilies.class)
 public interface BaseBlocksToFamiliesAccessor {
     @Accessor("BASE_BLOCKS_TO_FAMILIES")
-    public static Map<Block, BlockFamily> getBaseBlocksToFamilies() {
+    static Map<Block, BlockFamily> getBaseBlocksToFamilies() {
         throw new AssertionError();
     }
 }

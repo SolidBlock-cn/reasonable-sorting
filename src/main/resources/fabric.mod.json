@@ -9,6 +9,9 @@
     "SolidBlock"
   ],
   "contact": {
+    "homepage": "https://space.bilibili.com/87328531",
+    "sources": "https://github.com/SolidBlock-cn/reasonable-sorting",
+    "issues": "https://github.com/SolidBlock-cn/reasonable-sorting/issues"
   },
 
   "license": "GPLv3",
@@ -16,9 +19,6 @@
 
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "pers.solid.mod.ExampleMod"
-    ]
   },
   "mixins": [
     "reasonable-sorting.mixins.json"

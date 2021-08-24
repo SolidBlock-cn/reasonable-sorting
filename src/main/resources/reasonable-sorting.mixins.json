@@ -5,10 +5,7 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "BaseBlocksToFamiliesAccessor",
-    "ItemGroupMixin"
-  ],
-  "client": [
-    "BlockItemMixin"
+    "SimpleRegistryMixin"
   ],
   "injectors": {
     "defaultRequire": 1
