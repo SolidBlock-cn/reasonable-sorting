@@ -1,29 +1,27 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "reasonable-sorting",
   "version": "${version}",
 
-  "name": "Example Mod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "name": "Reasonable Sorting",
+  "description": "Sorts blocks and items in the creative inventory reasonably.",
   "authors": [
-    "Me!"
+    "SolidBlock"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
   },
 
-  "license": "CC0-1.0",
-  "icon": "assets/modid/icon.png",
+  "license": "GPLv3",
+  "icon": "assets/reasonable-sorting/icon.png",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.fabricmc.example.ExampleMod"
+      "pers.solid.mod.ExampleMod"
     ]
   },
   "mixins": [
-    "modid.mixins.json"
+    "reasonable-sorting.mixins.json"
   ],
 
   "depends": {

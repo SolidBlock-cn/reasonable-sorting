@@ -1,4 +1,4 @@
-package net.fabricmc.example;
+package pers.solid.mod;
 
 import net.fabricmc.api.ModInitializer;
 

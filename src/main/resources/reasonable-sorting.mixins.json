@@ -1,12 +1,14 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "net.fabricmc.example.mixin",
+  "package": "pers.solid.mod.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
+    "BaseBlocksToFamiliesAccessor",
+    "ItemGroupMixin"
   ],
   "client": [
-    "ExampleMixin"
+    "BlockItemMixin"
   ],
   "injectors": {
     "defaultRequire": 1
