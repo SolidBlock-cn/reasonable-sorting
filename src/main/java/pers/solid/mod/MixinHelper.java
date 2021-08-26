@@ -45,6 +45,11 @@ public class MixinHelper {
                 Items.MAGMA_CREAM, Items.BREWING_STAND, Items.CAULDRON, Items.GLISTERING_MELON_SLICE,
                 Items.GOLDEN_CARROT, Items.RABBIT_FOOT, Items.PHANTOM_MEMBRANE, Items.GLASS_BOTTLE, Items.DRAGON_BREATH});
         ITEM_COMBINATIONS.put(Items.FLINT, new Item[]{Items.SNOWBALL, Items.LEATHER});
+
+        ITEM_COMBINATIONS.put(Items.WARPED_TRAPDOOR,new Item[]{Items.IRON_TRAPDOOR});
+        ITEM_COMBINATIONS.put(Items.POLISHED_BLACKSTONE_PRESSURE_PLATE,new Item[]{Items.LIGHT_WEIGHTED_PRESSURE_PLATE
+                ,Items.HEAVY_WEIGHTED_PRESSURE_PLATE});
+        ITEM_COMBINATIONS.put(Items.WARPED_FENCE,new Item[]{Items.NETHER_BRICK_FENCE});
     }
 
     public static boolean isBuildingBlockContained(Block block) {
