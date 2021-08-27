@@ -23,7 +23,7 @@ public abstract class SimpleRegistryMixin {
 
     @Inject(method = "iterator", at = @At("HEAD"), cancellable = true)
     private void itemIterator(CallbackInfoReturnable<Iterator> cir) {
-        var thisRegistry = (SimpleRegistry) (Object) this;
+        SimpleRegistry thisRegistry = (SimpleRegistry) (Object) this;
         if (thisRegistry == Registry.ITEM) {
             cir.setReturnValue(MixinHelper.itemRegistryIterator(this.rawIdToEntry));
         }

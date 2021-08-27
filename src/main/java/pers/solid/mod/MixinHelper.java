@@ -1,5 +1,6 @@
 package pers.solid.mod;
 
+import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.block.Block;
@@ -8,10 +9,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import pers.solid.mod.mixin.BaseBlocksToFamiliesAccessor;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class MixinHelper {
@@ -54,12 +52,12 @@ public class MixinHelper {
 
     public static boolean isBuildingBlockContained(Block block) {
         // 检测某个方块是否已经是方块变种中的楼梯、台阶。
-        for (var entry : BASE_BLOCKS_TO_FAMILIES.entrySet()) {
-            var baseBlock = entry.getKey();
+        for (Map.Entry<Block, BlockFamily> entry : BASE_BLOCKS_TO_FAMILIES.entrySet()) {
+            Block baseBlock = entry.getKey();
             if (baseBlock == block) return false;
-            var blockFamily = entry.getValue();
-            var variants = blockFamily.getVariants();
-            for (var variant : BUILDING_BLOCK_VARIANTS) {
+            BlockFamily blockFamily = entry.getValue();
+            Map<BlockFamily.Variant, Block> variants = blockFamily.getVariants();
+            for (BlockFamily.Variant variant : BUILDING_BLOCK_VARIANTS) {
                 if (variants.get(variant) == block) {
                     return true;
                 }
@@ -83,8 +81,8 @@ public class MixinHelper {
 
     public static boolean isCombinationFollower(Item item) {
         // 检测某个物品是否为某个物品组合中的跟随物品。
-        for (var val : ITEM_COMBINATIONS.values()) {
-            if (List.of(val).contains(item)) {
+        for (Item[] val : ITEM_COMBINATIONS.values()) {
+            if (Arrays.asList(val).contains(item)) {
                 return true;
             }
         }
@@ -95,7 +93,7 @@ public class MixinHelper {
         if (BASE_BLOCKS_TO_FAMILIES.containsKey(block)) {
             BlockFamily blockFamily = BASE_BLOCKS_TO_FAMILIES.get(block);
             Map<BlockFamily.Variant, Block> variants = blockFamily.getVariants();
-            for (var variant : BUILDING_BLOCK_VARIANTS) {
+            for (BlockFamily.Variant variant : BUILDING_BLOCK_VARIANTS) {
                 if (variants.containsKey(variant)) {
                     Block variantBlock = variants.get(variant);
                     action.accept(variantBlock.asItem());
@@ -115,8 +113,8 @@ public class MixinHelper {
     public static void applyItemWithFollowings(Item item, Consumer<Item> action) {
         applyItemWithVariants(item, action);
         if (isCombinationLeader(item)) {
-            var followingItems = ITEM_COMBINATIONS.get(item);
-            for (var item1 : followingItems) {
+            Item[] followingItems = ITEM_COMBINATIONS.get(item);
+            for (Item item1 : followingItems) {
                 applyItemWithFollowings(item1, action);
             }
         }
