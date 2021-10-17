@@ -1,130 +1,126 @@
 package pers.solid.mod;
 
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import net.minecraft.block.Block;
-import net.minecraft.data.family.BlockFamily;
-import net.minecraft.item.BlockItem;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import pers.solid.mod.mixin.BaseBlocksToFamiliesAccessor;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.util.registry.Registry;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-public class MixinHelper {
-    public static final Map<Block, BlockFamily> BASE_BLOCKS_TO_FAMILIES = BaseBlocksToFamiliesAccessor.getBaseBlocksToFamilies();
-    public static final BlockFamily.Variant[] BUILDING_BLOCK_VARIANTS = {BlockFamily.Variant.STAIRS,
-            BlockFamily.Variant.SLAB};
+public class MixinHelper implements ModInitializer {
 
-    public static final Map<Item, Item[]> ITEM_COMBINATIONS = new HashMap<>();
+    /**
+     * 存放所有物品组合规则的列表。
+     */
+    public static final ObjectList<Map<Item, ? extends Collection<Item>>> ITEM_COMBINATION_RULES = new ObjectArrayList<>();
+    public static final ObjectList<Map<Item, ItemGroup>> ITEM_GROUP_TRANSFER_RULES = new ObjectArrayList<>();
+    public static final Map<Item, ImmutableCollection<ItemGroup>> COMPILED_ITEM_GROUP_TRANSFER_RULES = new HashMap<>();
 
-    static {
-        ITEM_COMBINATIONS.put(Items.COBBLESTONE, new Item[]{Items.MOSSY_COBBLESTONE});
-        ITEM_COMBINATIONS.put(Items.SANDSTONE, new Item[]{Items.CHISELED_SANDSTONE, Items.CUT_SANDSTONE,
-                Items.SMOOTH_SANDSTONE, Items.RED_SANDSTONE, Items.CHISELED_RED_SANDSTONE, Items.CUT_RED_SANDSTONE,
-                Items.SMOOTH_RED_SANDSTONE});
-        ITEM_COMBINATIONS.put(Items.ICE, new Item[]{Items.PACKED_ICE, Items.BLUE_ICE});
-        ITEM_COMBINATIONS.put(Items.NETHER_BRICKS, new Item[]{Items.CRACKED_NETHER_BRICKS, Items.RED_NETHER_BRICKS});
-        ITEM_COMBINATIONS.put(Items.QUARTZ_BLOCK, new Item[]{Items.SMOOTH_QUARTZ, Items.CHISELED_QUARTZ_BLOCK,
-                Items.QUARTZ_BRICKS,
-                Items.QUARTZ_PILLAR});
-        ITEM_COMBINATIONS.put(Items.OAK_SLAB, new Item[]{Items.PETRIFIED_OAK_SLAB});
-        ITEM_COMBINATIONS.put(Items.SMOOTH_STONE, new Item[]{Items.SMOOTH_STONE_SLAB});
-        ITEM_COMBINATIONS.put(Items.BOOK, new Item[]{Items.WRITABLE_BOOK});
-        ITEM_COMBINATIONS.put(Items.PAPER, new Item[]{Items.MAP});
-        ITEM_COMBINATIONS.put(Items.GOLD_NUGGET, new Item[]{Items.IRON_NUGGET});
-        ITEM_COMBINATIONS.put(Items.BRICK, new Item[]{Items.NETHER_BRICK});
-        ITEM_COMBINATIONS.put(Items.WHEAT_SEEDS, new Item[]{Items.PUMPKIN_SEEDS, Items.MELON_SEEDS, Items.BEETROOT_SEEDS});
-        ITEM_COMBINATIONS.put(Items.SNOWBALL, new Item[]{Items.CLAY_BALL, Items.ENDER_PEARL, Items.ENDER_EYE});
-        ITEM_COMBINATIONS.put(Items.BOW, new Item[]{Items.CROSSBOW});
-        ITEM_COMBINATIONS.put(Items.ARROW, new Item[]{Items.TRIDENT, Items.SHIELD, Items.TOTEM_OF_UNDYING});
-        ITEM_COMBINATIONS.put(Items.GHAST_TEAR, new Item[]{Items.FERMENTED_SPIDER_EYE, Items.BLAZE_POWDER,
-                Items.MAGMA_CREAM, Items.BREWING_STAND, Items.CAULDRON, Items.GLISTERING_MELON_SLICE,
-                Items.GOLDEN_CARROT, Items.RABBIT_FOOT, Items.PHANTOM_MEMBRANE, Items.GLASS_BOTTLE, Items.DRAGON_BREATH});
-        ITEM_COMBINATIONS.put(Items.FLINT, new Item[]{Items.SNOWBALL, Items.LEATHER});
-    }
+    public static final Logger LOGGER = LogManager.getLogger("REASONABLE_SORTING");
 
-    public static boolean isBuildingBlockContained(Block block) {
-        // 检测某个方块是否已经是方块变种中的楼梯、台阶。
-        for (var entry : BASE_BLOCKS_TO_FAMILIES.entrySet()) {
-            var baseBlock = entry.getKey();
-            if (baseBlock == block) return false;
-            var blockFamily = entry.getValue();
-            var variants = blockFamily.getVariants();
-            for (var variant : BUILDING_BLOCK_VARIANTS) {
-                if (variants.get(variant) == block) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public static boolean isBuildingBlockContained(Item item) {
-        if (item instanceof BlockItem) {
-            return isBuildingBlockContained(((BlockItem) item).getBlock());
-        } else {
-            return false;
-        }
-    }
-
-    public static boolean isCombinationLeader(Item item) {
-        // 检测某个物品是否为其组合的开始物品。
-        return ITEM_COMBINATIONS.containsKey(item);
-    }
-
-    public static boolean isCombinationFollower(Item item) {
-        // 检测某个物品是否为某个物品组合中的跟随物品。
-        for (var val : ITEM_COMBINATIONS.values()) {
-            if (List.of(val).contains(item)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static void applyBlockItemWithVariants(Block block, Consumer<Item> action) {
-        if (BASE_BLOCKS_TO_FAMILIES.containsKey(block)) {
-            BlockFamily blockFamily = BASE_BLOCKS_TO_FAMILIES.get(block);
-            Map<BlockFamily.Variant, Block> variants = blockFamily.getVariants();
-            for (var variant : BUILDING_BLOCK_VARIANTS) {
-                if (variants.containsKey(variant)) {
-                    Block variantBlock = variants.get(variant);
-                    action.accept(variantBlock.asItem());
-                }
-            }
-        }
-    }
-
-    public static void applyItemWithVariants(Item item, Consumer<Item> action) {
+    /**
+     * 对一个物品应用行为的同时，对其跟随物品也应用行为，如果有。
+     */
+    public static <T> void applyItemWithFollowings(Collection<? extends Map<T, ? extends Collection<T>>> rules, T item, Consumer<T> action, Consumer<T> actionForFollowings) {
         action.accept(item);
-        if (item instanceof BlockItem) {
-            Block block = ((BlockItem) item).getBlock();
-            applyBlockItemWithVariants(block, i -> applyItemWithFollowings(i, action));
-        }
-    }
-
-    public static void applyItemWithFollowings(Item item, Consumer<Item> action) {
-        applyItemWithVariants(item, action);
-        if (isCombinationLeader(item)) {
-            var followingItems = ITEM_COMBINATIONS.get(item);
-            for (var item1 : followingItems) {
-                applyItemWithFollowings(item1, action);
+        Collection<T> followings = new LinkedHashSet<>(); // 元素不重复
+        for (Map<T, ? extends Collection<T>> rule : rules) {
+            if (rule.containsKey(item)) {
+                followings.addAll(rule.get(item));
             }
         }
+        followings.forEach(actionForFollowings);
     }
 
-    public static Iterator<Item> itemRegistryIterator(ObjectList<Item> rawIdToEntry) {
-        ObjectList<Item> list = new ObjectArrayList<>();
-        for (Item item : rawIdToEntry) {
-            if (isCombinationFollower(item)) continue;
-            if (isBuildingBlockContained(item)) continue;
-            applyItemWithFollowings(item, list::add);
+    public static <T> void applyItemWithFollowings(Collection<? extends Map<T, ? extends Collection<T>>> rules, T item, Consumer<T> action) {
+        applyItemWithFollowings(rules, item, action,
+                followingItem -> {
+                    applyItemWithFollowings(rules, followingItem, action);
+                }
+        );
+    }
+
+    public static <T> Iterator<T> itemRegistryIterator(ObjectList<T> rawIdToEntry, Collection<? extends Map<T, ? extends Collection<T>>> rules) {
+        Set<T> list = new LinkedHashSet<>();
+        for (T item : rawIdToEntry) {
+            if (isCombinationFollower(item, rules)) continue;
+            applyItemWithFollowings(rules, item, list::add);
+        }
+        if (rawIdToEntry.size() != list.size()) {
+            LOGGER.error("Error found when trying to iterate! The size of raw list (%s) does not equal to that of the refreshed list (%s)!".formatted(rawIdToEntry.size(), list.size()));
+            for (T item : rawIdToEntry) {
+                if (!list.contains(item)) {
+                    LOGGER.error("Item %s is not in the refreshed list!".formatted(item));
+                }
+            }
         }
         return list.iterator();
+    }
+
+    /**
+     * 判断某个物品是否为物品组合的物品跟随。主要用于判断迭代物品时是否需要跳过该物品。
+     *
+     * @see #applyItemWithFollowings
+     */
+    public static <T> boolean isCombinationFollower(T item, Collection<? extends Map<T, ? extends Collection<T>>> rules) {
+        for (Map<T, ? extends Collection<T>> rule : rules) {
+            for (Collection<T> value : rule.values()) {
+                if (value.contains(item)) return true;
+            }
+        }
+        return false;
+    }
+
+    public void onInitialize() {
+        for (EntrypointContainer<Supplier> entrypointContainer : FabricLoader.getInstance().getEntrypointContainers("reasonable-sorting:item_combination_rules", (Supplier.class))) {
+            final Supplier<? extends Map<Item, ? extends Collection<Item>>> entrypoint;
+            try {
+                entrypoint = ((Supplier<? extends Map<Item, ? extends Collection<Item>>>) entrypointContainer.getEntrypoint());
+            } catch (ClassCastException e) {
+                final var e1 = entrypointContainer.getEntrypoint();
+                LOGGER.fatal("Invalid entrypoint %s from mod %s. Please make sure it's an instance of Supplier<Map<Item,Collection<Item>>>.".formatted(e1, entrypointContainer.getProvider()));
+                throw e;
+            }
+            ITEM_COMBINATION_RULES.add(entrypoint.get());
+        }
+        LOGGER.info("%s rules are recognized!".formatted(ITEM_COMBINATION_RULES.size()));
+
+        for (EntrypointContainer<Supplier> entrypointContainer : FabricLoader.getInstance().getEntrypointContainers("reasonable-sorting:item_group_transfer_rules", Supplier.class)) {
+            final Supplier<Map<Item, ItemGroup>> entrypoint;
+            try {
+                entrypoint = (Supplier<Map<Item, ItemGroup>>) entrypointContainer.getEntrypoint();
+            } catch (ClassCastException e) {
+                LOGGER.fatal("Invalid entrypoint %s from mod %s. Please make sure it's an instance of Supplier<Map<Item,ItemGroup>>.".formatted(entrypointContainer.getEntrypoint(), entrypointContainer.getProvider()));
+                throw e;
+            }
+            ITEM_GROUP_TRANSFER_RULES.add(entrypoint.get());
+        }
+
+        compileItemGroupTransferRules(ITEM_GROUP_TRANSFER_RULES);
+    }
+
+    public void compileItemGroupTransferRules(ObjectList<Map<Item, ItemGroup>> itemGroupTransferRules) {
+        COMPILED_ITEM_GROUP_TRANSFER_RULES.clear();
+        for (Item item : Registry.ITEM) {
+            ImmutableSet.Builder<ItemGroup> builder = new ImmutableSet.Builder<>();
+            for (Map<Item, ItemGroup> itemGroupTransferRule : itemGroupTransferRules) {
+                final @Nullable ItemGroup itemGroup = itemGroupTransferRule.get(item);
+                if (itemGroup != null) builder.add(itemGroup);
+            }
+            final ImmutableSet<ItemGroup> build = builder.build();
+            if (!build.isEmpty())
+                COMPILED_ITEM_GROUP_TRANSFER_RULES.put(item, build);
+        }
     }
 }

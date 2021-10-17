@@ -19,6 +19,19 @@
 
   "environment": "*",
   "entrypoints": {
+    "main": [
+      "pers.solid.mod.MixinHelper"
+    ],
+    "modmenu": [
+      "pers.solid.mod.ConfigScreen"
+    ],
+    "reasonable-sorting:item_combination_rules": [
+      "pers.solid.mod.DefaultItemCombinationRuleSupplier",
+      "pers.solid.mod.BlockFamilyRule"
+    ],
+    "reasonable-sorting:item_group_transfer_rules": [
+      "pers.solid.mod.ItemGroupTransfer"
+    ]
   },
   "mixins": [
     "reasonable-sorting.mixins.json"

@@ -5,6 +5,8 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "BaseBlocksToFamiliesAccessor",
+    "CreativeInventoryScreenMixin",
+    "ItemMixin",
     "SimpleRegistryMixin"
   ],
   "injectors": {
