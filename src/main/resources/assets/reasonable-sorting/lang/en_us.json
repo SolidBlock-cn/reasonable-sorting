@@ -1,9 +1,13 @@
 {
   "modmenu.descriptionTranslation.reasonable-sorting": "Adjust the sorting of items in creative inventory.",
   "title.reasonable-sorting.config": "Reasonable Sorting Mod configs",
-  "options.reasonable-sorting.custom_sorting_rules": "Custom Sorting Rules",
-  "options.reasonable-sorting.custom-sorting-rules.add": "Add a custom sorting rule.",
+  "category.reasonable-sorting.custom_sorting_rules": "Custom Sorting Rules",
+  "category.reasonable-sorting.custom_transfer_rules": "Custom Transfer Rules",
+  "options.reasonable-sorting.custom_sorting_rules": "Custom sorting rules",
+  "options.reasonable-sorting.custom_sorting_rules.add": "Add a custom sorting rule.",
   "options.reasonable-sorting.buttons_in_decorations": "Buttons in decorations",
   "options.reasonable-sorting.fence_gates_in_decorations": "Fence gates in decorations",
-  "options.reasonable-sorting.swords_in_tools": "Swords in tools"
+  "options.reasonable-sorting.swords_in_tools": "Swords in tools",
+  "options.reasonable-sorting.custom_transfer_rules": "Custom transfer rules",
+  "options.reasonable-sorting.custom_regex_transfer_rules": "Custom regex transfer rules"
 }

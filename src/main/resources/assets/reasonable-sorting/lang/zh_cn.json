@@ -1,3 +1,13 @@
 {
-  "modmenu.descriptionTranslation.reasonable-sorting": "调整创造模式物品栏中物品的顺序。"
+  "modmenu.descriptionTranslation.reasonable-sorting": "调整创造模式物品栏中物品的顺序。",
+  "title.reasonable-sorting.config": "合理排序模组配置",
+  "category.reasonable-sorting.custom_sorting_rules": "自定义排序规则",
+  "category.reasonable-sorting.custom_transfer_rules": "自定义转移规则",
+  "options.reasonable-sorting.custom_sorting_rules": "自定义排序规则",
+  "options.reasonable-sorting.custom_sorting_rules.add": "添加排序规则",
+  "options.reasonable-sorting.buttons_in_decorations": "按钮移至装饰性方块",
+  "options.reasonable-sorting.fence_gates_in_decorations": "栅栏门移至装饰性方块",
+  "options.reasonable-sorting.swords_in_tools": "剑移至工具",
+  "options.reasonable-sorting.custom_transfer_rules": "自定义转移规则",
+  "options.reasonable-sorting.custom_regex_transfer_rules": "自定义正则表达式转移规则"
 }

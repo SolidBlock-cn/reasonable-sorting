@@ -91,7 +91,7 @@ public class ConfigScreen implements ModMenuApi {
                 .startStrList(new TranslatableText("options.reasonable-sorting.custom_sorting_rules"), customSortingRulesStrList)
                 .setInsertInFront(false)
                 .setExpanded(true)
-                .setAddButtonTooltip(new TranslatableText("options.reasonable-sorting.custom-sorting-rules.add"))
+                .setAddButtonTooltip(new TranslatableText("options.reasonable-sorting.custom_sorting_rules.add"))
                 .setSaveConsumer(list -> {
                     customSortingRulesStrList = formatted(list);
                     CUSTOM_SORTING_RULES.clear();
