@@ -110,7 +110,7 @@ public class MixinHelper implements ModInitializer {
         compileItemGroupTransferRules(ITEM_GROUP_TRANSFER_RULES);
     }
 
-    public void compileItemGroupTransferRules(ObjectList<Map<Item, ItemGroup>> itemGroupTransferRules) {
+    public static void compileItemGroupTransferRules(ObjectList<Map<Item, ItemGroup>> itemGroupTransferRules) {
         COMPILED_ITEM_GROUP_TRANSFER_RULES.clear();
         for (Item item : Registry.ITEM) {
             ImmutableSet.Builder<ItemGroup> builder = new ImmutableSet.Builder<>();

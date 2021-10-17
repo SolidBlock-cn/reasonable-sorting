@@ -35,12 +35,12 @@ public class ItemGroupTransfer implements Supplier<Map<Item,ItemGroup>> {
         @Override
         public ItemGroup get(Object key) {
             if (key instanceof BlockItem) {
-                if (((BlockItem) key).getBlock() instanceof AbstractButtonBlock) {
+                if (ConfigScreen.buttonsInDecorations && ((BlockItem) key).getBlock() instanceof AbstractButtonBlock) {
                     return ItemGroup.DECORATIONS;
-                } else if (((BlockItem) key).getBlock() instanceof FenceGateBlock) {
+                } else if (ConfigScreen.fenceGatesInDecorations && ((BlockItem) key).getBlock() instanceof FenceGateBlock) {
                     return ItemGroup.DECORATIONS;
                 }
-            } else if (key instanceof SwordItem) {
+            } else if ( ConfigScreen.swordsInTools && key instanceof SwordItem) {
                 return ItemGroup.TOOLS;
             }
             return null;

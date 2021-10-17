@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "reasonable-sorting",
-  "version": "${version}",
+  "version": "1.2",
 
   "name": "Reasonable Sorting",
   "description": "Sorts blocks and items in the creative inventory reasonably.",
@@ -27,7 +27,8 @@
     ],
     "reasonable-sorting:item_combination_rules": [
       "pers.solid.mod.DefaultItemCombinationRuleSupplier",
-      "pers.solid.mod.BlockFamilyRule"
+      "pers.solid.mod.BlockFamilyRule",
+      "pers.solid.mod.ConfigScreen::getCustomSortingRules"
     ],
     "reasonable-sorting:item_group_transfer_rules": [
       "pers.solid.mod.ItemGroupTransfer"
@@ -40,7 +41,7 @@
   "depends": {
     "fabricloader": ">=0.11.3",
     "fabric": "*",
-    "minecraft": "1.17.x",
+    "minecraft": ">=1.17",
     "java": ">=16"
   },
   "suggests": {
