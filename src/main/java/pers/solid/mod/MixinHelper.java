@@ -83,6 +83,7 @@ public class MixinHelper implements ModInitializer {
     }
 
     public void onInitialize() {
+        Configs.CONFIG_HOLDER.load();
         for (EntrypointContainer<Supplier> entrypointContainer : FabricLoader.getInstance().getEntrypointContainers("reasonable-sorting:item_combination_rules", (Supplier.class))) {
             final Supplier<? extends Map<Item, ? extends Collection<Item>>> entrypoint;
             try {
