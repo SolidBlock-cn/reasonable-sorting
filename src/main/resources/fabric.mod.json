@@ -28,11 +28,13 @@
     "reasonable-sorting:item_combination_rules": [
       "pers.solid.mod.DefaultItemCombinationRuleSupplier",
       "pers.solid.mod.BlockFamilyRule",
-      "pers.solid.mod.ConfigScreen::getCustomSortingRules"
+      "pers.solid.mod.ConfigScreen::getCustomSortingRules",
+      "pers.solid.mod.BlockFamilyRule::getFenceToFenceGates"
     ],
     "reasonable-sorting:item_group_transfer_rules": [
       "pers.solid.mod.ItemGroupTransfer",
       "pers.solid.mod.ConfigScreen::getCustomTransferRule",
+      "pers.solid.mod.ConfigScreen::getAbstractCustomVariantTransferRule",
       "pers.solid.mod.ConfigScreen::getAbstractCustomRegexTransferRule"
     ]
   },

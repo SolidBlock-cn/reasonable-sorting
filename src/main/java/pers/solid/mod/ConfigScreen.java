@@ -1,6 +1,7 @@
 package pers.solid.mod;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
@@ -8,6 +9,8 @@ import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.data.family.BlockFamily;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.text.TranslatableText;
@@ -19,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 public class ConfigScreen implements ModMenuApi {
     public static final Map<Item, Collection<Item>> CUSTOM_SORTING_RULES = new HashMap<>();
@@ -60,6 +64,31 @@ public class ConfigScreen implements ModMenuApi {
             return builder.build();
         }
     };
+    public static final Map<BlockFamily.Variant, ItemGroup> CUSTOM_VARIANT_TRANSFER_RULE = new LinkedHashMap<>();
+    public static final Map<Item, ItemGroup> ABSTRACT_CUSTOM_VARIANT_TRANSFER_RULE = new AbstractMap<>() {
+        @Override
+        public Set<Entry<Item, ItemGroup>> entrySet() {
+            return (Registry.ITEM.stream().map(item -> new AbstractMap.SimpleImmutableEntry<>(item, get(item))).collect(Collectors.toUnmodifiableSet()));
+        }
+
+        @Override
+        public ItemGroup get(Object key) {
+            if (!(key instanceof BlockItem)) return null;
+            for (BlockFamily blockFamily : BlockFamilyRule.BASE_BLOCKS_TO_FAMILIES.values())
+                for (Map.Entry<BlockFamily.Variant, ItemGroup> entry : CUSTOM_VARIANT_TRANSFER_RULE.entrySet()) {
+                    final BlockFamily.Variant variant = entry.getKey();
+                    if (blockFamily.getVariant(variant) == ((BlockItem) key).getBlock()) return entry.getValue();
+                }
+            return null;
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            return get(key) == null;
+        }
+    };
+
+    public static final Map<String, BlockFamily.Variant> NAME_TO_VARIANT = Arrays.stream(BlockFamily.Variant.values()).collect(ImmutableMap.toImmutableMap(BlockFamily.Variant::getName, variant -> variant));
 
     public static Map<Item, Collection<Item>> getCustomSortingRules() {
         return CUSTOM_SORTING_RULES;
@@ -111,6 +140,10 @@ public class ConfigScreen implements ModMenuApi {
         return ABSTRACT_CUSTOM_REGEX_TRANSFER_RULE;
     }
 
+    public static Map<Item, ItemGroup> getAbstractCustomVariantTransferRule() {
+        return ABSTRACT_CUSTOM_VARIANT_TRANSFER_RULE;
+    }
+
     private static @Nullable ItemGroup getGroupFromId(String id) {
         for (ItemGroup group : ItemGroup.GROUPS) {
             if (Objects.equals(group.getName(), id)) {
@@ -126,6 +159,7 @@ public class ConfigScreen implements ModMenuApi {
     }
 
     private Screen createScreen(Screen previousScreen) {
+        final Configs config = Configs.CONFIG_HOLDER.getConfig();
         ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(previousScreen)
                 .setSavingRunnable(() -> {
@@ -134,45 +168,103 @@ public class ConfigScreen implements ModMenuApi {
                 })
                 .setTitle(new TranslatableText("title.reasonable-sorting.config"));
 
-        ConfigCategory general = builder.getOrCreateCategory(new TranslatableText("category.reasonable-sorting.custom_sorting_rules"));
-        ConfigCategory transfers = builder.getOrCreateCategory(new TranslatableText("category.reasonable-sorting.custom_transfer_rules"));
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
+        ConfigCategory categorySorting = builder.getOrCreateCategory(new TranslatableText("category.reasonable-sorting.sorting"));
+        categorySorting.setDescription(new TranslatableText[]{new TranslatableText("category.reasonable-sorting.sorting.description")});
+        ConfigCategory categoryTransfer = builder.getOrCreateCategory(new TranslatableText("category.reasonable-sorting.transfer"));
+        categoryTransfer.setDescription(new TranslatableText[]{new TranslatableText("category.reasonable-sorting.sorting.transfer")});
 
-        // 自定义排序规则列表
-        general.addEntry(entryBuilder
-                .startStrList(new TranslatableText("options.reasonable-sorting.custom_sorting_rules"), Configs.CONFIG_HOLDER.getConfig().customSortingRulesStrList)
+        // 排序部分。
+        categorySorting.addEntry(entryBuilder
+                .startTextDescription(new TranslatableText("category.reasonable-sorting.sorting.description"))
+                .build());
+
+        categorySorting.addEntry(entryBuilder
+                .startBooleanToggle(new TranslatableText("option.reasonable-sorting.enable_sorting"), config.enableSorting)
+                .setTooltip(new TranslatableText("option.reasonable-sorting.enable_sorting.tooltip"))
+                .setYesNoTextSupplier(b -> new TranslatableText(b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
+                .setDefaultValue(true)
+                .setSaveConsumer(b -> config.enableSorting = b)
+                .build());
+
+        categorySorting.addEntry(entryBuilder
+                .startStrList(new TranslatableText("option.reasonable-sorting.custom_sorting_rules"), config.customSortingRulesStrList)
+                .setTooltip(new TranslatableText("option.reasonable-sorting.custom_sorting_rules.tooltip"), new TranslatableText("option.reasonable-sorting.custom_sorting_rules.example"))
                 .setInsertInFront(false)
                 .setExpanded(true)
-                .setAddButtonTooltip(new TranslatableText("options.reasonable-sorting.custom_sorting_rules.add"))
+                .setAddButtonTooltip(new TranslatableText("option.reasonable-sorting.custom_sorting_rules.add"))
+                .setRemoveButtonTooltip(new TranslatableText("option.reasonable-sorting.custom_sorting_rule.remove"))
                 .setSaveConsumer(list -> {
-                    Configs.CONFIG_HOLDER.getConfig().customSortingRulesStrList = formatted(list);
+                    config.customSortingRulesStrList = formatted(list);
                     CUSTOM_SORTING_RULES.clear();
                     CUSTOM_SORTING_RULES.putAll(fromStringList(list));
                 }).build());
 
-        transfers.addEntry(entryBuilder
-                .startBooleanToggle(new TranslatableText("options.reasonable-sorting.buttons_in_decorations"), Configs.CONFIG_HOLDER.getConfig().buttonsInDecorations)
-                .setSaveConsumer(b -> Configs.CONFIG_HOLDER.getConfig().buttonsInDecorations = b)
-                .build());
-
-        transfers.addEntry(entryBuilder
-                .startBooleanToggle(new TranslatableText("options.reasonable-sorting.fence_gates_in_decorations"), Configs.CONFIG_HOLDER.getConfig().fenceGatesInDecorations)
-                .setSaveConsumer(b -> Configs.CONFIG_HOLDER.getConfig().fenceGatesInDecorations = b)
-                .build());
-
-        transfers.addEntry(entryBuilder
-                .startBooleanToggle(new TranslatableText("options.reasonable-sorting.swords_in_tools"), Configs.CONFIG_HOLDER.getConfig().swordsInTools)
-                .setSaveConsumer(b -> {
-                    Configs.CONFIG_HOLDER.getConfig().swordsInTools = b;
+        categorySorting.addEntry(entryBuilder
+                .startStrField(new TranslatableText("option.reasonable-sorting.variants_following_base_blocks"), config.variantsFollowingBaseBlocks)
+                .setDefaultValue("stairs slab")
+                .setTooltip(new TranslatableText("option.reasonable-sorting.variants_following_base_blocks.tooltip"), new TranslatableText("option.reasonable-sorting.variants_following_base_blocks.example", String.join(" ", Arrays.stream(BlockFamily.Variant.values()).map(BlockFamily.Variant::getName).toList())))
+                .setErrorSupplier(s -> {
+                    List<String> invalidNames = new ArrayList<>();
+                    Arrays.stream(s.split("\\s+")).filter(name -> !name.isEmpty()).filter(name -> !NAME_TO_VARIANT.containsKey(name)).forEach(invalidNames::add);
+                    return invalidNames.isEmpty() ? Optional.empty() : Optional.of(new TranslatableText("option.reasonable-sorting.variants_following_base_blocks.invalid_name", String.join(", ", invalidNames)));
+                })
+                .setSaveConsumer(s -> {
+                    config.variantsFollowingBaseBlocks = s;
+                    BlockFamilyRule.AFFECTED_VARIANTS.clear();
+                    Arrays.stream(s.split("\\s+")).filter(name -> !name.isEmpty()).map(NAME_TO_VARIANT::get).filter(Objects::nonNull).forEach(BlockFamilyRule.AFFECTED_VARIANTS::add);
                 })
                 .build());
 
-        transfers.addEntry(entryBuilder
-                .startStrList(new TranslatableText("options.reasonable-sorting.custom_transfer_rules"), Configs.CONFIG_HOLDER.getConfig().transferRules)
+        categorySorting.addEntry(entryBuilder
+                .startBooleanToggle(new TranslatableText("option.reasonable-sorting.fence_gate_follows_fence"), config.fenceGateFollowsFence)
+                .setSaveConsumer(b -> config.fenceGateFollowsFence = b)
+                .setTooltip(new TranslatableText("option.reasonable-sorting.fence_gate_follows_fence.tooltip"))
+                .build());
+
+
+        // 物品组转移部分。
+        categoryTransfer.addEntry(entryBuilder.startTextDescription(new TranslatableText("category.reasonable-sorting.transfer.description"))
+                .build());
+
+        categoryTransfer.addEntry(entryBuilder
+                .startBooleanToggle(new TranslatableText("option.reasonable-sorting.enable_group_transfer"), config.enableGroupTransfer)
+                .setDefaultValue(true)
+                .setTooltip(new TranslatableText("option.reasonable-sorting.enable_group_transfer.tooltip"))
+                .setYesNoTextSupplier(b -> new TranslatableText(b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
+                .setSaveConsumer(b -> config.enableGroupTransfer = b)
+                .build());
+
+        categoryTransfer.addEntry(entryBuilder
+                .startBooleanToggle(new TranslatableText("option.reasonable-sorting.buttons_in_decorations"), config.buttonsInDecorations)
+                .setSaveConsumer(b -> config.buttonsInDecorations = b)
+                .build());
+        categoryTransfer.addEntry(entryBuilder
+                .startBooleanToggle(new TranslatableText("option.reasonable-sorting.fence_gates_in_decorations"), config.fenceGatesInDecorations)
+                .setSaveConsumer(b -> config.fenceGatesInDecorations = b)
+                .build());
+        categoryTransfer.addEntry(entryBuilder
+                .startBooleanToggle(new TranslatableText("option.reasonable-sorting.swords_in_tools"), config.swordsInTools)
+                .setSaveConsumer(b -> {
+                    config.swordsInTools = b;
+                })
+                .build());
+        categoryTransfer.addEntry(entryBuilder
+                .startBooleanToggle(new TranslatableText("option.reasonable-sorting.doors_in_decorations"), config.doorsInDecorations)
+                .setSaveConsumer(b -> config.doorsInDecorations = b)
+                .build());
+
+        categoryTransfer.addEntry(entryBuilder
+                .startTextDescription(new TranslatableText("option.reasonable-sorting.describe_item_groups", String.join(" ", Arrays.stream(ItemGroup.GROUPS).map(ItemGroup::getName).toList())))
+                .build());
+
+        categoryTransfer.addEntry(entryBuilder
+                .startStrList(new TranslatableText("option.reasonable-sorting.custom_transfer_rules"), config.transferRules)
+                .setTooltip(new TranslatableText("option.reasonable-sorting.custom_transfer_rules.tooltip"))
                 .setExpanded(true)
                 .setInsertInFront(false)
                 .setSaveConsumer(list -> {
-                    Configs.CONFIG_HOLDER.getConfig().transferRules = list;
+                    config.transferRules = list;
                     CUSTOM_TRANSFER_RULE.clear();
                     for (String s : list) {
                         final String[] split = s.split("\\s+");
@@ -186,12 +278,61 @@ public class ConfigScreen implements ModMenuApi {
                 })
                 .build());
 
-        transfers.addEntry(entryBuilder
-                .startStrList(new TranslatableText("options.reasonable-sorting.custom_regex_transfer_rules"), Configs.CONFIG_HOLDER.getConfig().regexTransferRules)
+        categoryTransfer.addEntry(entryBuilder
+                .startStrList(new TranslatableText("option.reasonable-sorting.custom_variant_transfer_rules"), config.variantTransferRules)
+                .setTooltip(new TranslatableText("option.reasonable-sorting.custom_variant_transfer_rules.tooltip"))
                 .setExpanded(true)
                 .setInsertInFront(false)
+                .setCellErrorSupplier(s -> {
+                    if (s.isEmpty()) return Optional.empty();
+                    final String[] split = s.split("\\s+");
+                    if (split.length < 2)
+                        return Optional.of(new TranslatableText("option.reasonable-sorting.error.group_name_expected"));
+                    final ItemGroup group = getGroupFromId(split[1]);
+                    if (group == null)
+                        return Optional.of(new TranslatableText("option.reasonable-sorting.error.invalid_group_id", split[1]));
+                    if (!NAME_TO_VARIANT.containsKey(split[0]))
+                        return Optional.of(new TranslatableText("option.reasonable-sorting.error.invalid_variant_name", split[0]));
+                    return Optional.empty();
+                })
                 .setSaveConsumer(list -> {
-                    Configs.CONFIG_HOLDER.getConfig().regexTransferRules = list;
+                    config.variantTransferRules = list;
+                    CUSTOM_TRANSFER_RULE.clear();
+                    for (String s : list) {
+                        try {
+                            final String[] split = s.split("\\s+");
+                            if (split.length < 2) continue;
+                            final BlockFamily.Variant variant = NAME_TO_VARIANT.get(split[0]);
+                            final ItemGroup group = getGroupFromId(split[1]);
+                            CUSTOM_VARIANT_TRANSFER_RULE.put(Objects.requireNonNull(variant), Objects.requireNonNull(group));
+                        } catch (NullPointerException ignored) {
+                        }
+                    }
+                })
+                .build());
+
+        categoryTransfer.addEntry(entryBuilder
+                .startStrList(new TranslatableText("option.reasonable-sorting.custom_regex_transfer_rules"), config.regexTransferRules)
+                .setTooltip(new TranslatableText("option.reasonable-sorting.custom_regex_transfer_rules.tooltip"))
+                .setExpanded(true)
+                .setInsertInFront(false)
+                .setCellErrorSupplier(s -> {
+                    if (s.isEmpty()) return Optional.empty();
+                    final String[] split = s.split("\\s+");
+                    if (split.length < 2)
+                        return Optional.of(new TranslatableText("option.reasonable-sorting.error.group_name_expected"));
+                    final ItemGroup group = getGroupFromId(split[1]);
+                    if (group == null)
+                        return Optional.of(new TranslatableText("option.reasonable-sorting.error.invalid_group_id", split[1]));
+                    try {
+                        Pattern.compile(split[0]);
+                    } catch (PatternSyntaxException e) {
+                        return Optional.of(new TranslatableText("option.reasonable-sorting.error.invalid_regex", split[0], e.getMessage()));
+                    }
+                    return Optional.empty();
+                })
+                .setSaveConsumer(list -> {
+                    config.regexTransferRules = list;
                     CUSTOM_REGEX_TRANSFER_RULE.clear();
                     for (String s : list)
                         try {

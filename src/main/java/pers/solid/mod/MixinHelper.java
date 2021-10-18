@@ -19,12 +19,17 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class MixinHelper implements ModInitializer {
-
     /**
      * 存放所有物品组合规则的列表。
      */
     public static final ObjectList<Map<Item, ? extends Collection<Item>>> ITEM_COMBINATION_RULES = new ObjectArrayList<>();
+    /**
+     * 存放所有物品组转移规则的列表。
+     */
     public static final ObjectList<Map<Item, ItemGroup>> ITEM_GROUP_TRANSFER_RULES = new ObjectArrayList<>();
+    /**
+     * 编译后的物品组转移规则。由单个物品映射到物品组集合（考虑到不同的设定可能导致同一个物品转移到多个物品组）。编译是为了加快读取速度，每一次修改配置都会重新编译一次。编译时会清空、重写此列表内容，不会更改此列表指针。
+     */
     public static final Map<Item, ImmutableCollection<ItemGroup>> COMPILED_ITEM_GROUP_TRANSFER_RULES = new HashMap<>();
 
     public static final Logger LOGGER = LogManager.getLogger("REASONABLE_SORTING");
@@ -43,6 +48,14 @@ public class MixinHelper implements ModInitializer {
         followings.forEach(actionForFollowings);
     }
 
+    /**
+     * 对一个物品及其跟随者应用某一个行为。此方法以泛化，可以不仅针对物品。
+     *
+     * @param rules  物品排序规则。
+     * @param item   物品。（当然也可以是其他类的。）
+     * @param action 需要应用的行为。
+     * @param <T>    参数的类，比如 {@link Item}。
+     */
     public static <T> void applyItemWithFollowings(Collection<? extends Map<T, ? extends Collection<T>>> rules, T item, Consumer<T> action) {
         applyItemWithFollowings(rules, item, action,
                 followingItem -> {
@@ -51,6 +64,9 @@ public class MixinHelper implements ModInitializer {
         );
     }
 
+    /**
+     * 用于 {@link pers.solid.mod.mixin.SimpleRegistryMixin}。
+     */
     public static <T> Iterator<T> itemRegistryIterator(ObjectList<T> rawIdToEntry, Collection<? extends Map<T, ? extends Collection<T>>> rules) {
         Set<T> list = new LinkedHashSet<>();
         for (T item : rawIdToEntry) {
@@ -82,35 +98,11 @@ public class MixinHelper implements ModInitializer {
         return false;
     }
 
-    public void onInitialize() {
-        Configs.CONFIG_HOLDER.load();
-        for (EntrypointContainer<Supplier> entrypointContainer : FabricLoader.getInstance().getEntrypointContainers("reasonable-sorting:item_combination_rules", (Supplier.class))) {
-            final Supplier<? extends Map<Item, ? extends Collection<Item>>> entrypoint;
-            try {
-                entrypoint = ((Supplier<? extends Map<Item, ? extends Collection<Item>>>) entrypointContainer.getEntrypoint());
-            } catch (ClassCastException e) {
-                final var e1 = entrypointContainer.getEntrypoint();
-                LOGGER.fatal("Invalid entrypoint %s from mod %s. Please make sure it's an instance of Supplier<Map<Item,Collection<Item>>>.".formatted(e1, entrypointContainer.getProvider()));
-                throw e;
-            }
-            ITEM_COMBINATION_RULES.add(entrypoint.get());
-        }
-        LOGGER.info("%s rules are recognized!".formatted(ITEM_COMBINATION_RULES.size()));
-
-        for (EntrypointContainer<Supplier> entrypointContainer : FabricLoader.getInstance().getEntrypointContainers("reasonable-sorting:item_group_transfer_rules", Supplier.class)) {
-            final Supplier<Map<Item, ItemGroup>> entrypoint;
-            try {
-                entrypoint = (Supplier<Map<Item, ItemGroup>>) entrypointContainer.getEntrypoint();
-            } catch (ClassCastException e) {
-                LOGGER.fatal("Invalid entrypoint %s from mod %s. Please make sure it's an instance of Supplier<Map<Item,ItemGroup>>.".formatted(entrypointContainer.getEntrypoint(), entrypointContainer.getProvider()));
-                throw e;
-            }
-            ITEM_GROUP_TRANSFER_RULES.add(entrypoint.get());
-        }
-
-        compileItemGroupTransferRules(ITEM_GROUP_TRANSFER_RULES);
-    }
-
+    /**
+     * 将所有的物品组转移规则编译到 {@link #COMPILED_ITEM_GROUP_TRANSFER_RULES} 中以供使用。之所以编译是为了加快读取速度。在修改配置时，也会对物品组进行重新编译。
+     *
+     * @param itemGroupTransferRules 物品组转换规则，是由物品到物品组的映射的列表。
+     */
     public static void compileItemGroupTransferRules(ObjectList<Map<Item, ItemGroup>> itemGroupTransferRules) {
         COMPILED_ITEM_GROUP_TRANSFER_RULES.clear();
         for (Item item : Registry.ITEM) {
@@ -123,5 +115,38 @@ public class MixinHelper implements ModInitializer {
             if (!build.isEmpty())
                 COMPILED_ITEM_GROUP_TRANSFER_RULES.put(item, build);
         }
+    }
+
+    public void onInitialize() {
+        // 从配置文件中加载配置。如果文件不存在，则会使用默认的。
+        Configs.CONFIG_HOLDER.load();
+
+        // 通过入口点来获取物品组合规则。请参考 {@code fabric.mod.json} 以了解本模组使用的入口点。
+        for (EntrypointContainer<Supplier<? extends Map<Item, ? extends Collection<Item>>>> entrypointContainer : FabricLoader.getInstance().getEntrypointContainers("reasonable-sorting:item_combination_rules", (Class<Supplier<? extends Map<Item, ? extends Collection<Item>>>>) (Class) Supplier.class)) {
+            final Supplier<? extends Map<Item, ? extends Collection<Item>>> entrypoint;
+            try {
+                entrypoint = entrypointContainer.getEntrypoint();
+            } catch (ClassCastException e) {
+                final var e1 = entrypointContainer.getEntrypoint();
+                LOGGER.fatal("Invalid entrypoint %s from mod %s. Please make sure it's an instance of Supplier<Map<Item,Collection<Item>>>.".formatted(e1, entrypointContainer.getProvider()));
+                throw e;
+            }
+            ITEM_COMBINATION_RULES.add(entrypoint.get());
+        }
+        LOGGER.info("%s rules are recognized!".formatted(ITEM_COMBINATION_RULES.size()));
+
+        // 通过入口点来获取物品组转移规则。
+        for (EntrypointContainer<Supplier<Map<Item, ItemGroup>>> entrypointContainer : FabricLoader.getInstance().getEntrypointContainers("reasonable-sorting:item_group_transfer_rules", ((Class<Supplier<Map<Item, ItemGroup>>>) (Class) Supplier.class))) {
+            final Supplier<Map<Item, ItemGroup>> entrypoint;
+            try {
+                entrypoint = entrypointContainer.getEntrypoint();
+            } catch (ClassCastException e) {
+                LOGGER.fatal("Invalid entrypoint %s from mod %s. Please make sure it's an instance of Supplier<Map<Item,ItemGroup>>.".formatted(entrypointContainer.getEntrypoint(), entrypointContainer.getProvider()));
+                throw e;
+            }
+            ITEM_GROUP_TRANSFER_RULES.add(entrypoint.get());
+        }
+
+        compileItemGroupTransferRules(ITEM_GROUP_TRANSFER_RULES);
     }
 }

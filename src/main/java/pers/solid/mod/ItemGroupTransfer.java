@@ -2,6 +2,7 @@ package pers.solid.mod;
 
 import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.AbstractButtonBlock;
+import net.minecraft.block.DoorBlock;
 import net.minecraft.block.FenceGateBlock;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -34,13 +35,16 @@ public class ItemGroupTransfer implements Supplier<Map<Item,ItemGroup>> {
 
         @Override
         public ItemGroup get(Object key) {
+            final Configs config = Configs.CONFIG_HOLDER.getConfig();
             if (key instanceof BlockItem) {
-                if (Configs.CONFIG_HOLDER.getConfig().buttonsInDecorations && ((BlockItem) key).getBlock() instanceof AbstractButtonBlock) {
+                if (config.buttonsInDecorations && ((BlockItem) key).getBlock() instanceof AbstractButtonBlock) {
                     return ItemGroup.DECORATIONS;
-                } else if (Configs.CONFIG_HOLDER.getConfig().fenceGatesInDecorations && ((BlockItem) key).getBlock() instanceof FenceGateBlock) {
+                } else if (config.fenceGatesInDecorations && ((BlockItem) key).getBlock() instanceof FenceGateBlock) {
+                    return ItemGroup.DECORATIONS;
+                } else if (config.doorsInDecorations && ((BlockItem) key).getBlock() instanceof DoorBlock) {
                     return ItemGroup.DECORATIONS;
                 }
-            } else if ( Configs.CONFIG_HOLDER.getConfig().swordsInTools && key instanceof SwordItem) {
+            } else if (config.swordsInTools && key instanceof SwordItem) {
                 return ItemGroup.TOOLS;
             }
             return null;

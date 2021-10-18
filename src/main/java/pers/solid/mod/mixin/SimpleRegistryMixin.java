@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import pers.solid.mod.Configs;
 import pers.solid.mod.MixinHelper;
 
 import java.util.Iterator;
@@ -30,8 +31,8 @@ public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> {
 
     @Inject(method = "iterator", at = @At("HEAD"), cancellable = true)
     private void itemIterator(CallbackInfoReturnable<Iterator<T>> cir) {
-        if (this.equals(Registry.ITEM)) {
-            cir.setReturnValue((Iterator<T>) MixinHelper.itemRegistryIterator(this.rawIdToEntry,MixinHelper.ITEM_COMBINATION_RULES));
+        if (Configs.CONFIG_HOLDER.getConfig().enableSorting && this.equals(Registry.ITEM)) {
+            cir.setReturnValue((Iterator<T>) MixinHelper.itemRegistryIterator(this.rawIdToEntry, MixinHelper.ITEM_COMBINATION_RULES));
         }
     }
 }
