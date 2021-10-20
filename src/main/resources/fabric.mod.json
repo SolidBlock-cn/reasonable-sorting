@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "reasonable-sorting",
-  "version": "1.3",
+  "version": "${version}",
   "name": "Reasonable Sorting",
   "description": "Sorts blocks and items in the creative inventory reasonably.",
   "authors": [

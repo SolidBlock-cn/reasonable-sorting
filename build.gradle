@@ -11,17 +11,14 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
-	maven {
-		url 'https://maven.aliyun.com/nexus/content/groups/public'
-	}
-	maven {
-		url 'https://repository.hanbings.io/proxy'
-	}
+//	maven {
+//		url 'https://maven.aliyun.com/nexus/content/groups/public'
+//	}
+//	maven {
+//		url 'https://repository.hanbings.io/proxy'
+//	}
 
 	maven { url "https://maven.shedaniel.me/" }
-//	maven {
-//		url "https://maven.terraformersmc.com/releases/com/terraformersmc/modmenu/"
-//	}
 
 	maven {
 		name = 'TerraformersMC'

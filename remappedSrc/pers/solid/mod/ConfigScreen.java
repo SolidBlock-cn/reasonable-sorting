@@ -273,18 +273,14 @@ public class ConfigScreen implements ModMenuApi {
                 })
                 .build());
 
-        if (ExtShapeBridge.modLoaded()) {
-            categorySorting.addEntry(entryBuilder
-                    .startTextDescription(new TranslatableText("option.reasonable-sorting.describe_shapes",new LiteralText(ExtShapeBridge.getValidShapeNames()).formatted(Formatting.YELLOW)))
-                    .build());
-            categorySorting.addEntry(entryBuilder
-                    .startStrField(new TranslatableText("option.reasonable-sorting.shapes_following_base_blocks"), config.shapesFollowingBaseBlocks)
-                    .setDefaultValue("*")
-                    .setTooltip(new TranslatableText("option.reasonable-sorting.shapes_following_base_blocks.tooltip"))
-                    .setErrorSupplier(ExtShapeBridge::checkIfValid)
-                    .setSaveConsumer(ExtShapeBridge::updateShapeList)
-                    .build());
-        }
+        if (ExtShapeBridge.modLoaded())
+        categorySorting.addEntry(entryBuilder
+                .startStrField(new TranslatableText("option.reasonable-sorting.shape_following_base_blocks"), config.shapesFollowingBaseBlocks)
+                .setDefaultValue("*")
+                .setTooltip(new TranslatableText("option.reasonable-sorting.shape_following_base_blocks.tooltip"))
+                .setErrorSupplier(ExtShapeBridge::checkIfValid)
+                .setSaveConsumer(ExtShapeBridge::updateShapeList)
+                .build());
 
         categorySorting.addEntry(entryBuilder
                 .startBooleanToggle(new TranslatableText("option.reasonable-sorting.fence_gate_follows_fence"), config.fenceGateFollowsFence)
