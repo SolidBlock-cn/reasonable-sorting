@@ -223,11 +223,11 @@ public class ConfigScreen implements ModMenuApi {
                 .build());
 
         categorySorting.addEntry(entryBuilder
-                .startBooleanToggle(new TranslatableText("option.reasonable-sorting.enable_default_item_combination_rules"), config.enableDefaultItemCombinationRules)
-                .setTooltip(new TranslatableText("option.reasonable-sorting.enable_default_item_combination_rules.tooltip"))
+                .startBooleanToggle(new TranslatableText("option.reasonable-sorting.enable_default_item_sorting_rules"), config.enableDefaultItemSortingRules)
+                .setTooltip(new TranslatableText("option.reasonable-sorting.enable_default_item_sorting_rules.tooltip"))
                 .setYesNoTextSupplier(b -> new TranslatableText(b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
                 .setDefaultValue(true)
-                .setSaveConsumer(b -> config.enableDefaultItemCombinationRules = b)
+                .setSaveConsumer(b -> config.enableDefaultItemSortingRules = b)
                 .build());
 
         categorySorting.addEntry(entryBuilder

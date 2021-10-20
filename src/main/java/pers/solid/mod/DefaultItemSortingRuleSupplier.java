@@ -11,11 +11,11 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class DefaultItemCombinationRuleSupplier implements Supplier<Collection<Map<Item, Collection<Item>>>> {
+public class DefaultItemSortingRuleSupplier implements Supplier<Collection<Map<Item, Collection<Item>>>> {
     /**
      * 此模组默认内置的物品组合规则。
      */
-    public static final ImmutableMap<Item, Collection<Item>> DEFAULT_ITEM_COMBINATION_RULE = new ImmutableMap.Builder<Item, Collection<Item>>()
+    public static final ImmutableMap<Item, Collection<Item>> DEFAULT_ITEM_SORTING_RULE = new ImmutableMap.Builder<Item, Collection<Item>>()
             .put(Items.COBBLESTONE, ImmutableList.of(Items.MOSSY_COBBLESTONE))
             .put(Items.SANDSTONE, ImmutableList.of(Items.CHISELED_SANDSTONE, Items.CUT_SANDSTONE, Items.SMOOTH_SANDSTONE, Items.RED_SANDSTONE, Items.CHISELED_RED_SANDSTONE, Items.CUT_RED_SANDSTONE, Items.SMOOTH_RED_SANDSTONE))
             .put(Items.ICE, ImmutableList.of(Items.PACKED_ICE, Items.BLUE_ICE))
@@ -35,14 +35,14 @@ public class DefaultItemCombinationRuleSupplier implements Supplier<Collection<M
             .put(Items.FLINT, ImmutableList.of(Items.SNOWBALL, Items.LEATHER)).build();
 
     /**
-     * @return 会转射到 {@link #DEFAULT_ITEM_COMBINATION_RULE} 的 {@link ForwardingMap}。当对应的配置为 <code>true</code> 是转发到上述映射，否则转发到不可变的空映射。
+     * @return 会转射到 {@link #DEFAULT_ITEM_SORTING_RULE} 的 {@link ForwardingMap}。当对应的配置为 <code>true</code> 是转发到上述映射，否则转发到不可变的空映射。
      */
     @Override
     public Collection<Map<Item, Collection<Item>>> get() {
         return Collections.singleton(new ForwardingMap<>() {
             @Override
             protected Map<Item, Collection<Item>> delegate() {
-                return Configs.CONFIG_HOLDER.getConfig().enableDefaultItemCombinationRules ? DEFAULT_ITEM_COMBINATION_RULE : ImmutableMap.of();
+                return Configs.CONFIG_HOLDER.getConfig().enableDefaultItemSortingRules ? DEFAULT_ITEM_SORTING_RULE : ImmutableMap.of();
             }
         });
     }

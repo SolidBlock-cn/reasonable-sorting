@@ -34,7 +34,7 @@ public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> {
     private void itemIterator(CallbackInfoReturnable<Iterator<T>> cir) {
         if (Configs.CONFIG_HOLDER.getConfig().enableSorting && this.equals(Registry.ITEM)) {
             try {
-                cir.setReturnValue(MixinHelper.itemRegistryIterator((this.rawIdToEntry), (Collection<? extends Map<T, ? extends Collection<T>>>) (Collection) MixinHelper.ITEM_COMBINATION_RULES));
+                cir.setReturnValue(MixinHelper.itemRegistryIterator((this.rawIdToEntry), (Collection<? extends Map<T, ? extends Collection<T>>>) (Collection) MixinHelper.ITEM_SORTING_RULES));
             } catch (ClassCastException ignored) {
             }
         }

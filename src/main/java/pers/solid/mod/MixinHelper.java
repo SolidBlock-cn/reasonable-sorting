@@ -25,7 +25,7 @@ public class MixinHelper implements ModInitializer {
     /**
      * 存放所有物品组合规则的列表。
      */
-    public static final Collection<Map<Item, ? extends Collection<Item>>> ITEM_COMBINATION_RULES = new ObjectArrayList<>();
+    public static final Collection<Map<Item, ? extends Collection<Item>>> ITEM_SORTING_RULES = new ObjectArrayList<>();
     /**
      * 存放所有物品组转移规则的列表。
      */
@@ -163,13 +163,13 @@ public class MixinHelper implements ModInitializer {
         ConfigScreen.updateCustomRegexTransferRules(configs.regexTransferRules, ConfigScreen.CUSTOM_REGEX_TRANSFER_RULE);
 
         // 从入口点导入物品组合规则。
-        ITEM_COMBINATION_RULES.clear();
+        ITEM_SORTING_RULES.clear();
         // 通过入口点来获取物品组合规则。请参考 {@code fabric.mod.json} 以了解本模组使用的入口点。
-        for (EntrypointContainer<Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>>> entrypointContainer : FabricLoader.getInstance().getEntrypointContainers("reasonable-sorting:item_combination_rules", (Class<Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>>>) (Class) Supplier.class)) {
+        for (EntrypointContainer<Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>>> entrypointContainer : FabricLoader.getInstance().getEntrypointContainers("reasonable-sorting:item_sorting_rules", (Class<Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>>>) (Class) Supplier.class)) {
             final Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>> entrypoint = entrypointContainer.getEntrypoint();
-            ITEM_COMBINATION_RULES.addAll(entrypoint.get());
+            ITEM_SORTING_RULES.addAll(entrypoint.get());
         }
-        LOGGER.info("%s rules are recognized!".formatted(ITEM_COMBINATION_RULES.size()));
+        LOGGER.info("%s rules are recognized!".formatted(ITEM_SORTING_RULES.size()));
 
         // 从入口点导入物品组转移规则。
         ITEM_GROUP_TRANSFER_RULES.clear();
