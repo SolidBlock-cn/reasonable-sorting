@@ -1,7 +1,6 @@
 package pers.solid.mod;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
@@ -71,7 +70,7 @@ public class ConfigScreen implements ModMenuApi {
     public static final Map<Item, ItemGroup> ABSTRACT_CUSTOM_VARIANT_TRANSFER_RULE = new AbstractMap<>() {
         @Override
         public Set<Entry<Item, ItemGroup>> entrySet() {
-            return (Registry.ITEM.stream().map(item -> new AbstractMap.SimpleImmutableEntry<>(item, get(item))).collect(Collectors.toUnmodifiableSet()));
+            return (Registry.ITEM.stream().map(item -> new SimpleImmutableEntry<>(item, get(item))).filter(entry -> Objects.nonNull(entry.getValue())).collect(Collectors.toUnmodifiableSet()));
         }
 
         @Override
@@ -91,7 +90,7 @@ public class ConfigScreen implements ModMenuApi {
         }
     };
 
-    public static final Map<String, BlockFamily.Variant> NAME_TO_VARIANT = Arrays.stream(BlockFamily.Variant.values()).collect(ImmutableMap.toImmutableMap(BlockFamily.Variant::getName, variant -> variant));
+    public static final Map<String, BlockFamily.Variant> NAME_TO_VARIANT = Arrays.stream(BlockFamily.Variant.values()).collect(Collectors.toMap(BlockFamily.Variant::getName, variant -> variant));
 
     public static Collection<Map<Item, Collection<Item>>> getCustomSortingRules() {
         return Collections.singleton(CUSTOM_SORTING_RULES);
@@ -122,19 +121,6 @@ public class ConfigScreen implements ModMenuApi {
         return newList;
     }
 
-    public static Map<Item, Collection<Item>> fromStringList(List<String> list) {
-        Map<Item, Collection<Item>> map = new LinkedHashMap<>();
-        for (String s : list) {
-            final var split = new ArrayList<>(Arrays.asList(s.split("\\s+")));
-            if (split.size() < 1) continue;
-            var key = Identifier.tryParse(split.remove(0));
-            if (key == null) continue;
-            if (Registry.ITEM.containsId(key))
-                map.put(Registry.ITEM.get(key), (split.stream().map(Identifier::tryParse).filter(Registry.ITEM::containsId).map(Registry.ITEM::get).toList()));
-        }
-        return map;
-    }
-
     public static Collection<Map<Item, ItemGroup>> getCustomTransferRules() {
         return ImmutableList.of(CUSTOM_TRANSFER_RULE, ABSTRACT_CUSTOM_VARIANT_TRANSFER_RULE, ABSTRACT_CUSTOM_REGEX_TRANSFER_RULE);
     }
@@ -151,6 +137,63 @@ public class ConfigScreen implements ModMenuApi {
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
         return this::createScreen;
+    }
+
+    public static void updateVariantsFollowingBaseBlocks(String s, List<BlockFamily.Variant> mutableList) {
+        mutableList.clear();
+        Arrays.stream(s.split("\\s+")).filter(name -> !name.isEmpty()).map(NAME_TO_VARIANT::get).filter(Objects::nonNull).forEach(BlockFamilyRule.AFFECTED_VARIANTS::add);
+    }
+
+    public static void updateCustomSortingRules(List<String> list, Map<Item, Collection<Item>> mutableMap) {
+        mutableMap.clear();
+        for (String s : list) {
+            final var split = new ArrayList<>(Arrays.asList(s.split("\\s+")));
+            if (split.size() < 1) continue;
+            var key = Identifier.tryParse(split.remove(0));
+            if (key == null) continue;
+            if (Registry.ITEM.containsId(key))
+                CUSTOM_SORTING_RULES.put(Registry.ITEM.get(key), (split.stream().map(Identifier::tryParse).filter(Registry.ITEM::containsId).map(Registry.ITEM::get).toList()));
+        }
+    }
+
+    public static void updateCustomRegexTransferRules(List<String> list, Map<Pattern, ItemGroup> mutableMap) {
+        mutableMap.clear();
+        for (String s : list)
+            try {
+                final String[] split = s.split("\\s+");
+                if (split.length < 2) continue;
+                final Pattern compile = Pattern.compile(split[0]);
+                final ItemGroup group = getGroupFromId(split[1]);
+                CUSTOM_REGEX_TRANSFER_RULE.put(Objects.requireNonNull(compile), Objects.requireNonNull(group));
+            } catch (NullPointerException | PatternSyntaxException ignored) {
+            }
+    }
+
+    public static void updateCustomVariantTransferRules(List<String> list, Map<BlockFamily.Variant, ItemGroup> mutableMap) {
+        mutableMap.clear();
+        for (String s : list) {
+            try {
+                final String[] split = s.split("\\s+");
+                if (split.length < 2) continue;
+                final BlockFamily.Variant variant = NAME_TO_VARIANT.get(split[0]);
+                final ItemGroup group = getGroupFromId(split[1]);
+                CUSTOM_VARIANT_TRANSFER_RULE.put(Objects.requireNonNull(variant), Objects.requireNonNull(group));
+            } catch (NullPointerException ignored) {
+            }
+        }
+    }
+
+    public static void updateCustomTransferRule(List<String> list, Map<Item, ItemGroup> mutableMap) {
+        for (String s : list) {
+            mutableMap.clear();
+            final String[] split = s.split("\\s+");
+            if (split.length < 2) continue;
+            final Identifier id = Identifier.tryParse(split[0]);
+            if (!Registry.ITEM.containsId(id)) continue;
+            final Item item = Registry.ITEM.get(id);
+            ItemGroup itemGroup = getGroupFromId(split[1]);
+            mutableMap.put(item, itemGroup);
+        }
     }
 
     private Screen createScreen(Screen previousScreen) {
@@ -188,7 +231,7 @@ public class ConfigScreen implements ModMenuApi {
                 .build());
 
         categorySorting.addEntry(entryBuilder
-                .startStrList(new TranslatableText("option.reasonable-sorting.custom_sorting_rules"), config.customSortingRulesStrList)
+                .startStrList(new TranslatableText("option.reasonable-sorting.custom_sorting_rules"), config.customSortingRules)
                 .setTooltip(new TranslatableText("option.reasonable-sorting.custom_sorting_rules.tooltip"), new TranslatableText("option.reasonable-sorting.custom_sorting_rules.example"))
                 .setInsertInFront(false)
                 .setExpanded(true)
@@ -201,9 +244,8 @@ public class ConfigScreen implements ModMenuApi {
                     return !invalids.isEmpty() ? Optional.of(new TranslatableText("option.reasonable-sorting.error.invalid_identifier", String.join(" ", invalids))) : Optional.empty();
                 })
                 .setSaveConsumer(list -> {
-                    config.customSortingRulesStrList = formatted(list);
-                    CUSTOM_SORTING_RULES.clear();
-                    CUSTOM_SORTING_RULES.putAll(fromStringList(list));
+                    config.customSortingRules = formatted(list);
+                    updateCustomSortingRules(list, CUSTOM_SORTING_RULES);
                 }).build());
 
         categorySorting.addEntry(entryBuilder
@@ -221,14 +263,14 @@ public class ConfigScreen implements ModMenuApi {
                 })
                 .setSaveConsumer(s -> {
                     config.variantsFollowingBaseBlocks = s;
-                    BlockFamilyRule.AFFECTED_VARIANTS.clear();
-                    Arrays.stream(s.split("\\s+")).filter(name -> !name.isEmpty()).map(NAME_TO_VARIANT::get).filter(Objects::nonNull).forEach(BlockFamilyRule.AFFECTED_VARIANTS::add);
+                    updateVariantsFollowingBaseBlocks(s, BlockFamilyRule.AFFECTED_VARIANTS);
                 })
                 .build());
 
         categorySorting.addEntry(entryBuilder
                 .startBooleanToggle(new TranslatableText("option.reasonable-sorting.fence_gate_follows_fence"), config.fenceGateFollowsFence)
                 .setSaveConsumer(b -> config.fenceGateFollowsFence = b)
+                .setDefaultValue(true)
                 .setTooltip(new TranslatableText("option.reasonable-sorting.fence_gate_follows_fence.tooltip"))
                 .build());
 
@@ -247,18 +289,22 @@ public class ConfigScreen implements ModMenuApi {
 
         categoryTransfer.addEntry(entryBuilder
                 .startBooleanToggle(new TranslatableText("option.reasonable-sorting.buttons_in_decorations"), config.buttonsInDecorations)
+                .setDefaultValue(false)
                 .setSaveConsumer(b -> config.buttonsInDecorations = b)
                 .build());
         categoryTransfer.addEntry(entryBuilder
                 .startBooleanToggle(new TranslatableText("option.reasonable-sorting.fence_gates_in_decorations"), config.fenceGatesInDecorations)
+                .setDefaultValue(true)
                 .setSaveConsumer(b -> config.fenceGatesInDecorations = b)
                 .build());
         categoryTransfer.addEntry(entryBuilder
                 .startBooleanToggle(new TranslatableText("option.reasonable-sorting.swords_in_tools"), config.swordsInTools)
+                .setDefaultValue(false)
                 .setSaveConsumer(b -> config.swordsInTools = b)
                 .build());
         categoryTransfer.addEntry(entryBuilder
                 .startBooleanToggle(new TranslatableText("option.reasonable-sorting.doors_in_decorations"), config.doorsInDecorations)
+                .setDefaultValue(false)
                 .setSaveConsumer(b -> config.doorsInDecorations = b)
                 .build());
 
@@ -286,16 +332,7 @@ public class ConfigScreen implements ModMenuApi {
                 .setDefaultValue(Collections.emptyList())
                 .setSaveConsumer(list -> {
                     config.transferRules = list;
-                    CUSTOM_TRANSFER_RULE.clear();
-                    for (String s : list) {
-                        final String[] split = s.split("\\s+");
-                        if (split.length < 2) continue;
-                        final Identifier id = Identifier.tryParse(split[0]);
-                        if (!Registry.ITEM.containsId(id)) continue;
-                        final Item item = Registry.ITEM.get(id);
-                        ItemGroup itemGroup = getGroupFromId(split[1]);
-                        CUSTOM_TRANSFER_RULE.put(item, itemGroup);
-                    }
+                    updateCustomTransferRule(list, CUSTOM_TRANSFER_RULE);
                 })
                 .build());
 
@@ -313,9 +350,6 @@ public class ConfigScreen implements ModMenuApi {
                         return Optional.of(new TranslatableText("option.reasonable-sorting.error.unexpected_text", split[2]));
                     if (split.length < 2)
                         return Optional.of(new TranslatableText("option.reasonable-sorting.error.group_name_expected"));
-//                    final ItemGroup group = getGroupFromId(split[1]);
-//                    if (group == null)
-//                        return Optional.of(new TranslatableText("option.reasonable-sorting.error.invalid_group_id", split[1]));
                     if (!NAME_TO_VARIANT.containsKey(split[0]))
                         return Optional.of(new TranslatableText("option.reasonable-sorting.error.invalid_variant_name", split[0]));
                     return Optional.empty();
@@ -323,17 +357,7 @@ public class ConfigScreen implements ModMenuApi {
                 .setDefaultValue(Collections.emptyList())
                 .setSaveConsumer(list -> {
                     config.variantTransferRules = list;
-                    CUSTOM_TRANSFER_RULE.clear();
-                    for (String s : list) {
-                        try {
-                            final String[] split = s.split("\\s+");
-                            if (split.length < 2) continue;
-                            final BlockFamily.Variant variant = NAME_TO_VARIANT.get(split[0]);
-                            final ItemGroup group = getGroupFromId(split[1]);
-                            CUSTOM_VARIANT_TRANSFER_RULE.put(Objects.requireNonNull(variant), Objects.requireNonNull(group));
-                        } catch (NullPointerException ignored) {
-                        }
-                    }
+                    updateCustomVariantTransferRules(list, CUSTOM_VARIANT_TRANSFER_RULE);
                 })
                 .build());
 
@@ -351,9 +375,6 @@ public class ConfigScreen implements ModMenuApi {
                         return Optional.of(new TranslatableText("option.reasonable-sorting.error.unexpected_text", split[2]));
                     if (split.length < 2)
                         return Optional.of(new TranslatableText("option.reasonable-sorting.error.group_name_expected"));
-//                    final ItemGroup group = getGroupFromId(split[1]);
-//                    if (group == null)
-//                        return Optional.of(new TranslatableText("option.reasonable-sorting.error.invalid_group_id", split[1]));
                     final String pattern = split[0];
                     try {
                         Pattern.compile(pattern);
@@ -366,16 +387,7 @@ public class ConfigScreen implements ModMenuApi {
                 .setDefaultValue(Collections.emptyList())
                 .setSaveConsumer(list -> {
                     config.regexTransferRules = list;
-                    CUSTOM_REGEX_TRANSFER_RULE.clear();
-                    for (String s : list)
-                        try {
-                            final String[] split = s.split("\\s+");
-                            if (split.length < 2) continue;
-                            final Pattern compile = Pattern.compile(split[0]);
-                            final ItemGroup group = getGroupFromId(split[1]);
-                            CUSTOM_REGEX_TRANSFER_RULE.put(Objects.requireNonNull(compile), Objects.requireNonNull(group));
-                        } catch (NullPointerException | PatternSyntaxException ignored) {
-                        }
+                    updateCustomRegexTransferRules(list, CUSTOM_REGEX_TRANSFER_RULE);
                 })
                 .build());
 

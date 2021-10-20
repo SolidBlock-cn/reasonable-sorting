@@ -154,6 +154,15 @@ public class MixinHelper implements ModInitializer {
     public void onInitialize() {
         // 从配置文件中加载配置。如果文件不存在，则会使用默认的。
         Configs.CONFIG_HOLDER.load();
+        // 加载配置文件之后，还需要从配置文件导入信息。
+        final Configs configs = Configs.CONFIG_HOLDER.get();
+        ConfigScreen.updateVariantsFollowingBaseBlocks(configs.variantsFollowingBaseBlocks, BlockFamilyRule.AFFECTED_VARIANTS);
+        ConfigScreen.updateCustomSortingRules(configs.customSortingRules, ConfigScreen.CUSTOM_SORTING_RULES);
+        ConfigScreen.updateCustomTransferRule(configs.transferRules, ConfigScreen.CUSTOM_TRANSFER_RULE);
+        ConfigScreen.updateCustomVariantTransferRules(configs.variantTransferRules, ConfigScreen.CUSTOM_VARIANT_TRANSFER_RULE);
+        ConfigScreen.updateCustomRegexTransferRules(configs.regexTransferRules, ConfigScreen.CUSTOM_REGEX_TRANSFER_RULE);
+
+        // 从入口点导入物品组合规则。
         ITEM_COMBINATION_RULES.clear();
         // 通过入口点来获取物品组合规则。请参考 {@code fabric.mod.json} 以了解本模组使用的入口点。
         for (EntrypointContainer<Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>>> entrypointContainer : FabricLoader.getInstance().getEntrypointContainers("reasonable-sorting:item_combination_rules", (Class<Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>>>) (Class) Supplier.class)) {
@@ -162,6 +171,7 @@ public class MixinHelper implements ModInitializer {
         }
         LOGGER.info("%s rules are recognized!".formatted(ITEM_COMBINATION_RULES.size()));
 
+        // 从入口点导入物品组转移规则。
         ITEM_GROUP_TRANSFER_RULES.clear();
         // 通过入口点来获取物品组转移规则。
         for (EntrypointContainer<Supplier<? extends Collection<? extends Map<Item, ItemGroup>>>> entrypointContainer : FabricLoader.getInstance().getEntrypointContainers("reasonable-sorting:item_group_transfer_rules", ((Class<Supplier<? extends Collection<? extends Map<Item, ItemGroup>>>>) (Class) Supplier.class))) {
