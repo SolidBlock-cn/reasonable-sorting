@@ -2,7 +2,6 @@ package pers.solid.mod.mixin;
 
 import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import net.minecraft.item.Item;
 import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
@@ -16,14 +15,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import pers.solid.mod.Configs;
 import pers.solid.mod.MixinHelper;
 
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 @Mixin(SimpleRegistry.class)
 public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> {
 
     @Shadow
     @Final
-    private ObjectList<Item> rawIdToEntry;
+    private ObjectList<T> rawIdToEntry;
 
     public SimpleRegistryMixin(RegistryKey<? extends Registry<T>> registryKey, Lifecycle lifecycle) {
         super(registryKey, lifecycle);
@@ -32,7 +33,10 @@ public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> {
     @Inject(method = "iterator", at = @At("HEAD"), cancellable = true)
     private void itemIterator(CallbackInfoReturnable<Iterator<T>> cir) {
         if (Configs.CONFIG_HOLDER.getConfig().enableSorting && this.equals(Registry.ITEM)) {
-            cir.setReturnValue((Iterator<T>) MixinHelper.itemRegistryIterator(this.rawIdToEntry, MixinHelper.ITEM_COMBINATION_RULES));
+            try {
+                cir.setReturnValue(MixinHelper.itemRegistryIterator((this.rawIdToEntry), (Collection<? extends Map<T, ? extends Collection<T>>>) (Collection) MixinHelper.ITEM_COMBINATION_RULES));
+            } catch (ClassCastException ignored) {
+            }
         }
     }
 }

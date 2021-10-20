@@ -33,9 +33,7 @@
     ],
     "reasonable-sorting:item_group_transfer_rules": [
       "pers.solid.mod.ItemGroupTransfer",
-      "pers.solid.mod.ConfigScreen::getCustomTransferRule",
-      "pers.solid.mod.ConfigScreen::getAbstractCustomVariantTransferRule",
-      "pers.solid.mod.ConfigScreen::getAbstractCustomRegexTransferRule"
+      "pers.solid.mod.ConfigScreen::getCustomTransferRules"
     ]
   },
   "mixins": [

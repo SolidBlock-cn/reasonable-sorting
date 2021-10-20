@@ -24,7 +24,7 @@ public abstract class ItemMixin {
     public void isInMixin(ItemGroup group, CallbackInfoReturnable<Boolean> cir) {
         if (!Configs.CONFIG_HOLDER.getConfig().enableGroupTransfer) return;
         final Item item = this.asItem();
-        final @Nullable ImmutableCollection<ItemGroup> itemGroups = MixinHelper.COMPILED_ITEM_GROUP_TRANSFER_RULES.get(item);
+        final @Nullable ImmutableCollection<ItemGroup> itemGroups = MixinHelper.ABSTRACT_ITEM_GROUP_TRANSFER_RULES.get(item);
         if (itemGroups != null && group != ItemGroup.SEARCH) {
             cir.setReturnValue(itemGroups.contains(group));
             cir.cancel();

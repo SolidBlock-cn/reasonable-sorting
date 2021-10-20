@@ -1,6 +1,8 @@
 package pers.solid.mod;
 
+import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import net.minecraft.block.Block;
@@ -19,7 +21,7 @@ import java.util.stream.Collectors;
 /**
  * 用于方块物品的排序规则。所有的楼梯、台阶都排在其基础物品之后。
  */
-public class BlockFamilyRule implements Supplier<Map<Item, Collection<Item>>> {
+public class BlockFamilyRule implements Supplier<Collection<Map<Item, Collection<Item>>>> {
     /**
      * 由方块到方块家族的映射。来组 {@link BlockFamily}。
      *
@@ -34,7 +36,7 @@ public class BlockFamilyRule implements Supplier<Map<Item, Collection<Item>>> {
         @NotNull
         @Override
         public Set<Entry<Item, Collection<Item>>> entrySet() {
-            return BlockFamilies.getFamilies().filter(b -> Configs.CONFIG_HOLDER.getConfig().fenceGateFollowsFence).map(blockFamily -> {
+            return BlockFamilies.getFamilies().map(blockFamily -> {
                 final @Nullable Block v1 = blockFamily.getVariant(BlockFamily.Variant.FENCE);
                 final @Nullable Block v2 = blockFamily.getVariant(BlockFamily.Variant.FENCE_GATE);
                 if (v1 == null || v2 == null) return null;
@@ -45,7 +47,7 @@ public class BlockFamilyRule implements Supplier<Map<Item, Collection<Item>>> {
 
         @Override
         public Collection<Item> get(Object key) {
-            if (!Configs.CONFIG_HOLDER.getConfig().fenceGateFollowsFence || !(key instanceof BlockItem)) return null;
+            if (!(key instanceof BlockItem)) return null;
             final Block block = ((BlockItem) key).getBlock();
             for (BlockFamily blockFamily : BASE_BLOCKS_TO_FAMILIES.values()) {
                 if (blockFamily.getVariant(BlockFamily.Variant.FENCE) == block) {
@@ -118,14 +120,19 @@ public class BlockFamilyRule implements Supplier<Map<Item, Collection<Item>>> {
     /**
      * 用于入口点。
      *
-     * @return {@link #FENCE_TO_FENCE_GATES}
+     * @return {@link #FENCE_TO_FENCE_GATES} 的一个 {@link ForwardingMap}。当有关的配置文件为 <code>false</code> 时，会投射到空映射。
      */
-    public static Map<Item, Collection<Item>> getFenceToFenceGates() {
-        return FENCE_TO_FENCE_GATES;
+    public static Collection<Map<Item, Collection<Item>>> getFenceToFenceGates() {
+        return Collections.singleton(new ForwardingMap<>() {
+            @Override
+            protected Map<Item, Collection<Item>> delegate() {
+                return Configs.CONFIG_HOLDER.getConfig().fenceGateFollowsFence ? FENCE_TO_FENCE_GATES : ImmutableMap.of();
+            }
+        });
     }
 
     @Override
-    public Map<Item, Collection<Item>> get() {
-        return BLOCK_ITEM_TO_VARIANTS;
+    public Collection<Map<Item, Collection<Item>>> get() {
+        return Collections.singleton(BLOCK_ITEM_TO_VARIANTS);
     }
 }

@@ -1,6 +1,7 @@
 package pers.solid.mod;
 
 import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
@@ -12,7 +13,9 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import oshi.annotation.concurrent.Immutable;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -22,14 +25,43 @@ public class MixinHelper implements ModInitializer {
     /**
      * 存放所有物品组合规则的列表。
      */
-    public static final ObjectList<Map<Item, ? extends Collection<Item>>> ITEM_COMBINATION_RULES = new ObjectArrayList<>();
+    public static final Collection<Map<Item, ? extends Collection<Item>>> ITEM_COMBINATION_RULES = new ObjectArrayList<>();
     /**
      * 存放所有物品组转移规则的列表。
      */
     public static final ObjectList<Map<Item, ItemGroup>> ITEM_GROUP_TRANSFER_RULES = new ObjectArrayList<>();
     /**
+     * 类似于 {@link #COMPILED_ITEM_GROUP_TRANSFER_RULES}，不过它是实时的、抽象的，在修改配置之后不需要重新编译。
+     */
+    @Immutable
+    public static final Map<Item, ImmutableCollection<ItemGroup>> ABSTRACT_ITEM_GROUP_TRANSFER_RULES = new AbstractMap<>() {
+        @NotNull
+        @Override
+        public Set<Entry<Item, ImmutableCollection<ItemGroup>>> entrySet() {
+            ImmutableSet.Builder<Entry<Item, ImmutableCollection<ItemGroup>>> builder = new ImmutableSet.Builder<>();
+            for (Item item : Registry.ITEM) {
+                final @Nullable ImmutableCollection<ItemGroup> itemGroups = this.get(item);
+                if (itemGroups != null) builder.add(new SimpleImmutableEntry<>(item, itemGroups));
+            }
+            return builder.build();
+        }
+
+        @Override
+        @Nullable
+        public ImmutableCollection<ItemGroup> get(Object key) {
+            ImmutableCollection.Builder<ItemGroup> builder = new ImmutableList.Builder<>();
+            for (Map<Item, ItemGroup> itemGroupTransferRule : ITEM_GROUP_TRANSFER_RULES) {
+                final @Nullable ItemGroup itemGroup = itemGroupTransferRule.get(key);
+                if (itemGroup != null) builder.add(itemGroup);
+            }
+            final ImmutableCollection<ItemGroup> build = builder.build();
+            return build.isEmpty() ? null : build;
+        }
+    };
+    /**
      * 编译后的物品组转移规则。由单个物品映射到物品组集合（考虑到不同的设定可能导致同一个物品转移到多个物品组）。编译是为了加快读取速度，每一次修改配置都会重新编译一次。编译时会清空、重写此列表内容，不会更改此列表指针。
      */
+    @Deprecated
     public static final Map<Item, ImmutableCollection<ItemGroup>> COMPILED_ITEM_GROUP_TRANSFER_RULES = new HashMap<>();
 
     public static final Logger LOGGER = LogManager.getLogger("REASONABLE_SORTING");
@@ -99,10 +131,12 @@ public class MixinHelper implements ModInitializer {
     }
 
     /**
-     * 将所有的物品组转移规则编译到 {@link #COMPILED_ITEM_GROUP_TRANSFER_RULES} 中以供使用。之所以编译是为了加快读取速度。在修改配置时，也会对物品组进行重新编译。
+     * 将所有的物品组转移规则编译到 {@link #COMPILED_ITEM_GROUP_TRANSFER_RULES} 中以供使用。之所以编译是为了加快读取速度。在修改配置时，也会对物品组进行重新编译。<br>
+     * 但是，考虑到第三方模组也会修改配置，而其 {@code saveConsumer} 不会触发重新编译，所以这里也暂时先不重新编译。
      *
      * @param itemGroupTransferRules 物品组转换规则，是由物品到物品组的映射的列表。
      */
+    @Deprecated
     public static void compileItemGroupTransferRules(ObjectList<Map<Item, ItemGroup>> itemGroupTransferRules) {
         COMPILED_ITEM_GROUP_TRANSFER_RULES.clear();
         for (Item item : Registry.ITEM) {
@@ -120,33 +154,22 @@ public class MixinHelper implements ModInitializer {
     public void onInitialize() {
         // 从配置文件中加载配置。如果文件不存在，则会使用默认的。
         Configs.CONFIG_HOLDER.load();
-
+        ITEM_COMBINATION_RULES.clear();
         // 通过入口点来获取物品组合规则。请参考 {@code fabric.mod.json} 以了解本模组使用的入口点。
-        for (EntrypointContainer<Supplier<? extends Map<Item, ? extends Collection<Item>>>> entrypointContainer : FabricLoader.getInstance().getEntrypointContainers("reasonable-sorting:item_combination_rules", (Class<Supplier<? extends Map<Item, ? extends Collection<Item>>>>) (Class) Supplier.class)) {
-            final Supplier<? extends Map<Item, ? extends Collection<Item>>> entrypoint;
-            try {
-                entrypoint = entrypointContainer.getEntrypoint();
-            } catch (ClassCastException e) {
-                final var e1 = entrypointContainer.getEntrypoint();
-                LOGGER.fatal("Invalid entrypoint %s from mod %s. Please make sure it's an instance of Supplier<Map<Item,Collection<Item>>>.".formatted(e1, entrypointContainer.getProvider()));
-                throw e;
-            }
-            ITEM_COMBINATION_RULES.add(entrypoint.get());
+        for (EntrypointContainer<Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>>> entrypointContainer : FabricLoader.getInstance().getEntrypointContainers("reasonable-sorting:item_combination_rules", (Class<Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>>>) (Class) Supplier.class)) {
+            final Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>> entrypoint = entrypointContainer.getEntrypoint();
+            ITEM_COMBINATION_RULES.addAll(entrypoint.get());
         }
         LOGGER.info("%s rules are recognized!".formatted(ITEM_COMBINATION_RULES.size()));
 
+        ITEM_GROUP_TRANSFER_RULES.clear();
         // 通过入口点来获取物品组转移规则。
-        for (EntrypointContainer<Supplier<Map<Item, ItemGroup>>> entrypointContainer : FabricLoader.getInstance().getEntrypointContainers("reasonable-sorting:item_group_transfer_rules", ((Class<Supplier<Map<Item, ItemGroup>>>) (Class) Supplier.class))) {
-            final Supplier<Map<Item, ItemGroup>> entrypoint;
-            try {
-                entrypoint = entrypointContainer.getEntrypoint();
-            } catch (ClassCastException e) {
-                LOGGER.fatal("Invalid entrypoint %s from mod %s. Please make sure it's an instance of Supplier<Map<Item,ItemGroup>>.".formatted(entrypointContainer.getEntrypoint(), entrypointContainer.getProvider()));
-                throw e;
-            }
-            ITEM_GROUP_TRANSFER_RULES.add(entrypoint.get());
+        for (EntrypointContainer<Supplier<? extends Collection<? extends Map<Item, ItemGroup>>>> entrypointContainer : FabricLoader.getInstance().getEntrypointContainers("reasonable-sorting:item_group_transfer_rules", ((Class<Supplier<? extends Collection<? extends Map<Item, ItemGroup>>>>) (Class) Supplier.class))) {
+            final Supplier<? extends Collection<? extends Map<Item, ItemGroup>>> entrypoint = entrypointContainer.getEntrypoint();
+            ITEM_GROUP_TRANSFER_RULES.addAll(entrypoint.get());
         }
 
-        compileItemGroupTransferRules(ITEM_GROUP_TRANSFER_RULES);
+//        compileItemGroupTransferRules(ITEM_GROUP_TRANSFER_RULES);
     }
+
 }

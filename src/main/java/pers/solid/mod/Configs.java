@@ -23,6 +23,12 @@ public class Configs implements ConfigData {
      */
     public boolean enableSorting = true;
     /**
+     * 是否启用默认的物品组合排序规则。
+     *
+     * @see DefaultItemCombinationRuleSupplier
+     */
+    public boolean enableDefaultItemCombinationRules = true;
+    /**
      * 自定义排序规则。每行一条规则，由多个物品的命名空间 id 组成，用空格隔开。<br>
      * 例如：{@code grass_block dirt dirt_path} 表示将草方块、泥土、土径排在一起，以草方块的位置为准。
      */

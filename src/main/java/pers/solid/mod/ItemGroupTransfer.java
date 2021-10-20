@@ -13,22 +13,23 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.AbstractMap;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Supplier;
 
 /**
  * 转移物品组。
  */
-public class ItemGroupTransfer implements Supplier<Map<Item,ItemGroup>> {
-
-    public static final Map<Item,ItemGroup> DEFAULT_TRANSFER_RULES = new AbstractMap<Item, ItemGroup>() {
+public class ItemGroupTransfer implements Supplier<Collection<Map<Item, ItemGroup>>> {
+    public static final Map<Item, ItemGroup> DEFAULT_TRANSFER_RULES = new AbstractMap<Item, ItemGroup>() {
         @NotNull
         @Override
         public ImmutableSet<Map.Entry<Item, ItemGroup>> entrySet() {
-            ImmutableSet.Builder<Map.Entry<Item,ItemGroup>> entrySet = new ImmutableSet.Builder<>();
+            ImmutableSet.Builder<Map.Entry<Item, ItemGroup>> entrySet = new ImmutableSet.Builder<>();
             for (Item item : Registry.ITEM) {
                 final @Nullable ItemGroup itemGroup = this.get(item);
-                if (itemGroup!=null) entrySet.add(new AbstractMap.SimpleEntry<>(item,itemGroup));
+                if (itemGroup != null) entrySet.add(new AbstractMap.SimpleEntry<>(item, itemGroup));
             }
             return entrySet.build();
         }
@@ -52,12 +53,12 @@ public class ItemGroupTransfer implements Supplier<Map<Item,ItemGroup>> {
 
         @Override
         public boolean containsKey(Object key) {
-            return get(key)!=null;
+            return get(key) != null;
         }
     };
 
     @Override
-    public Map<Item, ItemGroup> get() {
-        return DEFAULT_TRANSFER_RULES;
+    public Collection<Map<Item, ItemGroup>> get() {
+        return Collections.singleton(DEFAULT_TRANSFER_RULES);
     }
 }
