@@ -44,5 +44,10 @@
   "title.reasonable-sorting.config": "合理排序模組配置",
   "option.reasonable-sorting.shapes_following_base_blocks": "緊隨基礎方塊的擴展方塊形狀",
   "option.reasonable-sorting.shapes_following_base_blocks.tooltip": "擴展方塊形狀模組中，這些形狀將會緊隨基礎方塊。",
-  "option.reasonable-sorting.describe_shapes": "有效的形狀名稱: %s。"
+  "option.reasonable-sorting.describe_shapes": "有效的形狀名稱: %s。",
+  "option.reasonable-sorting.error.invalid_shape_name": "無效的形狀名稱：%s。",
+  "option.reasonable-sorting.custom_shape_transfer_rules": "自訂形狀轉移規則",
+  "option.reasonable-sorting.custom_shape_transfer_rules.tooltip": "將擴展方塊形狀模組中特定形狀的方塊轉移至其他組。",
+  "option.reasonable-sorting.base_blocks_in_building_blocks": "基礎方塊移至建築方塊",
+  "option.reasonable-sorting.base_blocks_in_building_blocks.tooltip": "將擴展方塊形狀模組中的部分基礎方塊，比如蜂巢塊、蕈光體，移至建築方塊。"
 }

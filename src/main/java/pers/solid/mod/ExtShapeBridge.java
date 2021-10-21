@@ -1,12 +1,12 @@
 package pers.solid.mod;
 
+import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
+import it.unimi.dsi.fastutil.objects.Object2BooleanFunction;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.text.Text;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -14,17 +14,15 @@ import java.util.function.Supplier;
  */
 public final class ExtShapeBridge {
     private static boolean modLoaded = false;
-    private static Function<String, Optional<Text>> checkIfValid = null;
     private static Consumer<String> updateShapeList = null;
     private static Supplier<String> getValidShapeNames = null;
+    private static Object2BooleanFunction<String> isValidShapeName = null;
+    private static Consumer<List<String>> updateShapeTransferRules = null;
+    private static BooleanConsumer setBaseBlocksInBuildingBlocks = null;
 
     static {
         for (BooleanSupplier entrypoint : FabricLoader.getInstance().getEntrypoints("extshape:_modLoaded", BooleanSupplier.class)) {
             modLoaded = modLoaded || entrypoint.getAsBoolean();
-        }
-        for (Function<String, Optional<Text>> entrypoint : FabricLoader.getInstance().getEntrypoints("extshape:_checkIfValid", (Class<Function<String, Optional<Text>>>) (Class) Function.class)) {
-            if (checkIfValid != null) throw new IllegalStateException();
-            checkIfValid = entrypoint;
         }
         for (Consumer<String> entrypoint : FabricLoader.getInstance().getEntrypoints("extshape:_updateShapeList", (Class<Consumer<String>>) (Class) Consumer.class)) {
             if (updateShapeList != null) throw new IllegalStateException();
@@ -34,15 +32,27 @@ public final class ExtShapeBridge {
             if (getValidShapeNames != null) throw new IllegalStateException();
             getValidShapeNames = entrypoint;
         }
+        for (Object2BooleanFunction<String> entrypoint : FabricLoader.getInstance().getEntrypoints("extshape:_isValidShapeName", (Class<Object2BooleanFunction<String>>) (Class) Object2BooleanFunction.class)) {
+            if (isValidShapeName != null) throw new IllegalStateException();
+            isValidShapeName = entrypoint;
+        }
+        for (Consumer<List<String>> entrypoint : FabricLoader.getInstance().getEntrypoints("extshape:_updateShapeList", (Class<Consumer<List<String>>>) (Class) Consumer.class)) {
+            if (updateShapeTransferRules != null) throw new IllegalStateException();
+            updateShapeTransferRules = entrypoint;
+        }
+        for (BooleanConsumer entrypoint : FabricLoader.getInstance().getEntrypoints("extshape:_setBaseBlocksInBuildingBlocks", BooleanConsumer.class)) {
+            if (setBaseBlocksInBuildingBlocks != null) throw new IllegalStateException();
+            setBaseBlocksInBuildingBlocks = entrypoint;
+        }
     }
 
     public static boolean modLoaded() {
         return modLoaded;
     }
 
-    public static Optional<Text> checkIfValid(String s) {
-        if (checkIfValid == null) return Optional.empty();
-        return checkIfValid.apply(s);
+    public static boolean isValidShapeName(String s) {
+        if (isValidShapeName == null) return false;
+        return isValidShapeName.getBoolean(s);
     }
 
     public static void updateShapeList(String s) {
@@ -53,5 +63,15 @@ public final class ExtShapeBridge {
     public static String getValidShapeNames() {
         if (getValidShapeNames == null) return null;
         return getValidShapeNames.get();
+    }
+
+    public static void updateShapeTransferRules(List<String> s) {
+        if (updateShapeTransferRules == null) return;
+        updateShapeTransferRules.accept(s);
+    }
+
+    public static void setBaseBlocksInBuildingBlocks(boolean b) {
+        if (setBaseBlocksInBuildingBlocks == null) return;
+        setBaseBlocksInBuildingBlocks.accept(b);
     }
 }

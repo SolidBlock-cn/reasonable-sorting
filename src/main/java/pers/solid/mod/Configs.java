@@ -103,4 +103,12 @@ public class Configs implements ConfigData {
      * @see ConfigScreen#updateCustomRegexTransferRules
      */
     public List<String> regexTransferRules = new ArrayList<>();
+    /**
+     * 用于 Extended Block Shapes 模组。
+     */
+    public List<String> shapeTransferRules = new ArrayList<>();
+    /**
+     * 将蜜脾、菌光体等基础方块移至建筑方块
+     */
+    public boolean baseBlocksInBuildingBlocks = true;
 }

@@ -275,13 +275,17 @@ public class ConfigScreen implements ModMenuApi {
 
         if (ExtShapeBridge.modLoaded()) {
             categorySorting.addEntry(entryBuilder
-                    .startTextDescription(new TranslatableText("option.reasonable-sorting.describe_shapes",new LiteralText(ExtShapeBridge.getValidShapeNames()).formatted(Formatting.YELLOW)))
+                    .startTextDescription(new TranslatableText("option.reasonable-sorting.describe_shapes", new LiteralText(ExtShapeBridge.getValidShapeNames()).formatted(Formatting.YELLOW)))
                     .build());
             categorySorting.addEntry(entryBuilder
                     .startStrField(new TranslatableText("option.reasonable-sorting.shapes_following_base_blocks"), config.shapesFollowingBaseBlocks)
                     .setDefaultValue("*")
                     .setTooltip(new TranslatableText("option.reasonable-sorting.shapes_following_base_blocks.tooltip"))
-                    .setErrorSupplier(ExtShapeBridge::checkIfValid)
+                    .setErrorSupplier(s -> {
+                        if (s.equals("*")) return Optional.empty();
+                        final List<String> invalids = Arrays.stream(s.split("\\s+")).filter(s1 -> !s1.isEmpty()).filter(ExtShapeBridge::isValidShapeName).toList();
+                        return invalids.isEmpty() ? Optional.empty() : Optional.of(new TranslatableText("option.reasonable-sorting.error.invalid_shape_name", String.join(" ", invalids)));
+                    })
                     .setSaveConsumer(ExtShapeBridge::updateShapeList)
                     .build());
         }
@@ -409,6 +413,42 @@ public class ConfigScreen implements ModMenuApi {
                     updateCustomRegexTransferRules(list, CUSTOM_REGEX_TRANSFER_RULE);
                 })
                 .build());
+
+        if (ExtShapeBridge.modLoaded()) {
+            categoryTransfer
+                    .addEntry(entryBuilder
+                            .startStrList(new TranslatableText("option.reasonable-sorting.custom_shape_transfer_rules"), config.shapeTransferRules)
+                            .setDefaultValue(Collections.emptyList())
+                            .setTooltip(new TranslatableText("option.reasonable-sorting.custom_shape_transfer_rules.tooltip"))
+                            .setExpanded(true).setInsertInFront(false)
+                            .setAddButtonTooltip(new TranslatableText("option.reasonable-sorting.custom_transfer_rules.add"))
+                            .setRemoveButtonTooltip(new TranslatableText("option.reasonable-sorting.custom_transfer_rules.remove"))
+                            .setCellErrorSupplier(s -> {
+                                if (s.isEmpty()) return Optional.empty();
+                                final String[] split = s.split("\\s+");
+                                if (split.length > 2)
+                                    return Optional.of(new TranslatableText("option.reasonable-sorting.error.unexpected_text", split[2]));
+                                if (split.length < 2)
+                                    return Optional.of(new TranslatableText("option.reasonable-sorting.error.group_name_expected"));
+                                if (ExtShapeBridge.isValidShapeName(split[0]))
+                                    return Optional.of(new TranslatableText("option.reasonable-sorting.error.invalid_shape_name", split[0]));
+                                return Optional.empty();
+                            })
+                            .setSaveConsumer(list -> {
+                                config.shapeTransferRules = list;
+                                ExtShapeBridge.updateShapeTransferRules(list);
+                            })
+                            .build())
+                    .addEntry(entryBuilder
+                            .startBooleanToggle(new TranslatableText("option.reasonable-sorting.base_blocks_in_building_blocks"), config.baseBlocksInBuildingBlocks)
+                            .setDefaultValue(true)
+                            .setTooltip(new TranslatableText("option.reasonable-sorting.base_blocks_in_building_blocks.tooltip"))
+                            .setSaveConsumer(b -> {
+                                config.baseBlocksInBuildingBlocks = b;
+                                ExtShapeBridge.setBaseBlocksInBuildingBlocks(b);
+                            })
+                            .build());
+        }
 
         return builder.build();
     }

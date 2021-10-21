@@ -36,6 +36,11 @@
   "option.reasonable-sorting.custom_variant_transfer_rules.tooltip": "Each line is a block variant name and a group name, for example,\u00a7e wall building_blocks\u00a7r.",
   "option.reasonable-sorting.custom_regex_transfer_rules": "Custom regex transfer rules",
   "option.reasonable-sorting.custom_regex_transfer_rules.tooltip": "Each line is a regex and a group name, for example,\u00a7e .+?bucket transportation\u00a7r. \nAny items with ids matching the regex will be transferred to the group.",
+  "option.reasonable-sorting.custom_shape_transfer_rules": "Custom Shape Transfer Rules",
+  "option.reasonable-sorting.custom_shape_transfer_rules.tooltip": "Transfer specified shapes in Extended Block Shape mods to another group.",
+  "option.reasonable-sorting.base_blocks_in_building_blocks": "Base blocks in building blocks",
+  "option.reasonable-sorting.base_blocks_in_building_blocks.tooltip": "Base blocks in Extended Block Shapes mod, like honeycomb, shroomlight, are transferred to Building Blocks.",
+
   "option.reasonable-sorting.error.group_name_expected": "Item group name expected.",
   "option.reasonable-sorting.error.unexpected_text": "Unexpected text: %s.",
   "option.reasonable-sorting.error.invalid_identifier": "Invalid identifier: %s.",
@@ -44,5 +49,6 @@
   "option.reasonable-sorting.error.invalid_regex": "Invalid regex: %s: %s.",
   "option.reasonable-sorting.shapes_following_base_blocks": "Shapes following base blocks",
   "option.reasonable-sorting.shapes_following_base_blocks.tooltip": "Shapes in extshape mod following base blocks.",
-  "option.reasonable-sorting.describe_shapes": "Valid shape names: %s。"
+  "option.reasonable-sorting.describe_shapes": "Valid shape names: %s。",
+  "option.reasonable-sorting.error.invalid_shape_name": "Invalid shape name: %s."
 }

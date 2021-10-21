@@ -162,6 +162,7 @@ public class MixinHelper implements ModInitializer {
         ConfigScreen.updateCustomVariantTransferRules(configs.variantTransferRules, ConfigScreen.CUSTOM_VARIANT_TRANSFER_RULE);
         ConfigScreen.updateCustomRegexTransferRules(configs.regexTransferRules, ConfigScreen.CUSTOM_REGEX_TRANSFER_RULE);
         ExtShapeBridge.updateShapeList(configs.shapesFollowingBaseBlocks);
+        ExtShapeBridge.setBaseBlocksInBuildingBlocks(configs.baseBlocksInBuildingBlocks);
 
         // 从入口点导入物品组合规则。
         ITEM_SORTING_RULES.clear();
