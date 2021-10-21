@@ -156,11 +156,11 @@ public class MixinHelper implements ModInitializer {
         Configs.CONFIG_HOLDER.load();
         // 加载配置文件之后，还需要从配置文件导入信息。
         final Configs configs = Configs.CONFIG_HOLDER.get();
-        ConfigScreen.updateVariantsFollowingBaseBlocks(configs.variantsFollowingBaseBlocks, BlockFamilyRule.AFFECTED_VARIANTS);
-        ConfigScreen.updateCustomSortingRules(configs.customSortingRules, ConfigScreen.CUSTOM_SORTING_RULES);
-        ConfigScreen.updateCustomTransferRule(configs.transferRules, ConfigScreen.CUSTOM_TRANSFER_RULE);
-        ConfigScreen.updateCustomVariantTransferRules(configs.variantTransferRules, ConfigScreen.CUSTOM_VARIANT_TRANSFER_RULE);
-        ConfigScreen.updateCustomRegexTransferRules(configs.regexTransferRules, ConfigScreen.CUSTOM_REGEX_TRANSFER_RULE);
+        Configs.updateVariantsFollowingBaseBlocks(configs.variantsFollowingBaseBlocks, BlockFamilyRule.AFFECTED_VARIANTS);
+        Configs.updateCustomSortingRules(configs.customSortingRules, Configs.CUSTOM_SORTING_RULES);
+        Configs.updateCustomTransferRule(configs.transferRules, Configs.CUSTOM_TRANSFER_RULE);
+        Configs.updateCustomVariantTransferRules(configs.variantTransferRules, Configs.CUSTOM_VARIANT_TRANSFER_RULE);
+        Configs.updateCustomRegexTransferRules(configs.regexTransferRules, Configs.CUSTOM_REGEX_TRANSFER_RULE);
         ExtShapeBridge.updateShapeList(configs.shapesFollowingBaseBlocks);
         ExtShapeBridge.setBaseBlocksInBuildingBlocks(configs.baseBlocksInBuildingBlocks);
 

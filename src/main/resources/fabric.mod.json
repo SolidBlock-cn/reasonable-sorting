@@ -27,12 +27,12 @@
     "reasonable-sorting:item_sorting_rules": [
       "pers.solid.mod.DefaultItemSortingRuleSupplier",
       "pers.solid.mod.BlockFamilyRule",
-      "pers.solid.mod.ConfigScreen::getCustomSortingRules",
+      "pers.solid.mod.Configs::getCustomSortingRules",
       "pers.solid.mod.BlockFamilyRule::getFenceToFenceGates"
     ],
     "reasonable-sorting:item_group_transfer_rules": [
       "pers.solid.mod.ItemGroupTransfer",
-      "pers.solid.mod.ConfigScreen::getCustomTransferRules"
+      "pers.solid.mod.Configs::getCustomTransferRules"
     ]
   },
   "mixins": [

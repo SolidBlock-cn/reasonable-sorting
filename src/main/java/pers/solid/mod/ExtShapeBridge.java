@@ -13,11 +13,29 @@ import java.util.function.Supplier;
  * 与 ExtShape 模组联络的渠道。
  */
 public final class ExtShapeBridge {
+    /**
+     * @see #modLoaded()
+     */
     private static boolean modLoaded = false;
+    /**
+     * @see #updateShapeList(String)
+     */
     private static Consumer<String> updateShapeList = null;
+    /**
+     * @see #getValidShapeNames()
+     */
     private static Supplier<String> getValidShapeNames = null;
+    /**
+     * @see #isValidShapeName(String)
+     */
     private static Object2BooleanFunction<String> isValidShapeName = null;
+    /**
+     * @see #updateShapeTransferRules(List)
+     */
     private static Consumer<List<String>> updateShapeTransferRules = null;
+    /**
+     * @see #setBaseBlocksInBuildingBlocks(boolean)
+     */
     private static BooleanConsumer setBaseBlocksInBuildingBlocks = null;
 
     static {
@@ -36,7 +54,7 @@ public final class ExtShapeBridge {
             if (isValidShapeName != null) throw new IllegalStateException();
             isValidShapeName = entrypoint;
         }
-        for (Consumer<List<String>> entrypoint : FabricLoader.getInstance().getEntrypoints("extshape:_updateShapeList", (Class<Consumer<List<String>>>) (Class) Consumer.class)) {
+        for (Consumer<List<String>> entrypoint : FabricLoader.getInstance().getEntrypoints("extshape:_updateShapeTransferRules", (Class<Consumer<List<String>>>) (Class) Consumer.class)) {
             if (updateShapeTransferRules != null) throw new IllegalStateException();
             updateShapeTransferRules = entrypoint;
         }
@@ -65,9 +83,9 @@ public final class ExtShapeBridge {
         return getValidShapeNames.get();
     }
 
-    public static void updateShapeTransferRules(List<String> s) {
+    public static void updateShapeTransferRules(List<String> list) {
         if (updateShapeTransferRules == null) return;
-        updateShapeTransferRules.accept(s);
+        updateShapeTransferRules.accept(list);
     }
 
     public static void setBaseBlocksInBuildingBlocks(boolean b) {

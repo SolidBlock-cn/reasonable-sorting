@@ -20,21 +20,20 @@ import java.util.Iterator;
 @Immutable
 @Deprecated
 public class ItemGroupList extends ItemGroup {
-    public ImmutableCollection<ItemGroup> getItemGroups() {
-        return LIST_TO_COLLECTIONS.get(this);
-    }
-
     public static final String ID_FOR_LISTS = "reasonable-sorting:item_group_list";
-
-    public static final BiMap<ItemGroupList,ImmutableCollection<ItemGroup>> LIST_TO_COLLECTIONS = HashBiMap.create();
+    public static final BiMap<ItemGroupList, ImmutableCollection<ItemGroup>> LIST_TO_COLLECTIONS = HashBiMap.create();
 
     private ItemGroupList(ImmutableCollection<ItemGroup> itemGroups) {
         super(0, ID_FOR_LISTS);
-        LIST_TO_COLLECTIONS.put(this,itemGroups);
+        LIST_TO_COLLECTIONS.put(this, itemGroups);
     }
 
     public static ItemGroupList of(ImmutableCollection<ItemGroup> collection) {
-        return LIST_TO_COLLECTIONS.inverse().getOrDefault(collection,new ItemGroupList(collection));
+        return LIST_TO_COLLECTIONS.inverse().getOrDefault(collection, new ItemGroupList(collection));
+    }
+
+    public ImmutableCollection<ItemGroup> getItemGroups() {
+        return LIST_TO_COLLECTIONS.get(this);
     }
 
     @Override

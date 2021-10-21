@@ -77,7 +77,7 @@ public class BlockFamilyRule implements Supplier<Collection<Map<Item, Collection
         public Set<Entry<Item, Collection<Item>>> entrySet() {
             Set<Entry<Item, Collection<Item>>> entrySet = new HashSet<>();
             for (Entry<Block, BlockFamily> entry : BASE_BLOCKS_TO_FAMILIES.entrySet()) {
-                entrySet.add(new SimpleEntry<>(entry.getKey().asItem(), get(((Block) entry.getKey()))));
+                entrySet.add(new SimpleEntry<>(entry.getKey().asItem(), get(entry.getKey())));
             }
             return entrySet;
         }

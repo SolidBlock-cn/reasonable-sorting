@@ -30,6 +30,7 @@ public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> {
         super(registryKey, lifecycle);
     }
 
+    @SuppressWarnings({"RedundantCast"})
     @Inject(method = "iterator", at = @At("HEAD"), cancellable = true)
     private void itemIterator(CallbackInfoReturnable<Iterator<T>> cir) {
         if (Configs.CONFIG_HOLDER.getConfig().enableSorting && this.equals(Registry.ITEM)) {
