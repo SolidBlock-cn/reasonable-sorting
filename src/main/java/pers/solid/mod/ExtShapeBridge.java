@@ -41,16 +41,17 @@ public final class ExtShapeBridge {
     }
 
     public static Optional<Text> checkIfValid(String s) {
-        if (checkIfValid == null) throw new IllegalStateException();
+        if (checkIfValid == null) return Optional.empty();
         return checkIfValid.apply(s);
     }
 
     public static void updateShapeList(String s) {
-        if (updateShapeList == null) throw new IllegalStateException();
+        if (updateShapeList == null) return;
         updateShapeList.accept(s);
     }
 
     public static String getValidShapeNames() {
+        if (getValidShapeNames == null) return null;
         return getValidShapeNames.get();
     }
 }

@@ -1,9 +1,9 @@
 {
+  "modmenu.descriptionTranslation.reasonable-sorting": "调整创造模式物品栏下面的物品顺序，并修改部分物品所在的物品组，从而让你的创造模式物品栏不再乱。你还可以自定义一些规则！",
   "category.reasonable-sorting.sorting": "排序",
   "category.reasonable-sorting.sorting.description": "可以让创造模式物品栏中的物品更好地排序。比如，你可以让楼梯、台阶排在其基础方块后面，而不是像原版那样一团乱麻。",
   "category.reasonable-sorting.transfer": "物品组转移",
   "category.reasonable-sorting.transfer.description": "你可以将物品从一个组转移到另一个组。例如，可以将按钮或者栅栏门由“红石”转移到“装饰性方块”。",
-  "modmenu.descriptionTranslation.reasonable-sorting": "让你的创造模式物品栏不再乱。",
   "option.reasonable-sorting.buttons_in_decorations": "按钮移至装饰性方块",
   "option.reasonable-sorting.custom_regex_transfer_rules": "自定义正则表达式转移规则",
   "option.reasonable-sorting.custom_regex_transfer_rules.tooltip": "每一行是一个正则表达式和物品组名称，例如，§e .+?bucket transportation§r。\n任何物品若id符合此正则表达式则转移至该组。",

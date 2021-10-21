@@ -1,5 +1,5 @@
 {
-  "modmenu.descriptionTranslation.reasonable-sorting": "Adjust the sorting of items in creative inventory.",
+  "modmenu.descriptionTranslation.reasonable-sorting": "Adjust the sorting of items in creative inventory and change item groups to make items in your creative inventory no longer in a mess! You can also customize some rules!",
   "title.reasonable-sorting.config": "Reasonable Sorting Mod configs",
   "category.reasonable-sorting.sorting": "Sorting",
   "category.reasonable-sorting.sorting.description": "You can make items in your creative inventory sort in a better way. For example, you can make stairs and slabs follow their base block, instead of in a messy order.",
