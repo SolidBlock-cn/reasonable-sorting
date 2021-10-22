@@ -143,7 +143,10 @@ public class ConfigScreen implements ModMenuApi {
                         final List<String> invalids = Arrays.stream(s.split("\\s+")).filter(s1 -> !s1.isEmpty()).filter(s2 -> !ExtShapeBridge.isValidShapeName(s2)).toList();
                         return invalids.isEmpty() ? Optional.empty() : Optional.of(new TranslatableText("option.reasonable-sorting.error.invalid_shape_name", String.join(" ", invalids)));
                     })
-                    .setSaveConsumer(ExtShapeBridge::updateShapeList)
+                    .setSaveConsumer(s3 -> {
+                        config.shapesFollowingBaseBlocks = s3;
+                        ExtShapeBridge.updateShapeList(s3);
+                    })
                     .build());
         }
 
