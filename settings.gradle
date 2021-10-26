@@ -2,7 +2,7 @@ pluginManagement {
     repositories {
         maven {
             name = 'Fabric'
-            url = 'https://repository.hanbings.io/proxy'
+            url = 'https://maven.fabricmc.net/'
         }
         gradlePluginPortal()
     }

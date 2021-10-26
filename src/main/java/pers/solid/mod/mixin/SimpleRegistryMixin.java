@@ -21,6 +21,7 @@ public abstract class SimpleRegistryMixin {
     @Final
     private ObjectList<Item> rawIdToEntry;
 
+    @SuppressWarnings({"RedundantCast"})
     @Inject(method = "iterator", at = @At("HEAD"), cancellable = true)
     private void itemIterator(CallbackInfoReturnable<Iterator> cir) {
         SimpleRegistry thisRegistry = (SimpleRegistry) (Object) this;
