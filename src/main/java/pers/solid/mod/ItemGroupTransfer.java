@@ -37,7 +37,7 @@ public class ItemGroupTransfer implements Supplier<Collection<Map<Item, ItemGrou
         @Override
         public ItemGroup get(Object key) {
             final Configs config = Configs.CONFIG_HOLDER.getConfig();
-            if (key instanceof BlockItem) {
+            if (key instanceof BlockItem && ((BlockItem) key).getGroup() == ItemGroup.REDSTONE) {
                 if (config.buttonsInDecorations && ((BlockItem) key).getBlock() instanceof AbstractButtonBlock) {
                     return ItemGroup.DECORATIONS;
                 } else if (config.fenceGatesInDecorations && ((BlockItem) key).getBlock() instanceof FenceGateBlock) {
@@ -45,7 +45,7 @@ public class ItemGroupTransfer implements Supplier<Collection<Map<Item, ItemGrou
                 } else if (config.doorsInDecorations && ((BlockItem) key).getBlock() instanceof DoorBlock) {
                     return ItemGroup.DECORATIONS;
                 }
-            } else if (config.swordsInTools && key instanceof SwordItem) {
+            } else if (config.swordsInTools && key instanceof SwordItem && ((SwordItem) key).getGroup() == ItemGroup.COMBAT) {
                 return ItemGroup.TOOLS;
             }
             return null;
