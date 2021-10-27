@@ -7,7 +7,6 @@ import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.ConfigHolder;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
-import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -33,10 +32,10 @@ public class Configs implements ConfigData {
     public static final Map<Item, Collection<Item>> CUSTOM_SORTING_RULES = new HashMap<>();
     public static final Map<Item, ItemGroup> CUSTOM_TRANSFER_RULE = new LinkedHashMap<>();
     public static final Map<BlockFamily.Variant, ItemGroup> CUSTOM_VARIANT_TRANSFER_RULE = new LinkedHashMap<>();
-    public static final Map<Item, ItemGroup> ABSTRACT_CUSTOM_VARIANT_TRANSFER_RULE = new AbstractMap<>() {
+    public static final Map<Item, ItemGroup> ABSTRACT_CUSTOM_VARIANT_TRANSFER_RULE = new AbstractMap<Item, ItemGroup>() {
         @Override
         public Set<Entry<Item, ItemGroup>> entrySet() {
-            return (Registry.ITEM.stream().map(item -> new SimpleImmutableEntry<>(item, get(item))).filter(entry -> Objects.nonNull(entry.getValue())).collect(Collectors.toUnmodifiableSet()));
+            return (Registry.ITEM.stream().map(item -> new SimpleImmutableEntry<>(item, get(item))).filter(entry -> Objects.nonNull(entry.getValue())).collect(Collectors.toSet()));
         }
 
         @Override
@@ -56,7 +55,7 @@ public class Configs implements ConfigData {
         }
     };
     public static final Map<Pattern, ItemGroup> CUSTOM_REGEX_TRANSFER_RULE = new LinkedHashMap<>();
-    public static final Map<Item, ItemGroup> ABSTRACT_CUSTOM_REGEX_TRANSFER_RULE = new AbstractMap<>() {
+    public static final Map<Item, ItemGroup> ABSTRACT_CUSTOM_REGEX_TRANSFER_RULE = new AbstractMap<Item, ItemGroup>() {
         @Override
         public ItemGroup get(Object key) {
             if (key instanceof Item) {
@@ -212,12 +211,12 @@ public class Configs implements ConfigData {
     public static void updateCustomSortingRules(List<String> list, Map<Item, Collection<Item>> mutableMap) {
         mutableMap.clear();
         for (String s : list) {
-            final var split = new ArrayList<>(Arrays.asList(s.split("\\s+")));
+            final ArrayList<String> split = new ArrayList<>(Arrays.asList(s.split("\\s+")));
             if (split.size() < 1) continue;
-            var key = Identifier.tryParse(split.remove(0));
+            Identifier key = Identifier.tryParse(split.remove(0));
             if (key == null) continue;
             if (Registry.ITEM.containsId(key))
-                CUSTOM_SORTING_RULES.put(Registry.ITEM.get(key), (split.stream().map(Identifier::tryParse).filter(Registry.ITEM::containsId).map(Registry.ITEM::get).toList()));
+                CUSTOM_SORTING_RULES.put(Registry.ITEM.get(key), (split.stream().map(Identifier::tryParse).filter(Registry.ITEM::containsId).map(Registry.ITEM::get).collect(Collectors.toList())));
         }
     }
 

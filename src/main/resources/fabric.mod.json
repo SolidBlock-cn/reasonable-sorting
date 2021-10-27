@@ -40,9 +40,9 @@
   ],
 
   "depends": {
-    "fabricloader": ">=0.11.6",
+    "fabricloader": "*",
     "fabric": "*",
-    "minecraft": "1.16.x",
+    "minecraft": ">=1.16",
     "java": ">=8",
     "cloth-config2": ">4.9.0"
   },

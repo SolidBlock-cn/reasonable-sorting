@@ -1,13 +1,12 @@
 package pers.solid.mod;
 
 import com.google.common.collect.ImmutableList;
-import com.terraformersmc.modmenu.api.ConfigScreenFactory;
-import com.terraformersmc.modmenu.api.ModMenuApi;
+import io.github.prospector.modmenu.api.ConfigScreenFactory;
+import io.github.prospector.modmenu.api.ModMenuApi;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.text.LiteralText;
@@ -20,6 +19,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 public class ConfigScreen implements ModMenuApi {
 
@@ -43,7 +43,7 @@ public class ConfigScreen implements ModMenuApi {
     public static List<String> formatted(List<String> list) {
         List<String> newList = new ArrayList<>();
         for (String s : list) {
-            newList.add(String.join(" ", Arrays.stream(s.split("\\s+")).map(Identifier::tryParse).filter(Objects::nonNull).map(Identifier::toString).toList()));
+            newList.add(Arrays.stream(s.split("\\s+")).map(Identifier::tryParse).filter(Objects::nonNull).map(Identifier::toString).collect(Collectors.joining(" ")));
         }
         return newList;
     }
@@ -103,7 +103,7 @@ public class ConfigScreen implements ModMenuApi {
                 .setDefaultValue(Collections.emptyList())
                 .setCellErrorSupplier(s -> {
                     final String[] split = s.split("\\s+");
-                    final List<String> invalids = Arrays.stream(split).filter(((Predicate<String>) String::isEmpty).negate()).filter(s1 -> Identifier.tryParse(s1) == null).toList();
+                    final List<String> invalids = Arrays.stream(split).filter(((Predicate<String>) String::isEmpty).negate()).filter(s1 -> Identifier.tryParse(s1) == null).collect(Collectors.toList());
                     return !invalids.isEmpty() ? Optional.of(new TranslatableText("option.reasonable-sorting.error.invalid_identifier", String.join(" ", invalids))) : Optional.empty();
                 })
                 .setSaveConsumer(list -> {
@@ -112,7 +112,7 @@ public class ConfigScreen implements ModMenuApi {
                 }).build());
 
         categorySorting.addEntry(entryBuilder
-                .startTextDescription(new TranslatableText("option.reasonable-sorting.describe_variants", new LiteralText(String.join(" ", Arrays.stream(BlockFamily.Variant.values()).map(BlockFamily.Variant::getName).toList())).formatted(Formatting.YELLOW)))
+                .startTextDescription(new TranslatableText("option.reasonable-sorting.describe_variants", new LiteralText(Arrays.stream(BlockFamily.Variant.values()).map(BlockFamily.Variant::getName).collect(Collectors.joining(" "))).formatted(Formatting.YELLOW)))
                 .build());
 
         categorySorting.addEntry(entryBuilder
@@ -140,7 +140,7 @@ public class ConfigScreen implements ModMenuApi {
                     .setTooltip(new TranslatableText("option.reasonable-sorting.shapes_following_base_blocks.tooltip"))
                     .setErrorSupplier(s -> {
                         if (s.equals("*")) return Optional.empty();
-                        final List<String> invalids = Arrays.stream(s.split("\\s+")).filter(s1 -> !s1.isEmpty()).filter(s2 -> !ExtShapeBridge.isValidShapeName(s2)).toList();
+                        final List<String> invalids = Arrays.stream(s.split("\\s+")).filter(s1 -> !s1.isEmpty()).filter(s2 -> !ExtShapeBridge.isValidShapeName(s2)).collect(Collectors.toList());
                         return invalids.isEmpty() ? Optional.empty() : Optional.of(new TranslatableText("option.reasonable-sorting.error.invalid_shape_name", String.join(" ", invalids)));
                     })
                     .setSaveConsumer(s3 -> {
@@ -192,7 +192,7 @@ public class ConfigScreen implements ModMenuApi {
                 .build());
 
         categoryTransfer.addEntry(entryBuilder
-                .startTextDescription(new TranslatableText("option.reasonable-sorting.describe_item_groups", new LiteralText(String.join(" ", Arrays.stream(ItemGroup.GROUPS).map(ItemGroup::getName).toList())).formatted(Formatting.YELLOW)))
+                .startTextDescription(new TranslatableText("option.reasonable-sorting.describe_item_groups", new LiteralText(Arrays.stream(ItemGroup.GROUPS).map(ItemGroup::getName).collect(Collectors.joining(" "))).formatted(Formatting.YELLOW)))
                 .build());
 
         categoryTransfer.addEntry(entryBuilder

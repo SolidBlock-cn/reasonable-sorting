@@ -6,15 +6,16 @@ package pers.solid.mod;
 //
 
 import com.google.common.collect.Maps;
-import java.util.Map;
-import java.util.stream.Stream;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import pers.solid.mod.BlockFamily.Builder;
 import net.minecraft.util.registry.Registry;
+import pers.solid.mod.BlockFamily.Builder;
+
+import java.util.Map;
+import java.util.stream.Stream;
 
 public class BlockFamilies {
-    private static final Map<Block, BlockFamily> BASE_BLOCKS_TO_FAMILIES = Maps.newHashMap();
+    public static final Map<Block, BlockFamily> BASE_BLOCKS_TO_FAMILIES = Maps.newHashMap();
     private static final String WOODEN_GROUP = "wooden";
     private static final String WOODEN_UNLOCK_CRITERION_NAME = "has_planks";
     public static final BlockFamily ACACIA;

@@ -11,25 +11,25 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
+	maven { url "https://maven.shedaniel.me/" }
 	maven {
-		url 'https://maven.aliyun.com/nexus/content/groups/public'
-	}
-	maven {
-		url 'https://repository.hanbings.io/proxy'
-	}
-	maven {
-		url 'https://maven.terraformersmc.com/releases/com/terraformersmc/modmenu/'
+		url 'https://maven.terraformersmc.com/releases/'
 	}
 }
 
 
 dependencies {
-	minecraft "com.mojang:minecraft:1.16.5"
-	mappings "net.fabricmc:yarn:1.16.5+build.10:v2"
-	modImplementation "net.fabricmc:fabric-loader:0.11.6"
+	minecraft "com.mojang:minecraft:1.16"
+	mappings "net.fabricmc:yarn:1.16+build.4:v2"
+	modImplementation "net.fabricmc:fabric-loader:0.12.3"
 
 	//Fabric api
-	modImplementation "net.fabricmc.fabric-api:fabric-api:0.39.2+1.16"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:0.14.0+build.371-1.16"
+
+	modApi("me.shedaniel.cloth:cloth-config-fabric:4.11.26") {
+		exclude(group: "net.fabricmc.fabric-api")
+	}
+	modImplementation("io.github.prospector:modmenu:1.12.2+build.17")
 }
 
 processResources {

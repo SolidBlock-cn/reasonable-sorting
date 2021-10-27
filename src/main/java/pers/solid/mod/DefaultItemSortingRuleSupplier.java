@@ -39,7 +39,7 @@ public class DefaultItemSortingRuleSupplier implements Supplier<Collection<Map<I
      */
     @Override
     public Collection<Map<Item, Collection<Item>>> get() {
-        return Collections.singleton(new ForwardingMap<>() {
+        return Collections.singleton(new ForwardingMap<Item, Collection<Item>>() {
             @Override
             protected Map<Item, Collection<Item>> delegate() {
                 return Configs.CONFIG_HOLDER.getConfig().enableDefaultItemSortingRules ? DEFAULT_ITEM_SORTING_RULE : ImmutableMap.of();

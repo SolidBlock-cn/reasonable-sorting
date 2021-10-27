@@ -4,7 +4,6 @@
   "package": "pers.solid.mod.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "BlockFamiliesAccessor",
     "CreativeInventoryScreenMixin",
     "ItemMixin",
     "SimpleRegistryMixin"

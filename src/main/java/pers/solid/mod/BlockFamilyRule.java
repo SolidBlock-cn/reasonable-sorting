@@ -6,13 +6,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.ObjectLists;
 import net.minecraft.block.Block;
-import net.minecraft.data.family.BlockFamilies;
-import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import pers.solid.mod.mixin.BlockFamiliesAccessor;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -26,13 +23,13 @@ public class BlockFamilyRule implements Supplier<Collection<Map<Item, Collection
      * 由方块到方块家族的映射。来组 {@link BlockFamily}。
      *
      * @see BlockFamily
-     * @see net.minecraft.data.family.BlockFamilies
+     * @see BlockFamilies
      */
-    public static final Map<Block, BlockFamily> BASE_BLOCKS_TO_FAMILIES = BlockFamiliesAccessor.getBaseBlocksToFamilies();
+    public static final Map<Block, BlockFamily> BASE_BLOCKS_TO_FAMILIES = BlockFamilies.BASE_BLOCKS_TO_FAMILIES;
     /**
      * 从栅栏映射到栅栏门的抽象映射。如果 {@link Configs#fenceGateFollowsFence} 为 <code>false</code>，则该映射视为空映射。
      */
-    public static final Map<Item, Collection<Item>> FENCE_TO_FENCE_GATES = new AbstractMap<>() {
+    public static final Map<Item, Collection<Item>> FENCE_TO_FENCE_GATES = new AbstractMap<Item, Collection<Item>>() {
         @NotNull
         @Override
         public Set<Entry<Item, Collection<Item>>> entrySet() {
@@ -42,7 +39,7 @@ public class BlockFamilyRule implements Supplier<Collection<Map<Item, Collection
                 if (v1 == null || v2 == null) return null;
                 else
                     return new SimpleImmutableEntry<Item, Collection<Item>>(v1.asItem(), ObjectLists.singleton(v2.asItem()));
-            }).filter(Objects::nonNull).collect(Collectors.toUnmodifiableSet());
+            }).filter(Objects::nonNull).collect(Collectors.toSet());
         }
 
         @Override
@@ -71,7 +68,7 @@ public class BlockFamilyRule implements Supplier<Collection<Map<Item, Collection
     /**
      * 抽象映射，由基础方块物品映射到其变种方块物品的集合。请注意该映射是抽象的，并不会实际存储内容，每调用一次 <code>get</code> 都会从 {@link #BASE_BLOCKS_TO_FAMILIES} 中获取，并临时构造一个不可修改的列表然后返回。
      */
-    public static final Map<Item, Collection<Item>> BLOCK_ITEM_TO_VARIANTS = new AbstractMap<>() {
+    public static final Map<Item, Collection<Item>> BLOCK_ITEM_TO_VARIANTS = new AbstractMap<Item, Collection<Item>>() {
         @NotNull
         @Override
         public Set<Entry<Item, Collection<Item>>> entrySet() {
@@ -123,7 +120,7 @@ public class BlockFamilyRule implements Supplier<Collection<Map<Item, Collection
      * @return {@link #FENCE_TO_FENCE_GATES} 的一个 {@link ForwardingMap}。当有关的配置文件为 <code>false</code> 时，会投射到空映射。
      */
     public static Collection<Map<Item, Collection<Item>>> getFenceToFenceGates() {
-        return Collections.singleton(new ForwardingMap<>() {
+        return Collections.singleton(new ForwardingMap<Item, Collection<Item>>() {
             @Override
             protected Map<Item, Collection<Item>> delegate() {
                 return Configs.CONFIG_HOLDER.getConfig().fenceGateFollowsFence ? FENCE_TO_FENCE_GATES : ImmutableMap.of();
