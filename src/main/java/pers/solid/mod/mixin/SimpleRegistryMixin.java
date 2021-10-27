@@ -1,7 +1,7 @@
 package pers.solid.mod.mixin;
 
 import com.mojang.serialization.Lifecycle;
-import net.minecraft.util.collection.Int2ObjectBiMap;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
@@ -24,19 +24,18 @@ public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> {
 
     @Shadow
     @Final
-    protected Int2ObjectBiMap<T> indexedEntries;
+    private ObjectList<T> rawIdToEntry;
 
-    public SimpleRegistryMixin(RegistryKey<Registry<T>> registryKey, Lifecycle lifecycle) {
+    public SimpleRegistryMixin(RegistryKey<? extends Registry<T>> registryKey, Lifecycle lifecycle) {
         super(registryKey, lifecycle);
     }
-
 
     @SuppressWarnings({"RedundantCast"})
     @Inject(method = "iterator", at = @At("HEAD"), cancellable = true)
     private void itemIterator(CallbackInfoReturnable<Iterator<T>> cir) {
         if (Configs.CONFIG_HOLDER.getConfig().enableSorting && this.equals(Registry.ITEM)) {
             try {
-                cir.setReturnValue(MixinHelper.itemRegistryIterator(this.indexedEntries, (Collection<? extends Map<T, ? extends Collection<T>>>) (Collection) MixinHelper.ITEM_SORTING_RULES));
+                cir.setReturnValue(MixinHelper.itemRegistryIterator((this.rawIdToEntry), (Collection<? extends Map<T, ? extends Collection<T>>>) (Collection) MixinHelper.ITEM_SORTING_RULES));
             } catch (ClassCastException ignored) {
             }
         }

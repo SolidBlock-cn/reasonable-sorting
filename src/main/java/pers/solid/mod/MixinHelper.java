@@ -10,7 +10,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.util.collection.Int2ObjectBiMap;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -99,15 +98,15 @@ public class MixinHelper implements ModInitializer {
     /**
      * 用于 {@link pers.solid.mod.mixin.SimpleRegistryMixin}。
      */
-    public static <T> Iterator<T> itemRegistryIterator(Int2ObjectBiMap<T> indexedEntries, Collection<? extends Map<T, ? extends Collection<T>>> rules) {
+    public static <T> Iterator<T> itemRegistryIterator(ObjectList<T> rawIdToEntry, Collection<? extends Map<T, ? extends Collection<T>>> rules) {
         Set<T> list = new LinkedHashSet<>();
-        for (T item : indexedEntries) {
+        for (T item : rawIdToEntry) {
             if (isCombinationFollower(item, rules)) continue;
             applyItemWithFollowings(rules, item, list::add);
         }
-        if (indexedEntries.size() != list.size()) {
-            LOGGER.error(String.format("Error found when trying to iterate! The size of raw list (%s) does not equal to that of the refreshed list (%s)!", indexedEntries.size(), list.size()));
-            for (T item : indexedEntries) {
+        if (rawIdToEntry.size() != list.size()) {
+            LOGGER.error(String.format("Error found when trying to iterate! The size of raw list (%s) does not equal to that of the refreshed list (%s)!", rawIdToEntry.size(), list.size()));
+            for (T item : rawIdToEntry) {
                 if (!list.contains(item)) {
                     LOGGER.error(String.format("Item %s is not in the refreshed list!", item));
                 }

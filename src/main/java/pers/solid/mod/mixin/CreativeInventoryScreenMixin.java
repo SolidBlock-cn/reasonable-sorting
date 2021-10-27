@@ -8,9 +8,8 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -41,10 +40,10 @@ public abstract class CreativeInventoryScreenMixin {
      * 在创造模式物品栏的搜索部分，选中物品会显示其物品组。该 mixin 则会使其显示修改后的物品组。修改后的物品组可能为多个，都会显示。
      *
      * @param instance 物品所属的原版物品组。
-     * @return
+     * @return 物品所属的物品组所代表的文本。可能是原版的，也有可能是修改后的。
      */
-    @Redirect(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/text/TranslatableText;formatted(Lnet/minecraft/util/Formatting;)Lnet/minecraft/text/MutableText;"))
-    public MutableText renderTooltipMixin(TranslatableText instance, Formatting formatting) {
+    @Redirect(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;getTranslationKey()Lnet/minecraft/text/Text;"))
+    public Text renderTooltipMixin(ItemGroup instance) {
         final @Nullable ImmutableCollection<ItemGroup> itemGroups = MixinHelper.ABSTRACT_ITEM_GROUP_TRANSFER_RULES.get(stack.getItem());
         if (Configs.CONFIG_HOLDER.getConfig().enableGroupTransfer && itemGroups != null) {
             MutableText text = new LiteralText("").styled(style -> style.withColor(TextColor.fromRgb(0x88ccff)));
@@ -53,8 +52,8 @@ public abstract class CreativeInventoryScreenMixin {
                 text.append(itemGroup.getTranslationKey());
                 if (iterator.hasNext()) text.append(" / ");
             }
-            return text;
+            return new LiteralText("").append(text);
         }
-        return instance.formatted(formatting);
+        return instance.getTranslationKey();
     }
 }
