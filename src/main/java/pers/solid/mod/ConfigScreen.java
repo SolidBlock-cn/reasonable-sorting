@@ -70,7 +70,7 @@ public class ConfigScreen implements ModMenuApi {
         ConfigCategory categorySorting = builder.getOrCreateCategory(new TranslatableText("category.reasonable-sorting.sorting"));
         categorySorting.setDescription(new TranslatableText[]{new TranslatableText("category.reasonable-sorting.sorting.description")});
         ConfigCategory categoryTransfer = builder.getOrCreateCategory(new TranslatableText("category.reasonable-sorting.transfer"));
-        categoryTransfer.setDescription(new TranslatableText[]{new TranslatableText("category.reasonable-sorting.sorting.transfer")});
+        categoryTransfer.setDescription(new TranslatableText[]{new TranslatableText("category.reasonable-sorting.transfer.description")});
 
         // 排序部分。
         categorySorting.addEntry(entryBuilder
