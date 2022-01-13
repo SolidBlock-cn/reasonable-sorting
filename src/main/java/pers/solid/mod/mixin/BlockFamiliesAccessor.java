@@ -10,8 +10,8 @@ import java.util.Map;
 
 @Mixin(BlockFamilies.class)
 public interface BlockFamiliesAccessor {
-    @Accessor("BASE_BLOCKS_TO_FAMILIES")
-    static Map<Block, BlockFamily> getBaseBlocksToFamilies() {
-        throw new AssertionError();
-    }
+  @Accessor("BASE_BLOCKS_TO_FAMILIES")
+  static Map<Block, BlockFamily> getBaseBlocksToFamilies() {
+    throw new AssertionError();
+  }
 }

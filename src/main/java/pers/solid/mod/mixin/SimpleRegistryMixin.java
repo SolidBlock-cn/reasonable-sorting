@@ -22,22 +22,24 @@ import java.util.Map;
 @Mixin(SimpleRegistry.class)
 public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> {
 
-    @Shadow
-    @Final
-    private ObjectList<T> rawIdToEntry;
+  @Shadow @Final private ObjectList<T> rawIdToEntry;
 
-    public SimpleRegistryMixin(RegistryKey<? extends Registry<T>> registryKey, Lifecycle lifecycle) {
-        super(registryKey, lifecycle);
-    }
+  public SimpleRegistryMixin(RegistryKey<? extends Registry<T>> registryKey, Lifecycle lifecycle) {
+    super(registryKey, lifecycle);
+  }
 
-    @SuppressWarnings({"RedundantCast"})
-    @Inject(method = "iterator", at = @At("HEAD"), cancellable = true)
-    private void itemIterator(CallbackInfoReturnable<Iterator<T>> cir) {
-        if (Configs.CONFIG_HOLDER.getConfig().enableSorting && this.equals(Registry.ITEM)) {
-            try {
-                cir.setReturnValue(MixinHelper.itemRegistryIterator((this.rawIdToEntry), (Collection<? extends Map<T, ? extends Collection<T>>>) (Collection) MixinHelper.ITEM_SORTING_RULES));
-            } catch (ClassCastException ignored) {
-            }
-        }
+  @SuppressWarnings({"RedundantCast"})
+  @Inject(method = "iterator", at = @At("HEAD"), cancellable = true)
+  private void itemIterator(CallbackInfoReturnable<Iterator<T>> cir) {
+    if (Configs.CONFIG_HOLDER.getConfig().enableSorting && this.equals(Registry.ITEM)) {
+      try {
+        cir.setReturnValue(
+            MixinHelper.itemRegistryIterator(
+                (this.rawIdToEntry),
+                (Collection<? extends Map<T, ? extends Collection<T>>>)
+                    (Collection) MixinHelper.ITEM_SORTING_RULES));
+      } catch (ClassCastException ignored) {
+      }
     }
+  }
 }
