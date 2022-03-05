@@ -1,29 +1,29 @@
 plugins {
-	id 'fabric-loom' version '0.10-SNAPSHOT'
-	id 'maven-publish'
+    id 'fabric-loom' version '0.11-SNAPSHOT'
+    id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
 repositories {
-//	maven {
-//		url 'https://maven.aliyun.com/nexus/content/groups/public'
-//	}
-//	maven {
-//		url 'https://repository.hanbings.io/proxy'
-//	}
+    maven {
+        url 'https://maven.aliyun.com/nexus/content/groups/public'
+    }
+    maven {
+        url 'https://repository.hanbings.io/proxy'
+    }
 
-	maven { url "https://maven.shedaniel.me/" }
+    maven { url "https://maven.shedaniel.me/" }
 
-	maven {
-		name = 'TerraformersMC'
-		url = 'https://maven.terraformersmc.com/releases'
-	}
+    maven {
+        name = 'TerraformersMC'
+        url = 'https://maven.terraformersmc.com/releases'
+    }
 }
 
 
@@ -39,10 +39,10 @@ dependencies {
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
 
-	modApi("me.shedaniel.cloth:cloth-config-fabric:6.1.48") {
-		exclude(group: "net.fabricmc.fabric-api")
-	}
-	modImplementation("com.terraformersmc:modmenu:3.0.1")
+    modApi("me.shedaniel.cloth:cloth-config-fabric:6.2.57") {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+    modImplementation("com.terraformersmc:modmenu:3.1.0")
 }
 
 processResources {
@@ -61,7 +61,7 @@ tasks.withType(JavaCompile).configureEach {
 	it.options.encoding = "UTF-8"
 
 	// Minecraft 1.17 (21w19a) upwards uses Java 16.
-	it.options.release = 16
+    it.options.release = 17
 }
 
 java {
