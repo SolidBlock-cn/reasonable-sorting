@@ -21,7 +21,9 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-/** @author SolidBlock */
+/**
+ * @author SolidBlock
+ */
 public class ConfigScreen implements ModMenuApi {
 
   public static List<String> toStringList(Map<Item, Collection<Item>> map) {
@@ -83,14 +85,14 @@ public class ConfigScreen implements ModMenuApi {
     ConfigCategory categorySorting =
         builder.getOrCreateCategory(new TranslatableText("category.reasonable-sorting.sorting"));
     categorySorting.setDescription(
-        new TranslatableText[] {
-          new TranslatableText("category.reasonable-sorting.sorting.description")
+        new TranslatableText[]{
+            new TranslatableText("category.reasonable-sorting.sorting.description")
         });
     ConfigCategory categoryTransfer =
         builder.getOrCreateCategory(new TranslatableText("category.reasonable-sorting.transfer"));
     categoryTransfer.setDescription(
-        new TranslatableText[] {
-          new TranslatableText("category.reasonable-sorting.transfer.description")
+        new TranslatableText[]{
+            new TranslatableText("category.reasonable-sorting.transfer.description")
         });
 
     // 排序部分。
@@ -155,9 +157,9 @@ public class ConfigScreen implements ModMenuApi {
                           .toList();
                   return !invalids.isEmpty()
                       ? Optional.of(
-                          new TranslatableText(
-                              "option.reasonable-sorting.error.invalid_identifier",
-                              String.join(" ", invalids)))
+                      new TranslatableText(
+                          "option.reasonable-sorting.error.invalid_identifier",
+                          String.join(" ", invalids)))
                       : Optional.empty();
                 })
             .setSaveConsumer(
@@ -173,11 +175,11 @@ public class ConfigScreen implements ModMenuApi {
                 new TranslatableText(
                     "option.reasonable-sorting.describe_variants",
                     new LiteralText(
-                            String.join(
-                                " ",
-                                Arrays.stream(BlockFamily.Variant.values())
-                                    .map(BlockFamily.Variant::getName)
-                                    .toList()))
+                        String.join(
+                            " ",
+                            Arrays.stream(BlockFamily.Variant.values())
+                                .map(BlockFamily.Variant::getName)
+                                .toList()))
                         .formatted(Formatting.YELLOW)))
             .build());
 
@@ -200,9 +202,9 @@ public class ConfigScreen implements ModMenuApi {
                   return invalidNames.isEmpty()
                       ? Optional.empty()
                       : Optional.of(
-                          new TranslatableText(
-                              "option.reasonable-sorting.error.invalid_variant_name",
-                              String.join(", ", invalidNames)));
+                      new TranslatableText(
+                          "option.reasonable-sorting.error.invalid_variant_name",
+                          String.join(", ", invalidNames)));
                 })
             .setSaveConsumer(
                 s -> {
@@ -242,9 +244,9 @@ public class ConfigScreen implements ModMenuApi {
                     return invalids.isEmpty()
                         ? Optional.empty()
                         : Optional.of(
-                            new TranslatableText(
-                                "option.reasonable-sorting.error.invalid_shape_name",
-                                String.join(" ", invalids)));
+                        new TranslatableText(
+                            "option.reasonable-sorting.error.invalid_shape_name",
+                            String.join(" ", invalids)));
                   })
               .setSaveConsumer(
                   s3 -> {
@@ -326,9 +328,9 @@ public class ConfigScreen implements ModMenuApi {
                 new TranslatableText(
                     "option.reasonable-sorting.describe_item_groups",
                     new LiteralText(
-                            String.join(
-                                " ",
-                                Arrays.stream(ItemGroup.GROUPS).map(ItemGroup::getName).toList()))
+                        String.join(
+                            " ",
+                            Arrays.stream(ItemGroup.GROUPS).map(ItemGroup::getName).toList()))
                         .formatted(Formatting.YELLOW)))
             .build());
 
@@ -463,9 +465,9 @@ public class ConfigScreen implements ModMenuApi {
                                 .append("»")
                                 .append(
                                     new LiteralText(
-                                            index < pattern.length()
-                                                ? pattern.substring(index, index + 1)
-                                                : "")
+                                        index < pattern.length()
+                                            ? pattern.substring(index, index + 1)
+                                            : "")
                                         .formatted(Formatting.DARK_RED))
                                 .append("«")
                                 .append(

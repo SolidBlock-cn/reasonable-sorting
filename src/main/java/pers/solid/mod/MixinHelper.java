@@ -11,10 +11,10 @@ import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.util.registry.Registry;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import oshi.annotation.concurrent.Immutable;
 
 import java.util.*;
@@ -22,13 +22,19 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class MixinHelper implements ModInitializer {
-  /** 存放所有物品组合规则的列表。 */
+  /**
+   * 存放所有物品组合规则的列表。
+   */
   public static final Collection<Map<Item, ? extends Collection<Item>>> ITEM_SORTING_RULES =
       new ObjectArrayList<>();
-  /** 存放所有物品组转移规则的列表。 */
+  /**
+   * 存放所有物品组转移规则的列表。
+   */
   public static final ObjectList<Map<Item, ItemGroup>> ITEM_GROUP_TRANSFER_RULES =
       new ObjectArrayList<>();
-  /** 类似于 {@link #COMPILED_ITEM_GROUP_TRANSFER_RULES}，不过它是实时的、抽象的，在修改配置之后不需要重新编译。 */
+  /**
+   * 类似于 {@link #COMPILED_ITEM_GROUP_TRANSFER_RULES}，不过它是实时的、抽象的，在修改配置之后不需要重新编译。
+   */
   @Immutable
   public static final Map<Item, ImmutableCollection<ItemGroup>> ABSTRACT_ITEM_GROUP_TRANSFER_RULES =
       new AbstractMap<>() {
@@ -63,9 +69,11 @@ public class MixinHelper implements ModInitializer {
   public static final Map<Item, ImmutableCollection<ItemGroup>> COMPILED_ITEM_GROUP_TRANSFER_RULES =
       new HashMap<>();
 
-  public static final Logger LOGGER = LogManager.getLogger("REASONABLE_SORTING");
+  public static final Logger LOGGER = LoggerFactory.getLogger("REASONABLE_SORTING");
 
-  /** 对一个物品应用行为的同时，对其跟随物品也应用行为，如果有。 */
+  /**
+   * 对一个物品应用行为的同时，对其跟随物品也应用行为，如果有。
+   */
   public static <T> void applyItemWithFollowings(
       Collection<? extends Map<T, ? extends Collection<T>>> rules,
       T item,
@@ -84,10 +92,10 @@ public class MixinHelper implements ModInitializer {
   /**
    * 对一个物品及其跟随者应用某一个行为。此方法以泛化，可以不仅针对物品。
    *
-   * @param rules 物品排序规则。
-   * @param item 物品。（当然也可以是其他类的。）
+   * @param rules  物品排序规则。
+   * @param item   物品。（当然也可以是其他类的。）
    * @param action 需要应用的行为。
-   * @param <T> 参数的类，比如 {@link Item}。
+   * @param <T>    参数的类，比如 {@link Item}。
    */
   public static <T> void applyItemWithFollowings(
       Collection<? extends Map<T, ? extends Collection<T>>> rules, T item, Consumer<T> action) {
@@ -100,21 +108,23 @@ public class MixinHelper implements ModInitializer {
         });
   }
 
-  /** 用于 {@link pers.solid.mod.mixin.SimpleRegistryMixin}。 */
+  /**
+   * 用于 {@link pers.solid.mod.mixin.SimpleRegistryMixin}。
+   */
   public static <T> Iterator<T> itemRegistryIterator(
       ObjectList<T> rawIdToEntry, Collection<? extends Map<T, ? extends Collection<T>>> rules) {
     Set<T> list = new LinkedHashSet<>();
-    for (T item : rawIdToEntry) {
+    for (var item : rawIdToEntry) {
       if (isCombinationFollower(item, rules)) continue;
       applyItemWithFollowings(rules, item, list::add);
     }
     if (rawIdToEntry.size() != list.size()) {
       LOGGER.error(
-          "Error found when trying to iterate! The size of raw list (%s) does not equal to that of the refreshed list (%s)!"
-              .formatted(rawIdToEntry.size(), list.size()));
-      for (T item : rawIdToEntry) {
+          "Error found when trying to iterate! The size of raw list ({}) does not equal to that of the refreshed list ({})!"
+          , rawIdToEntry.size(), list.size());
+      for (var item : rawIdToEntry) {
         if (!list.contains(item)) {
-          LOGGER.error("Item %s is not in the refreshed list!".formatted(item));
+          LOGGER.error("Item {} is not in the refreshed list!", item);
         }
       }
     }
@@ -177,33 +187,26 @@ public class MixinHelper implements ModInitializer {
     // 从入口点导入物品组合规则。
     ITEM_SORTING_RULES.clear();
     // 通过入口点来获取物品组合规则。请参考 {@code fabric.mod.json} 以了解本模组使用的入口点。
-    for (EntrypointContainer<
-            Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>>>
-        entrypointContainer :
-            FabricLoader.getInstance()
-                .getEntrypointContainers(
-                    "reasonable-sorting:item_sorting_rules",
-                    (Class<
-                            Supplier<
-                                ? extends
-                                    Collection<? extends Map<Item, ? extends Collection<Item>>>>>)
-                        (Class) Supplier.class)) {
+    for (EntrypointContainer<Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>>> entrypointContainer : FabricLoader.getInstance()
+        .getEntrypointContainers(
+            "reasonable-sorting:item_sorting_rules",
+            (Class<Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>>>) (Class) Supplier.class)) {
       final Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>>
           entrypoint = entrypointContainer.getEntrypoint();
       ITEM_SORTING_RULES.addAll(entrypoint.get());
     }
-    LOGGER.info("%s rules are recognized!".formatted(ITEM_SORTING_RULES.size()));
+    LOGGER.info("{} rules are recognized!", ITEM_SORTING_RULES.size());
 
     // 从入口点导入物品组转移规则。
     ITEM_GROUP_TRANSFER_RULES.clear();
     // 通过入口点来获取物品组转移规则。
     for (EntrypointContainer<Supplier<? extends Collection<? extends Map<Item, ItemGroup>>>>
         entrypointContainer :
-            FabricLoader.getInstance()
-                .getEntrypointContainers(
-                    "reasonable-sorting:item_group_transfer_rules",
-                    ((Class<Supplier<? extends Collection<? extends Map<Item, ItemGroup>>>>)
-                        (Class) Supplier.class))) {
+        FabricLoader.getInstance()
+            .getEntrypointContainers(
+                "reasonable-sorting:item_group_transfer_rules",
+                ((Class<Supplier<? extends Collection<? extends Map<Item, ItemGroup>>>>)
+                    (Class) Supplier.class))) {
       final Supplier<? extends Collection<? extends Map<Item, ItemGroup>>> entrypoint =
           entrypointContainer.getEntrypoint();
       ITEM_GROUP_TRANSFER_RULES.addAll(entrypoint.get());

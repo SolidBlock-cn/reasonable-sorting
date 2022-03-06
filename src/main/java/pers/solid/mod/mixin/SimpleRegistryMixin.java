@@ -22,7 +22,9 @@ import java.util.Map;
 @Mixin(SimpleRegistry.class)
 public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> {
 
-  @Shadow @Final private ObjectList<T> rawIdToEntry;
+  @Shadow
+  @Final
+  private ObjectList<T> rawIdToEntry;
 
   public SimpleRegistryMixin(RegistryKey<? extends Registry<T>> registryKey, Lifecycle lifecycle) {
     super(registryKey, lifecycle);
