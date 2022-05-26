@@ -8,7 +8,6 @@ import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
@@ -51,7 +50,7 @@ public abstract class CreativeInventoryScreenMixin {
     final @Nullable ImmutableCollection<ItemGroup> itemGroups =
         MixinHelper.ABSTRACT_ITEM_GROUP_TRANSFER_RULES.get(stack.getItem());
     if (Configs.CONFIG_HOLDER.getConfig().enableGroupTransfer && itemGroups != null) {
-      MutableText text = new LiteralText("").styled(style -> style.withColor(0x88ccff));
+      MutableText text = Text.literal("").styled(style -> style.withColor(0x88ccff));
       for (UnmodifiableIterator<ItemGroup> iterator = itemGroups.iterator(); iterator.hasNext(); ) {
         ItemGroup itemGroup = iterator.next();
         text.append(itemGroup.getDisplayName());
@@ -59,7 +58,7 @@ public abstract class CreativeInventoryScreenMixin {
           text.append(" / ");
         }
       }
-      return new LiteralText("").append(text);
+      return Text.literal("").append(text);
     }
     return instance.getDisplayName();
   }

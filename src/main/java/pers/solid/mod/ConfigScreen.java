@@ -10,8 +10,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -79,38 +78,38 @@ public class ConfigScreen implements ModMenuApi {
         ConfigBuilder.create()
             .setParentScreen(previousScreen)
             .setSavingRunnable(Configs.CONFIG_HOLDER::save)
-            .setTitle(new TranslatableText("title.reasonable-sorting.config"));
+            .setTitle(Text.translatable("title.reasonable-sorting.config"));
 
     ConfigEntryBuilder entryBuilder = builder.entryBuilder();
     ConfigCategory categorySorting =
-        builder.getOrCreateCategory(new TranslatableText("category.reasonable-sorting.sorting"));
+        builder.getOrCreateCategory(Text.translatable("category.reasonable-sorting.sorting"));
     categorySorting.setDescription(
-        new TranslatableText[]{
-            new TranslatableText("category.reasonable-sorting.sorting.description")
+        new Text[]{
+            Text.translatable("category.reasonable-sorting.sorting.description")
         });
     ConfigCategory categoryTransfer =
-        builder.getOrCreateCategory(new TranslatableText("category.reasonable-sorting.transfer"));
+        builder.getOrCreateCategory(Text.translatable("category.reasonable-sorting.transfer"));
     categoryTransfer.setDescription(
-        new TranslatableText[]{
-            new TranslatableText("category.reasonable-sorting.transfer.description")
+        new Text[]{
+            Text.translatable("category.reasonable-sorting.transfer.description")
         });
 
     // 排序部分。
     categorySorting.addEntry(
         entryBuilder
             .startTextDescription(
-                new TranslatableText("category.reasonable-sorting.sorting.description"))
+                Text.translatable("category.reasonable-sorting.sorting.description"))
             .build());
 
     categorySorting.addEntry(
         entryBuilder
             .startBooleanToggle(
-                new TranslatableText("option.reasonable-sorting.enable_sorting"),
+                Text.translatable("option.reasonable-sorting.enable_sorting"),
                 config.enableSorting)
-            .setTooltip(new TranslatableText("option.reasonable-sorting.enable_sorting.tooltip"))
+            .setTooltip(Text.translatable("option.reasonable-sorting.enable_sorting.tooltip"))
             .setYesNoTextSupplier(
                 b ->
-                    new TranslatableText(
+                    Text.translatable(
                         b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
             .setDefaultValue(true)
             .setSaveConsumer(b -> config.enableSorting = b)
@@ -119,14 +118,14 @@ public class ConfigScreen implements ModMenuApi {
     categorySorting.addEntry(
         entryBuilder
             .startBooleanToggle(
-                new TranslatableText("option.reasonable-sorting.enable_default_item_sorting_rules"),
+                Text.translatable("option.reasonable-sorting.enable_default_item_sorting_rules"),
                 config.enableDefaultItemSortingRules)
             .setTooltip(
-                new TranslatableText(
+                Text.translatable(
                     "option.reasonable-sorting.enable_default_item_sorting_rules.tooltip"))
             .setYesNoTextSupplier(
                 b ->
-                    new TranslatableText(
+                    Text.translatable(
                         b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
             .setDefaultValue(true)
             .setSaveConsumer(b -> config.enableDefaultItemSortingRules = b)
@@ -135,17 +134,17 @@ public class ConfigScreen implements ModMenuApi {
     categorySorting.addEntry(
         entryBuilder
             .startStrList(
-                new TranslatableText("option.reasonable-sorting.custom_sorting_rules"),
+                Text.translatable("option.reasonable-sorting.custom_sorting_rules"),
                 config.customSortingRules)
             .setTooltip(
-                new TranslatableText("option.reasonable-sorting.custom_sorting_rules.tooltip"),
-                new TranslatableText("option.reasonable-sorting.custom_sorting_rules.example"))
+                Text.translatable("option.reasonable-sorting.custom_sorting_rules.tooltip"),
+                Text.translatable("option.reasonable-sorting.custom_sorting_rules.example"))
             .setInsertInFront(false)
             .setExpanded(true)
             .setAddButtonTooltip(
-                new TranslatableText("option.reasonable-sorting.custom_sorting_rules.add"))
+                Text.translatable("option.reasonable-sorting.custom_sorting_rules.add"))
             .setRemoveButtonTooltip(
-                new TranslatableText("option.reasonable-sorting.custom_sorting_rules.remove"))
+                Text.translatable("option.reasonable-sorting.custom_sorting_rules.remove"))
             .setDefaultValue(Collections.emptyList())
             .setCellErrorSupplier(
                 s -> {
@@ -157,7 +156,7 @@ public class ConfigScreen implements ModMenuApi {
                           .toList();
                   return !invalids.isEmpty()
                       ? Optional.of(
-                      new TranslatableText(
+                      Text.translatable(
                           "option.reasonable-sorting.error.invalid_identifier",
                           String.join(" ", invalids)))
                       : Optional.empty();
@@ -172,25 +171,25 @@ public class ConfigScreen implements ModMenuApi {
     categorySorting.addEntry(
         entryBuilder
             .startTextDescription(
-                new TranslatableText(
+                Text.translatable(
                     "option.reasonable-sorting.describe_variants",
-                    new LiteralText(
-                        String.join(
-                            " ",
-                            Arrays.stream(BlockFamily.Variant.values())
-                                .map(BlockFamily.Variant::getName)
-                                .toList()))
+                    Text.literal(
+                            String.join(
+                                " ",
+                                Arrays.stream(BlockFamily.Variant.values())
+                                    .map(BlockFamily.Variant::getName)
+                                    .toList()))
                         .formatted(Formatting.YELLOW)))
             .build());
 
     categorySorting.addEntry(
         entryBuilder
             .startStrField(
-                new TranslatableText("option.reasonable-sorting.variants_following_base_blocks"),
+                Text.translatable("option.reasonable-sorting.variants_following_base_blocks"),
                 config.variantsFollowingBaseBlocks)
             .setDefaultValue("stairs slab")
             .setTooltip(
-                new TranslatableText(
+                Text.translatable(
                     "option.reasonable-sorting.variants_following_base_blocks.tooltip"))
             .setErrorSupplier(
                 s -> {
@@ -202,7 +201,7 @@ public class ConfigScreen implements ModMenuApi {
                   return invalidNames.isEmpty()
                       ? Optional.empty()
                       : Optional.of(
-                      new TranslatableText(
+                      Text.translatable(
                           "option.reasonable-sorting.error.invalid_variant_name",
                           String.join(", ", invalidNames)));
                 })
@@ -217,19 +216,19 @@ public class ConfigScreen implements ModMenuApi {
       categorySorting.addEntry(
           entryBuilder
               .startTextDescription(
-                  new TranslatableText(
+                  Text.translatable(
                       "option.reasonable-sorting.describe_shapes",
-                      new LiteralText(ExtShapeBridge.getValidShapeNames())
+                      Text.literal(ExtShapeBridge.getValidShapeNames())
                           .formatted(Formatting.YELLOW)))
               .build());
       categorySorting.addEntry(
           entryBuilder
               .startStrField(
-                  new TranslatableText("option.reasonable-sorting.shapes_following_base_blocks"),
+                  Text.translatable("option.reasonable-sorting.shapes_following_base_blocks"),
                   config.shapesFollowingBaseBlocks)
               .setDefaultValue("*")
               .setTooltip(
-                  new TranslatableText(
+                  Text.translatable(
                       "option.reasonable-sorting.shapes_following_base_blocks.tooltip"))
               .setErrorSupplier(
                   s -> {
@@ -244,7 +243,7 @@ public class ConfigScreen implements ModMenuApi {
                     return invalids.isEmpty()
                         ? Optional.empty()
                         : Optional.of(
-                        new TranslatableText(
+                        Text.translatable(
                             "option.reasonable-sorting.error.invalid_shape_name",
                             String.join(" ", invalids)));
                   })
@@ -259,32 +258,32 @@ public class ConfigScreen implements ModMenuApi {
     categorySorting.addEntry(
         entryBuilder
             .startBooleanToggle(
-                new TranslatableText("option.reasonable-sorting.fence_gate_follows_fence"),
+                Text.translatable("option.reasonable-sorting.fence_gate_follows_fence"),
                 config.fenceGateFollowsFence)
             .setSaveConsumer(b -> config.fenceGateFollowsFence = b)
             .setDefaultValue(true)
             .setTooltip(
-                new TranslatableText("option.reasonable-sorting.fence_gate_follows_fence.tooltip"))
+                Text.translatable("option.reasonable-sorting.fence_gate_follows_fence.tooltip"))
             .build());
 
     // 物品组转移部分。
     categoryTransfer.addEntry(
         entryBuilder
             .startTextDescription(
-                new TranslatableText("category.reasonable-sorting.transfer.description"))
+                Text.translatable("category.reasonable-sorting.transfer.description"))
             .build());
 
     categoryTransfer.addEntry(
         entryBuilder
             .startBooleanToggle(
-                new TranslatableText("option.reasonable-sorting.enable_group_transfer"),
+                Text.translatable("option.reasonable-sorting.enable_group_transfer"),
                 config.enableGroupTransfer)
             .setDefaultValue(true)
             .setTooltip(
-                new TranslatableText("option.reasonable-sorting.enable_group_transfer.tooltip"))
+                Text.translatable("option.reasonable-sorting.enable_group_transfer.tooltip"))
             .setYesNoTextSupplier(
                 b ->
-                    new TranslatableText(
+                    Text.translatable(
                         b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
             .setSaveConsumer(b -> config.enableGroupTransfer = b)
             .build());
@@ -292,7 +291,7 @@ public class ConfigScreen implements ModMenuApi {
     categoryTransfer.addEntry(
         entryBuilder
             .startBooleanToggle(
-                new TranslatableText("option.reasonable-sorting.buttons_in_decorations"),
+                Text.translatable("option.reasonable-sorting.buttons_in_decorations"),
                 config.buttonsInDecorations)
             .setDefaultValue(false)
             .setSaveConsumer(b -> config.buttonsInDecorations = b)
@@ -300,7 +299,7 @@ public class ConfigScreen implements ModMenuApi {
     categoryTransfer.addEntry(
         entryBuilder
             .startBooleanToggle(
-                new TranslatableText("option.reasonable-sorting.fence_gates_in_decorations"),
+                Text.translatable("option.reasonable-sorting.fence_gates_in_decorations"),
                 config.fenceGatesInDecorations)
             .setDefaultValue(true)
             .setSaveConsumer(b -> config.fenceGatesInDecorations = b)
@@ -308,7 +307,7 @@ public class ConfigScreen implements ModMenuApi {
     categoryTransfer.addEntry(
         entryBuilder
             .startBooleanToggle(
-                new TranslatableText("option.reasonable-sorting.swords_in_tools"),
+                Text.translatable("option.reasonable-sorting.swords_in_tools"),
                 config.swordsInTools)
             .setDefaultValue(false)
             .setSaveConsumer(b -> config.swordsInTools = b)
@@ -316,7 +315,7 @@ public class ConfigScreen implements ModMenuApi {
     categoryTransfer.addEntry(
         entryBuilder
             .startBooleanToggle(
-                new TranslatableText("option.reasonable-sorting.doors_in_decorations"),
+                Text.translatable("option.reasonable-sorting.doors_in_decorations"),
                 config.doorsInDecorations)
             .setDefaultValue(false)
             .setSaveConsumer(b -> config.doorsInDecorations = b)
@@ -325,44 +324,44 @@ public class ConfigScreen implements ModMenuApi {
     categoryTransfer.addEntry(
         entryBuilder
             .startTextDescription(
-                new TranslatableText(
+                Text.translatable(
                     "option.reasonable-sorting.describe_item_groups",
-                    new LiteralText(
-                        String.join(
-                            " ",
-                            Arrays.stream(ItemGroup.GROUPS).map(ItemGroup::getName).toList()))
+                    Text.literal(
+                            String.join(
+                                " ",
+                                Arrays.stream(ItemGroup.GROUPS).map(ItemGroup::getName).toList()))
                         .formatted(Formatting.YELLOW)))
             .build());
 
     categoryTransfer.addEntry(
         entryBuilder
             .startStrList(
-                new TranslatableText("option.reasonable-sorting.custom_transfer_rules"),
+                Text.translatable("option.reasonable-sorting.custom_transfer_rules"),
                 config.transferRules)
             .setTooltip(
-                new TranslatableText("option.reasonable-sorting.custom_transfer_rules.tooltip"))
+                Text.translatable("option.reasonable-sorting.custom_transfer_rules.tooltip"))
             .setExpanded(true)
             .setInsertInFront(false)
             .setAddButtonTooltip(
-                new TranslatableText("option.reasonable-sorting.custom_transfer_rules.add"))
+                Text.translatable("option.reasonable-sorting.custom_transfer_rules.add"))
             .setRemoveButtonTooltip(
-                new TranslatableText("option.reasonable-sorting.custom_transfer_rules.remove"))
+                Text.translatable("option.reasonable-sorting.custom_transfer_rules.remove"))
             .setCellErrorSupplier(
                 s -> {
                   final String[] split = s.split("\\s+");
                   if (split.length > 2) {
                     return Optional.of(
-                        new TranslatableText(
+                        Text.translatable(
                             "option.reasonable-sorting.error.unexpected_text", split[2]));
                   }
                   if (split.length < 2) {
                     return Optional.of(
-                        new TranslatableText(
+                        Text.translatable(
                             "option.reasonable-sorting.error.group_name_expected"));
                   }
                   if (Identifier.tryParse(split[0]) == null) {
                     return Optional.of(
-                        new TranslatableText(
+                        Text.translatable(
                             "option.reasonable-sorting.error.invalid_identifier", split[0]));
                   }
                   return Optional.empty();
@@ -378,17 +377,17 @@ public class ConfigScreen implements ModMenuApi {
     categoryTransfer.addEntry(
         entryBuilder
             .startStrList(
-                new TranslatableText("option.reasonable-sorting.custom_variant_transfer_rules"),
+                Text.translatable("option.reasonable-sorting.custom_variant_transfer_rules"),
                 config.variantTransferRules)
             .setTooltip(
-                new TranslatableText(
+                Text.translatable(
                     "option.reasonable-sorting.custom_variant_transfer_rules.tooltip"))
             .setExpanded(true)
             .setInsertInFront(false)
             .setAddButtonTooltip(
-                new TranslatableText("option.reasonable-sorting.custom_transfer_rules.add"))
+                Text.translatable("option.reasonable-sorting.custom_transfer_rules.add"))
             .setRemoveButtonTooltip(
-                new TranslatableText("option.reasonable-sorting.custom_transfer_rules.remove"))
+                Text.translatable("option.reasonable-sorting.custom_transfer_rules.remove"))
             .setCellErrorSupplier(
                 s -> {
                   if (s.isEmpty()) {
@@ -397,17 +396,17 @@ public class ConfigScreen implements ModMenuApi {
                   final String[] split = s.split("\\s+");
                   if (split.length > 2) {
                     return Optional.of(
-                        new TranslatableText(
+                        Text.translatable(
                             "option.reasonable-sorting.error.unexpected_text", split[2]));
                   }
                   if (split.length < 2) {
                     return Optional.of(
-                        new TranslatableText(
+                        Text.translatable(
                             "option.reasonable-sorting.error.group_name_expected"));
                   }
                   if (!Configs.NAME_TO_VARIANT.containsKey(split[0])) {
                     return Optional.of(
-                        new TranslatableText(
+                        Text.translatable(
                             "option.reasonable-sorting.error.invalid_variant_name", split[0]));
                   }
                   return Optional.empty();
@@ -424,17 +423,17 @@ public class ConfigScreen implements ModMenuApi {
     categoryTransfer.addEntry(
         entryBuilder
             .startStrList(
-                new TranslatableText("option.reasonable-sorting.custom_regex_transfer_rules"),
+                Text.translatable("option.reasonable-sorting.custom_regex_transfer_rules"),
                 config.regexTransferRules)
             .setTooltip(
-                new TranslatableText(
+                Text.translatable(
                     "option.reasonable-sorting.custom_regex_transfer_rules.tooltip"))
             .setExpanded(true)
             .setInsertInFront(false)
             .setAddButtonTooltip(
-                new TranslatableText("option.reasonable-sorting.custom_transfer_rules.add"))
+                Text.translatable("option.reasonable-sorting.custom_transfer_rules.add"))
             .setRemoveButtonTooltip(
-                new TranslatableText("option.reasonable-sorting.custom_transfer_rules.remove"))
+                Text.translatable("option.reasonable-sorting.custom_transfer_rules.remove"))
             .setCellErrorSupplier(
                 s -> {
                   if (s.isEmpty()) {
@@ -443,12 +442,12 @@ public class ConfigScreen implements ModMenuApi {
                   final String[] split = s.split("\\s+");
                   if (split.length > 2) {
                     return Optional.of(
-                        new TranslatableText(
+                        Text.translatable(
                             "option.reasonable-sorting.error.unexpected_text", split[2]));
                   }
                   if (split.length < 2) {
                     return Optional.of(
-                        new TranslatableText(
+                        Text.translatable(
                             "option.reasonable-sorting.error.group_name_expected"));
                   }
                   final String pattern = split[0];
@@ -457,21 +456,21 @@ public class ConfigScreen implements ModMenuApi {
                   } catch (PatternSyntaxException e) {
                     final int index = e.getIndex();
                     return Optional.of(
-                        new TranslatableText(
+                        Text.translatable(
                             "option.reasonable-sorting.error.invalid_regex",
                             e.getDescription(),
-                            new LiteralText("")
+                            Text.literal("")
                                 .append(pattern.substring(0, index))
                                 .append("»")
                                 .append(
-                                    new LiteralText(
-                                        index < pattern.length()
-                                            ? pattern.substring(index, index + 1)
-                                            : "")
+                                    Text.literal(
+                                            index < pattern.length()
+                                                ? pattern.substring(index, index + 1)
+                                                : "")
                                         .formatted(Formatting.DARK_RED))
                                 .append("«")
                                 .append(
-                                    new LiteralText(
+                                    Text.literal(
                                         index + 1 < pattern.length()
                                             ? pattern.substring(index + 1)
                                             : ""))));
@@ -491,18 +490,18 @@ public class ConfigScreen implements ModMenuApi {
           .addEntry(
               entryBuilder
                   .startStrList(
-                      new TranslatableText("option.reasonable-sorting.custom_shape_transfer_rules"),
+                      Text.translatable("option.reasonable-sorting.custom_shape_transfer_rules"),
                       config.shapeTransferRules)
                   .setDefaultValue(Collections.emptyList())
                   .setTooltip(
-                      new TranslatableText(
+                      Text.translatable(
                           "option.reasonable-sorting.custom_shape_transfer_rules.tooltip"))
                   .setExpanded(true)
                   .setInsertInFront(false)
                   .setAddButtonTooltip(
-                      new TranslatableText("option.reasonable-sorting.custom_transfer_rules.add"))
+                      Text.translatable("option.reasonable-sorting.custom_transfer_rules.add"))
                   .setRemoveButtonTooltip(
-                      new TranslatableText(
+                      Text.translatable(
                           "option.reasonable-sorting.custom_transfer_rules.remove"))
                   .setCellErrorSupplier(
                       s -> {
@@ -512,17 +511,17 @@ public class ConfigScreen implements ModMenuApi {
                         final String[] split = s.split("\\s+");
                         if (split.length > 2) {
                           return Optional.of(
-                              new TranslatableText(
+                              Text.translatable(
                                   "option.reasonable-sorting.error.unexpected_text", split[2]));
                         }
                         if (split.length < 2) {
                           return Optional.of(
-                              new TranslatableText(
+                              Text.translatable(
                                   "option.reasonable-sorting.error.group_name_expected"));
                         }
                         if (!ExtShapeBridge.isValidShapeName(split[0])) {
                           return Optional.of(
-                              new TranslatableText(
+                              Text.translatable(
                                   "option.reasonable-sorting.error.invalid_shape_name", split[0]));
                         }
                         return Optional.empty();
@@ -536,12 +535,12 @@ public class ConfigScreen implements ModMenuApi {
           .addEntry(
               entryBuilder
                   .startBooleanToggle(
-                      new TranslatableText(
+                      Text.translatable(
                           "option.reasonable-sorting.base_blocks_in_building_blocks"),
                       config.baseBlocksInBuildingBlocks)
                   .setDefaultValue(true)
                   .setTooltip(
-                      new TranslatableText(
+                      Text.translatable(
                           "option.reasonable-sorting.base_blocks_in_building_blocks.tooltip"))
                   .setSaveConsumer(
                       b -> {
