@@ -14,6 +14,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryEntry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import oshi.annotation.concurrent.Immutable;
@@ -37,27 +38,33 @@ public class MixinHelper implements ModInitializer {
    * 类似于 {@link #COMPILED_ITEM_GROUP_TRANSFER_RULES}，不过它是实时的、抽象的，在修改配置之后不需要重新编译。
    */
   @Immutable
-  public static final Map<Item, ImmutableCollection<ItemGroup>> ABSTRACT_ITEM_GROUP_TRANSFER_RULES =
+  public static final @Unmodifiable Map<Item, @Unmodifiable ImmutableCollection<ItemGroup>> ABSTRACT_ITEM_GROUP_TRANSFER_RULES =
       new AbstractMap<>() {
         @NotNull
         @Override
-        public Set<Entry<Item, ImmutableCollection<ItemGroup>>> entrySet() {
+        public @Unmodifiable ImmutableSet<Entry<Item, ImmutableCollection<ItemGroup>>> entrySet() {
           ImmutableSet.Builder<Entry<Item, ImmutableCollection<ItemGroup>>> builder =
               new ImmutableSet.Builder<>();
           for (Item item : Registry.ITEM) {
-            final @Nullable ImmutableCollection<ItemGroup> itemGroups = this.get(item);
-            if (itemGroups != null) builder.add(new SimpleImmutableEntry<>(item, itemGroups));
+            try {
+              final @Nullable ImmutableCollection<ItemGroup> itemGroups = this.get(item);
+              if (itemGroups != null) builder.add(new SimpleImmutableEntry<>(item, itemGroups));
+            } catch (ClassCastException ignore) {
+            }
           }
           return builder.build();
         }
 
         @Override
         @Nullable
-        public ImmutableCollection<ItemGroup> get(Object key) {
+        public @Unmodifiable ImmutableCollection<ItemGroup> get(Object key) {
           ImmutableCollection.Builder<ItemGroup> builder = new ImmutableList.Builder<>();
           for (Map<Item, ItemGroup> itemGroupTransferRule : ITEM_GROUP_TRANSFER_RULES) {
-            final @Nullable ItemGroup itemGroup = itemGroupTransferRule.get(key);
-            if (itemGroup != null) builder.add(itemGroup);
+            try {
+              final @Nullable ItemGroup itemGroup = itemGroupTransferRule.get(key);
+              if (itemGroup != null) builder.add(itemGroup);
+            } catch (ClassCastException ignore) {
+            }
           }
           final ImmutableCollection<ItemGroup> build = builder.build();
           return build.isEmpty() ? null : build;
@@ -67,8 +74,7 @@ public class MixinHelper implements ModInitializer {
    * 编译后的物品组转移规则。由单个物品映射到物品组集合（考虑到不同的设定可能导致同一个物品转移到多个物品组）。编译是为了加快读取速度，每一次修改配置都会重新编译一次。编译时会清空、重写此列表内容，不会更改此列表指针。
    */
   @Deprecated
-  public static final Map<Item, ImmutableCollection<ItemGroup>> COMPILED_ITEM_GROUP_TRANSFER_RULES =
-      new HashMap<>();
+  public static final HashMap<Item, ImmutableCollection<ItemGroup>> COMPILED_ITEM_GROUP_TRANSFER_RULES = new HashMap<>();
 
   public static final Logger LOGGER = LoggerFactory.getLogger("REASONABLE_SORTING");
 
@@ -104,9 +110,7 @@ public class MixinHelper implements ModInitializer {
         rules,
         item,
         action,
-        followingItem -> {
-          applyItemWithFollowings(rules, followingItem, action);
-        });
+        followingItem -> applyItemWithFollowings(rules, followingItem, action));
   }
 
   /**
@@ -115,8 +119,8 @@ public class MixinHelper implements ModInitializer {
   public static <T> Iterator<T> itemRegistryIterator(
       ObjectList<RegistryEntry.Reference<T>> rawIdToEntry, Collection<? extends Map<T, ? extends Collection<T>>> rules) {
     Set<T> list = new LinkedHashSet<>();
-    for (var reference : rawIdToEntry) {
-      var item = reference.value();
+    for (RegistryEntry.Reference<T> reference : rawIdToEntry) {
+      T item = reference.value();
       if (isCombinationFollower(item, rules)) continue;
       applyItemWithFollowings(rules, item, list::add);
     }
@@ -124,8 +128,8 @@ public class MixinHelper implements ModInitializer {
       LOGGER.error(
           "Error found when trying to iterate! The size of raw list ({}) does not equal to that of the refreshed list ({})!"
           , rawIdToEntry.size(), list.size());
-      for (var reference : rawIdToEntry) {
-        var item = reference.value();
+      for (RegistryEntry.Reference<T> reference : rawIdToEntry) {
+        T item = reference.value();
         if (!list.contains(item)) {
           LOGGER.error("Item {} is not in the refreshed list!", item);
         }
@@ -171,6 +175,7 @@ public class MixinHelper implements ModInitializer {
     }
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public void onInitialize() {
     // 从配置文件中加载配置。如果文件不存在，则会使用默认的。
     Configs.CONFIG_HOLDER.load();
@@ -196,7 +201,10 @@ public class MixinHelper implements ModInitializer {
             (Class<Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>>>) (Class) Supplier.class)) {
       final Supplier<? extends Collection<? extends Map<Item, ? extends Collection<Item>>>>
           entrypoint = entrypointContainer.getEntrypoint();
-      ITEM_SORTING_RULES.addAll(entrypoint.get());
+      try {
+        ITEM_SORTING_RULES.addAll(entrypoint.get());
+      } catch (ClassCastException ignore) {
+      }
     }
     LOGGER.info("{} rules are recognized!", ITEM_SORTING_RULES.size());
 
@@ -212,7 +220,10 @@ public class MixinHelper implements ModInitializer {
                     (Class) Supplier.class))) {
       final Supplier<? extends Collection<? extends Map<Item, ItemGroup>>> entrypoint =
           entrypointContainer.getEntrypoint();
-      ITEM_GROUP_TRANSFER_RULES.addAll(entrypoint.get());
+      try {
+        ITEM_GROUP_TRANSFER_RULES.addAll(entrypoint.get());
+      } catch (ClassCastException ignore) {
+      }
     }
 
     //        compileItemGroupTransferRules(ITEM_GROUP_TRANSFER_RULES);

@@ -2,6 +2,8 @@ package pers.solid.mod.mixin;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.UnmodifiableIterator;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemGroup;
@@ -19,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import pers.solid.mod.Configs;
 import pers.solid.mod.MixinHelper;
 
-@SuppressWarnings("AlibabaAbstractClassShouldStartWithAbstractNaming")
+@Environment(EnvType.CLIENT)
 @Mixin(CreativeInventoryScreen.class)
 public abstract class CreativeInventoryScreenMixin {
 
@@ -28,7 +30,9 @@ public abstract class CreativeInventoryScreenMixin {
   @Shadow
   public abstract void removed();
 
-  /** 将方法调用中的 <code>stack</code> 存储到此类的私有变量中以供 {@link #renderTooltipMixin} 使用。 */
+  /**
+   * 将方法调用中的 <code>stack</code> 存储到此类的私有变量中以供 {@link #renderTooltipMixin} 使用。
+   */
   @Inject(method = "renderTooltip", at = @At("HEAD"))
   public void sendStack(MatrixStack matrices, ItemStack stack, int x, int y, CallbackInfo ci) {
     this.stack = stack;
@@ -42,10 +46,7 @@ public abstract class CreativeInventoryScreenMixin {
    */
   @Redirect(
       method = "renderTooltip",
-      at =
-          @At(
-              value = "INVOKE",
-              target = "Lnet/minecraft/item/ItemGroup;getDisplayName()Lnet/minecraft/text/Text;"))
+      at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;getDisplayName()Lnet/minecraft/text/Text;"))
   public Text renderTooltipMixin(ItemGroup instance) {
     final @Nullable ImmutableCollection<ItemGroup> itemGroups =
         MixinHelper.ABSTRACT_ITEM_GROUP_TRANSFER_RULES.get(stack.getItem());

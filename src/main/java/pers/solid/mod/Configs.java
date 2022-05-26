@@ -2,6 +2,7 @@ package pers.solid.mod;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.ConfigHolder;
@@ -13,8 +14,10 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -34,57 +37,62 @@ public class Configs implements ConfigData {
   public static final Map<String, BlockFamily.Variant> NAME_TO_VARIANT =
       Arrays.stream(BlockFamily.Variant.values())
           .collect(Collectors.toMap(BlockFamily.Variant::getName, variant -> variant));
-  public static final Map<Item, Collection<Item>> CUSTOM_SORTING_RULES = new HashMap<>();
-  public static final Map<Item, ItemGroup> CUSTOM_TRANSFER_RULE = new LinkedHashMap<>();
-  public static final Map<BlockFamily.Variant, ItemGroup> CUSTOM_VARIANT_TRANSFER_RULE =
+  public static final HashMap<Item, Collection<Item>> CUSTOM_SORTING_RULES = new HashMap<>();
+  public static final LinkedHashMap<Item, ItemGroup> CUSTOM_TRANSFER_RULE = new LinkedHashMap<>();
+  public static final LinkedHashMap<BlockFamily.Variant, ItemGroup> CUSTOM_VARIANT_TRANSFER_RULE =
       new LinkedHashMap<>();
-  public static final Map<Item, ItemGroup> ABSTRACT_CUSTOM_VARIANT_TRANSFER_RULE =
-      new AbstractMap<>() {
-        @Override
-        public Set<Entry<Item, ItemGroup>> entrySet() {
-          return (Registry.ITEM.stream()
-              .map(item -> new SimpleImmutableEntry<>(item, get(item)))
-              .filter(entry -> Objects.nonNull(entry.getValue()))
-              .collect(Collectors.toUnmodifiableSet()));
-        }
+  public static final @Unmodifiable Map<Item, ItemGroup> ABSTRACT_CUSTOM_VARIANT_TRANSFER_RULE = new AbstractMap<>() {
+    @Override
+    public @Unmodifiable Set<Entry<Item, ItemGroup>> entrySet() {
+      return (Registry.ITEM.stream()
+          .map(item -> new SimpleImmutableEntry<>(item, get(item)))
+          .filter(entry -> Objects.nonNull(entry.getValue()))
+          .collect(Collectors.toUnmodifiableSet()));
+    }
 
-        @Override
-        public ItemGroup get(Object key) {
-          if (!(key instanceof BlockItem)) {
-            return null;
-          }
-          for (BlockFamily blockFamily : BlockFamilyRule.BASE_BLOCKS_TO_FAMILIES.values()) {
-            for (Entry<BlockFamily.Variant, ItemGroup> entry :
-                CUSTOM_VARIANT_TRANSFER_RULE.entrySet()) {
-              final BlockFamily.Variant variant = entry.getKey();
-              if (blockFamily.getVariant(variant) == ((BlockItem) key).getBlock()) {
-                return entry.getValue();
-              }
+    @Override
+    public ItemGroup get(Object key) {
+      if (!(key instanceof BlockItem)) {
+        return null;
+      }
+      for (BlockFamily blockFamily : BlockFamilyRule.BASE_BLOCKS_TO_FAMILIES.values()) {
+        for (Entry<BlockFamily.Variant, ItemGroup> entry :
+            CUSTOM_VARIANT_TRANSFER_RULE.entrySet()) {
+          try {
+            final BlockFamily.Variant variant = entry.getKey();
+            if (blockFamily.getVariant(variant) == ((BlockItem) key).getBlock()) {
+              return entry.getValue();
             }
+          } catch (ClassCastException ignore) {
           }
-          return null;
         }
+      }
+      return null;
+    }
 
-        @Override
-        public boolean containsKey(Object key) {
-          return get(key) == null;
-        }
-      };
-  public static final Map<Pattern, ItemGroup> CUSTOM_REGEX_TRANSFER_RULE = new LinkedHashMap<>();
-  public static final Map<Item, ItemGroup> ABSTRACT_CUSTOM_REGEX_TRANSFER_RULE =
+    @Override
+    public boolean containsKey(Object key) {
+      return get(key) == null;
+    }
+  };
+  public static final LinkedHashMap<Pattern, ItemGroup> CUSTOM_REGEX_TRANSFER_RULE = new LinkedHashMap<>();
+  public static final @Unmodifiable Map<Item, ItemGroup> ABSTRACT_CUSTOM_REGEX_TRANSFER_RULE =
       new AbstractMap<>() {
         @Override
         public ItemGroup get(Object key) {
           if (key instanceof Item) {
-            final Identifier id = Registry.ITEM.getId((Item) key);
-            if (id == Registry.ITEM.getDefaultId()) {
-              return null;
-            }
-            final String idString = id.toString();
-            for (Entry<Pattern, ItemGroup> entry : CUSTOM_REGEX_TRANSFER_RULE.entrySet()) {
-              if (entry.getKey().matcher(idString).matches()) {
-                return entry.getValue();
+            try {
+              final Identifier id = Registry.ITEM.getId((Item) key);
+              if (id == Registry.ITEM.getDefaultId()) {
+                return null;
               }
+              final String idString = id.toString();
+              for (Entry<Pattern, ItemGroup> entry : CUSTOM_REGEX_TRANSFER_RULE.entrySet()) {
+                if (entry.getKey().matcher(idString).matches()) {
+                  return entry.getValue();
+                }
+              }
+            } catch (ClassCastException ignore) {
             }
           }
           return null;
@@ -108,17 +116,18 @@ public class Configs implements ConfigData {
           for (Item item : Registry.ITEM) {
             final ItemGroup itemGroup = get(item);
             if (itemGroup != null) {
-              builder.add(new SimpleImmutableEntry<>(item, itemGroup));
+              try {
+                builder.add(new SimpleImmutableEntry<>(item, itemGroup));
+              } catch (ClassCastException ignore) {
+              }
             }
           }
           return builder.build();
         }
       };
   /**
-   *
-   *
    * <h2>排序部分</h2>
-   *
+   * <p>
    * 是否启用排序。如果该项为 {@code false}，则所有的排序都会按照原版进行。
    */
   public boolean enableSorting = true;
@@ -144,7 +153,9 @@ public class Configs implements ConfigData {
    * @see Configs#updateVariantsFollowingBaseBlocks
    */
   public String variantsFollowingBaseBlocks = "stairs slab";
-  /** 受排序规则影响的 ExtShape 模组中的方块变种。 */
+  /**
+   * 受排序规则影响的 ExtShape 模组中的方块变种。
+   */
   public String shapesFollowingBaseBlocks = "*";
   /**
    * 栅栏门紧随栅栏。需要注意的是，该项需要和 {@link #fenceGatesInDecorations} 搭配使用。
@@ -153,10 +164,8 @@ public class Configs implements ConfigData {
    */
   public boolean fenceGateFollowsFence = true;
   /**
-   *
-   *
    * <h2>物品组转移部分</h2>
-   *
+   * <p>
    * 是否启用物品组转移。如果该项为 <code>false</code>，则所有的物品组转移都会按照原版进行。
    */
   public boolean enableGroupTransfer = true;
@@ -205,16 +214,20 @@ public class Configs implements ConfigData {
    * @see Configs#updateCustomRegexTransferRules
    */
   public List<String> regexTransferRules = new ArrayList<>();
-  /** 用于 Extended Block Shapes 模组。 */
+  /**
+   * 用于 Extended Block Shapes 模组。
+   */
   public List<String> shapeTransferRules = new ArrayList<>();
-  /** 将蜜脾、菌光体等基础方块移至建筑方块 */
+  /**
+   * 将蜜脾、菌光体等基础方块移至建筑方块
+   */
   public boolean baseBlocksInBuildingBlocks = true;
 
-  public static Collection<Map<Item, Collection<Item>>> getCustomSortingRules() {
+  public static @Unmodifiable Collection<HashMap<Item, Collection<Item>>> getCustomSortingRules() {
     return Collections.singleton(CUSTOM_SORTING_RULES);
   }
 
-  public static Collection<Map<Item, ItemGroup>> getCustomTransferRules() {
+  public static @Unmodifiable Collection<Map<Item, ItemGroup>> getCustomTransferRules() {
     return ImmutableList.of(
         CUSTOM_TRANSFER_RULE,
         ABSTRACT_CUSTOM_VARIANT_TRANSFER_RULE,
@@ -240,15 +253,15 @@ public class Configs implements ConfigData {
         .forEach(BlockFamilyRule.AFFECTED_VARIANTS::add);
   }
 
-  public static void updateCustomSortingRules(
-      List<String> list, Map<Item, Collection<Item>> mutableMap) {
+  @Contract(mutates = "param2")
+  public static void updateCustomSortingRules(List<String> list, Map<Item, Collection<Item>> mutableMap) {
     mutableMap.clear();
     for (String s : list) {
-      final var split = new ArrayList<>(Arrays.asList(s.split("\\s+")));
+      final ArrayList<String> split = Lists.newArrayList(s.split("\\s+"));
       if (split.size() < 1) {
         continue;
       }
-      var key = Identifier.tryParse(split.remove(0));
+      Identifier key = Identifier.tryParse(split.remove(0));
       if (key == null) {
         continue;
       }
@@ -264,8 +277,8 @@ public class Configs implements ConfigData {
     }
   }
 
-  public static void updateCustomRegexTransferRules(
-      List<String> list, Map<Pattern, ItemGroup> mutableMap) {
+  @Contract(mutates = "param2")
+  public static void updateCustomRegexTransferRules(List<String> list, Map<Pattern, ItemGroup> mutableMap) {
     mutableMap.clear();
     for (String s : list) {
       try {
@@ -275,15 +288,14 @@ public class Configs implements ConfigData {
         }
         final Pattern compile = Pattern.compile(split[0]);
         final ItemGroup group = getGroupFromId(split[1]);
-        CUSTOM_REGEX_TRANSFER_RULE.put(
-            Objects.requireNonNull(compile), Objects.requireNonNull(group));
+        CUSTOM_REGEX_TRANSFER_RULE.put(Objects.requireNonNull(compile), Objects.requireNonNull(group));
       } catch (NullPointerException | PatternSyntaxException ignored) {
       }
     }
   }
 
-  public static void updateCustomVariantTransferRules(
-      List<String> list, Map<BlockFamily.Variant, ItemGroup> mutableMap) {
+  @Contract(mutates = "param2")
+  public static void updateCustomVariantTransferRules(List<String> list, Map<BlockFamily.Variant, ItemGroup> mutableMap) {
     mutableMap.clear();
     for (String s : list) {
       try {
@@ -300,6 +312,7 @@ public class Configs implements ConfigData {
     }
   }
 
+  @Contract(mutates = "param2")
   public static void updateCustomTransferRule(List<String> list, Map<Item, ItemGroup> mutableMap) {
     for (String s : list) {
       mutableMap.clear();
