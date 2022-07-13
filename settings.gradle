@@ -1,30 +1,12 @@
 pluginManagement {
     repositories {
-
-        // 存放 fabricloomCN 的主仓库
-        maven {
-            name = 'Iced\'s loom maven'
-            url = 'https://maven.icedlab.tech/loom/'
-        }
-
-        // 存放 fabricloomCN 的代理仓库
-        maven {
-            name = 'Hanbing\'s proxy maven'
-            url = 'https://repository.hanbings.io/proxy/'
-        }
-
-        maven {
-            name = 'BMCLAPI'
-            url = 'https://bmclapi2.bangbang93.com/maven'
-        }
-
-        // fabricloom 原版的仓库
-        maven {
-            name = 'Fabric'
-            url = 'https://maven.fabricmc.net/'
-        }
-
-        // 其余插件所存放的仓库
+        maven { url "https://bmclapi2.bangbang93.com/maven/" }
+        maven { url "https://maven.fabricmc.net/" }
+        maven { url "https://maven.architectury.dev/" }
+        maven { url "https://maven.minecraftforge.net/" }
         gradlePluginPortal()
     }
 }
+
+include "common", "fabric", "forge", "quilt"
+rootProject.name = "reasonable-sorting"
