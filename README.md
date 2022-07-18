@@ -10,7 +10,7 @@ If you do not understand Chinese, you can read [English version](README-en.md).
 
 本模组的 Fabric 版本**依赖 Fabric API 和 Cloth Config 模组**，如果不安装这些模组将无法运行。此外**建议安装 Mod Menu 模组**以进行配置。（已经安装了上述模组的不要重复安装。另外，部分模组，如 Bedrockify、Edit Sign、Better F3 可能会内置 Cloth Config 模组，这些情况下可以不再单独安装 Cloth Config。）
 
-本模组的 Quilt 版本依赖 Quilt Standard Libraries，不依赖 Cloth Config，暂无配置界面，但是可以手动修改位于 `config/reasonable-sorting.json` 的配置文件并重启游戏。
+本模组的 Quilt 版本依赖 Quilt Standard Libraries，不依赖 Cloth Config，暂无配置界面，但是可以手动修改位于 `config/reasonable-sorting.json` 的配置文件并重启游戏。Minecraft 1.18.1 以下版本没有 Quilt Stand Libraries，故不依赖。如果 Quilt 版本出现问题，请尝试使用 Fabric 版本的模组代替。
 
 自 2.0.0 版本开始，本模组不再与 1.5.2 以下的扩展方块形状（Extended Block Shapes）模组联动（当然也不会冲突）。请等待扩展方块形状模组的新版本。
 
@@ -38,13 +38,17 @@ If you do not understand Chinese, you can read [English version](README-en.md).
 
 Minecraft 中，很多方块都具有其**变种**，例如橡木木板的“楼梯”变种为橡木楼梯，“台阶”变种为橡木台阶等等，也就是说，橡木木板是橡木楼梯、橡木台阶等方块的**基础方块**。你可以指定一些变种类型使之排在基础方块后面。
 
-默认语法为多个方块变种名称用空格隔开。可用的方块变种名称会在模组配置界面显示。默认为 `stairs slab` ，也就是说所有的楼梯、台阶会依次排在其基础方块后面。
+默认语法为多个方块变种名称用空格隔开。可用的方块变种名称会在模组配置界面显示。默认为 `stairs slab`，也就是说所有的楼梯、台阶会依次排在其基础方块后面。
 
 需要注意的是，改变物品排序并不会改变物品所在的物品组。如要改变物品组，还需要设置**变种转移规则**。
 
 **栅栏门紧随栅栏**
 
 默认开启。将会使栅栏门方块紧跟在栅栏方块的后面。需要开启**栅栏门移至装饰性方块**，否则这些栅栏门仍会出现在“红石”物品组中，不会起到效果。
+
+**仅限方块物品**
+
+默认关闭。关闭时，无论是方块，还是物品形式的方块（也就是方块物品，其本质为物品），都会受到本模组的排序规则的影响。若开启，则只有方块物品会受影响，方块是不受影响的。也就是说，若开启，那么创造模式物品栏仍受本模组影响，但调试模式世界中的方块仍然按照原版排序。
 
 ### 物品组转移
 
@@ -64,7 +68,7 @@ Minecraft 中，很多方块都具有其**变种**，例如橡木木板的“楼
 
 **自定义物品转移规则**
 
-默认为空。和自定义排序规则一样，一行一条规则，点击“+”新增一条规则。每条规则的语法是：物品id + 空格 + 需要移至的物品组。例如 `redstone_block building_blocks`就会将红石块移至“建筑方块”（建材）物品组。
+默认为空。和自定义排序规则一样，一行一条规则，点击“+”新增一条规则。每条规则的语法是：物品id + 空格 + 需要移至的物品组。例如 `redstone_block building_blocks` 就会将红石块移至“建筑方块”（建材）物品组。
 
 **自定义变种转移规则**
 

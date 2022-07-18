@@ -10,7 +10,7 @@ Besides, this mod allows you to change the item groups to which items belong.
 
 The Fabric version of this mod **depends on Fabric API and Cloth Config mod**, without which this mod cannot work. Besides, **it's recommended to install Mod Menu** to configure. (If you have installed these mod please do not install duplicate ones. Moreover, some mods, like Bedrockify, Edit Sign, Better F3 may include nested Cloth Config mod. In these cases you do not need to install separately Cloth Config).
 
-The Quilt version of this mod relies on Quilt Standard Libraries but does not rely on Cloth Confi. There is no config screen now, but you can manually modify the config located at `config/reasonable-sorting.json` and restart the game.
+The Quilt version of this mod relies on Quilt Standard Libraries but does not rely on Cloth Config. There is no config screen now, but you can manually modify the config located at `config/reasonable-sorting.json` and restart the game. Minecraft versions 1.18.1 and below have no Quilt Stand Libraries, in this case it is not depended. If you find issues with Quilt version, you may substitute with Fabric version.
 
 Since version 2.0.0, this mod does not work with Extended Block Shapes mod of version 1.5.2 or lower (yet still no conflict). Please wait for newer versions of Extended Block Shapes mod.
 
@@ -45,6 +45,10 @@ Take notice that changing item sorting does not affect which item group they bel
 **Fence gate follows fence**
 
 ON by default. Makes all fence gate blocks follow their corresponding fence blocks. Requires **Fence gates in decorations** otherwise their still appear in "Redstone" item group and does not take effect.
+
+**Block items only**
+
+OFF by default. When OFF, both blocks and blocks in item forms (aka block items, which are in essence items) are influenced by the sorting rules of this mod. When ON, only block items are affected, while block are not. In other words, when ON, the Creative Inventory is affected by mod, but blocks in Debug Mode are sorted as vanilla behaviour.
 
 ### Item group transfer
 
