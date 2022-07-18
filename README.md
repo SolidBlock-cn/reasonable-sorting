@@ -8,7 +8,13 @@ If you do not understand Chinese, you can read [English version](README-en.md).
 
 此外，本模组还提供修改物品所在物品组的功能。
 
-本模组基于 Fabric，且**依赖 Fabric API 和 Cloth Config 模组**，如果不安装这些模组将无法运行。此外**建议安装 Mod Menu 模组**以进行配置。（已经安装了上述模组的不要重复安装。另外，部分模组，如 Bedrockify、Edit Sign、Better F3可能会内置 Cloth Config 模组，这些情况下可以不再单独安装 Cloth Config。）
+本模组的 Fabric 版本**依赖 Fabric API 和 Cloth Config 模组**，如果不安装这些模组将无法运行。此外**建议安装 Mod Menu 模组**以进行配置。（已经安装了上述模组的不要重复安装。另外，部分模组，如 Bedrockify、Edit Sign、Better F3 可能会内置 Cloth Config 模组，这些情况下可以不再单独安装 Cloth Config。）
+
+本模组的 Quilt 版本依赖 Quilt Standard Libraries，不依赖 Cloth Config，暂无配置界面，但是可以手动修改位于 `config/reasonable-sorting.json` 的配置文件并重启游戏。
+
+自 2.0.0 版本开始，本模组不再与 1.5.2 以下的扩展方块形状（Extended Block Shapes）模组联动（当然也不会冲突）。请等待扩展方块形状模组的新版本。
+
+注意：本模组正在开发 Forge 的版本。
 
 ## 配置
 
@@ -72,24 +78,14 @@ Minecraft 中，很多方块都具有其**变种**，例如橡木木板的“楼
 
 物品排序的实质是“指定一个领队物品和多个跟随物品，这些跟随物品将会跟随在领队物品的后面”。举个例子，对于规则 `dirt white_wool diamond_block`，泥土将会是领队物品，白色羊毛和钻石块将会跟随在泥土后面，而不再出现在原来的位置。
 
-一个物品不能同时跟随多个物品，如果有，则只会跟随其中的一个。例如如果同时指定了 `dirt white_wool` 和 `grass_block white_wool` 两个规则，那么白色羊毛只会出现在泥土和草方块二者**其中一个**的后面。也就是说，物品**不会重复出现**。这种情况应当避免，因为可能导致游戏不认识该物品，导致出现物品纹理、模型缺失等异常情况。
+一个物品不能同时跟随多个物品，如果有，则只会跟随其中的一个。例如如果同时指定了 `dirt white_wool` 和 `grass_block white_wool` 两个规则，那么白色羊毛只会出现在泥土和草方块二者**其中一个**的后面。也就是说，物品**不会重复出现**。
 
 物品**可以嵌套跟随**。例如，默认情况下，根据“紧随基础方块的方块变种”规则，橡木楼梯和橡木台阶会跟随在橡木木板后面，而根据“默认物品排序规则”，石化橡木台阶会跟随在橡木台阶后面。这样，物品栏中将会出现“橡木木板-橡木楼梯-橡木台阶-石化橡木台阶”的组合。
 
-物品**不能够互相跟随、循环跟随**。例如，如果同时设置了 `dirt white_wool` 和 `white_wool dirt`两条规则，则泥土和白色羊毛可能都不会出现（游戏日志中将会记录错误），有可能还会导致死循环。因此，应当避免这种情况。
+物品**不能够互相跟随、循环跟随**。例如，如果同时设置了 `dirt white_wool` 和 `white_wool dirt` 两条规则，则泥土和白色羊毛可能都不会出现（游戏日志中将会记录错误），有可能还会导致死循环。因此，应当避免这种情况。
 
-关于物品组转移，转移后的物品将会不再出现在此物品组。如果多条规则同时适用于同一个物品，则可能会是个一个物品出现在多个物品组，但是这通常是少见的情况，一般不需要考虑。需要注意：目前在自定义规则中，还不能把一个物品同时转移到多个组中，例如如果设置了 `redstone_block transportation`和 `redstone_block misc`，则红石块只会转移到“交通运输”和“杂项”中的一个。
+关于物品组转移，转移后的物品将会不再出现在此物品组。但是，一个物品可以转移至多组。
 
 ## 开发
 
-本模组可以识别其他模组的物品排序规则和物品组转移规则。你不需要在你的模组中使用本模组代码，甚至不需要修改 `build.gradle`，~~因为这东西我也不懂~~。
-
-如需让本模组使用你自己的物品排序规则，让你的类实现 `Supplier<Collection<Map<Item, Collection<Item>>>>` 并覆盖 `get` 方法，然后将该类添加到 `fabric.mod.json` 的 `reasonable-sorting:item_sorting_rules` 入口点中即可。你也可以直接将静态方法添加到该入口点中。
-
-该方法需要返回一个集合（collection），其元素是物品到物品集合的映射。需要注意的是，该集合会在游戏初始化时复制到模组内部的变量中，因此如果你在游戏初始化之后增删此集合内的元素不会达到效果。但是集合内的元素不会被复制，而是直接相同指针传到本模组内部。
-
-所以，如果你通过访问你的模组配置来决定是否在返回的集合中包含某个特定的元素，将会出现问题，因为游戏初始化之后再修改有关配置并不会使得相关修改生效。你可以在加载和更新配置的时候，清空或填充集合元素而不改变其指针，或直接使用 `ForwardingMap`，通过配置来决定其 `delegate`。
-
-如需让模组使用你自己的物品组转移规则，让你的类实现 `Supplier<Collection<Map<Item, ItemGroup>>>` 即可，并覆盖 `get` 方法，然后将该类添加到 `reasonable-sorting:item_group_transfer_rules` 入口点中即可。你也可以直接将静态方法添加到该入口点中。
-
-如果你还是不懂，你可以参考本模组的代码。
+使用 `SortingRule.addSortingRule` 方法可以添加一条排序规则。使用 `SortingRule.addConditionalSortingRule` 可以添加一个只在特定条件下的排序规则。类似地，物品组转移规则可以使用 `TransferRule.addTransferRule` 或 `TransferRule.addConditionalTransferRule` 添加。
