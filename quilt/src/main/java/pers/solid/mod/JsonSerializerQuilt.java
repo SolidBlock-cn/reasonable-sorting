@@ -1,6 +1,5 @@
 package pers.solid.mod;
 
-import com.google.gson.Gson;
 import org.quiltmc.config.api.Config;
 import org.quiltmc.config.api.Serializer;
 import org.quiltmc.config.api.exceptions.ConfigParseException;
@@ -15,7 +14,6 @@ import java.io.OutputStreamWriter;
 import java.util.Map;
 
 public class JsonSerializerQuilt implements Serializer {
-  private static final Gson GSON = new Gson();
 
   @Override
   public String getFileExtension() {
