@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "reasonable-sorting",
+  "version": "1.5",
+  "name": "Reasonable Sorting",
+  "description": "Sorts blocks and items in the creative inventory reasonably.",
+  "authors": [
+    "SolidBlock"
+  ],
+  "contact": {
+    "homepage": "https://space.bilibili.com/87328531",
+    "sources": "https://github.com/SolidBlock-cn/reasonable-sorting",
+    "issues": "https://github.com/SolidBlock-cn/reasonable-sorting/issues"
+  },
+
+  "license": "LGPLv3",
+  "icon": "assets/reasonable-sorting/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "pers.solid.mod.ReasonableSortingFabric"
+    ],
+    "modmenu": [
+      "pers.solid.mod.ConfigScreen"
+    ]
+  },
+  "mixins": [
+    "reasonable-sorting.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.11.3",
+    "fabric": "*",
+    "minecraft": ">=1.18.2",
+    "java": ">=17",
+    "cloth-config2": ">4.9.0"
+  },
+  "recommends": {
+    "modmenu": "*"
+  }
+}
