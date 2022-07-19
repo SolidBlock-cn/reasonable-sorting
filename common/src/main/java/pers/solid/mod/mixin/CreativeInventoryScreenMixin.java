@@ -7,6 +7,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,6 +19,7 @@ import pers.solid.mod.TransferRule;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.stream.Collectors;
 
 @Mixin(CreativeInventoryScreen.class)
 public abstract class CreativeInventoryScreenMixin {
@@ -44,9 +46,9 @@ public abstract class CreativeInventoryScreenMixin {
   @Redirect(method = "renderTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;getTranslationKey()Lnet/minecraft/text/Text;"))
   public Text renderTooltipMixin(ItemGroup instance) {
     final Collection<ItemGroup> itemGroups =
-        TransferRule.streamTransferredGroupOf(stack.getItem()).toList();
+        TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toList());
     if (Configs.instance.enableGroupTransfer && !itemGroups.isEmpty()) {
-      MutableText text = new LiteralText("").styled(style -> style.withColor(0x88ccff));
+      MutableText text = new LiteralText("").styled(style -> style.withColor(TextColor.fromRgb(0x88ccff)));
       for (Iterator<ItemGroup> iterator = itemGroups.iterator(); iterator.hasNext(); ) {
         ItemGroup itemGroup = iterator.next();
         text.append(itemGroup.getTranslationKey());

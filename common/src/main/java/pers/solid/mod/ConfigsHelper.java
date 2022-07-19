@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 /**
  * 核查模组选项里的字符串形式配置并用于更新相应集合内容的实用类。
@@ -71,7 +72,7 @@ public final class ConfigsHelper {
                 .map(Identifier::tryParse)
                 .filter(Bridge::itemIdExists)
                 .map(Bridge::getItemById)
-                .toList());
+                .collect(Collectors.toList()));
       }
     }
   }
@@ -134,7 +135,7 @@ public final class ConfigsHelper {
         Arrays.stream(split)
             .filter(StringUtils::isNotEmpty)
             .filter(s1 -> Identifier.tryParse(s1) == null)
-            .toList();
+            .collect(Collectors.toList());
     return !invalids.isEmpty()
         ? Optional.of(new TranslatableText("option.reasonable-sorting.error.invalid_identifier",
         String.join(" ", invalids)))
@@ -165,7 +166,7 @@ public final class ConfigsHelper {
         Arrays.stream(s.split("\\s+"))
             .filter(StringUtils::isNotEmpty)
             .filter(s2 -> !ExtShapeBridge.INSTANCE.isValidShapeName(s2))
-            .toList();
+            .collect(Collectors.toList());
     return invalids.isEmpty()
         ? Optional.empty()
         : Optional.of(

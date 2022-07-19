@@ -6,7 +6,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,9 +20,9 @@ public class ReasonableSortingForge {
       .define("reasonable-sorting.enable_default_item_sorting_rules", false)
       .next()
       .define("reasonable-sorting.custom_sorting_rules", new ArrayList<String>(), o -> {
-        if (o instanceof Iterable iterable) {
-          for (Object o1 : iterable) {
-            if (o1 instanceof String s1 && ConfigsHelper.validateCustomSortingRule(s1).isEmpty()) continue;
+        if (o instanceof Iterable) {
+          for (Object o1 : ((Iterable<?>) o)) {
+            if (o1 instanceof String && !ConfigsHelper.validateCustomSortingRule((String) o1).isPresent()) continue;
             return false;
           }
           return true;
@@ -45,7 +44,7 @@ public class ReasonableSortingForge {
   }
 
   @SubscribeEvent
-  public static void loadConfig(ModConfigEvent.Loading event) {
+  public static void loadConfig(ModConfig.Loading event) {
     final ModConfig config = event.getConfig();
     final CommentedConfig configData = config.getConfigData();
     if (config.getSpec() != CONFIG) return;

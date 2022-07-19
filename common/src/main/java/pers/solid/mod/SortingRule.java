@@ -8,10 +8,10 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.util.registry.SimpleRegistry;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
@@ -46,7 +46,7 @@ public interface SortingRule<T> {
   Multimap<RegistryKey<?>, SortingRule<?>> RULES = HashMultimap.create();
 
   @ApiStatus.Internal
-  Logger LOGGER = LoggerFactory.getLogger(SortingRules.class);
+  Logger LOGGER = LogManager.getLogger(SortingRules.class);
 
   /**
    * 添加一个规则。迭代注册表时就会应用到此规则。
