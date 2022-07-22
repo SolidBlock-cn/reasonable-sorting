@@ -7,37 +7,45 @@
     "group": "${group}",
     "id": "reasonable-sorting",
     "version": "${version}",
-    "name": "Reasonable Sorting",
-    "description": "Sorts blocks and items in the creative inventory reasonably.",
-    "authors": ["SolidBlock"],
-    "contact": {
-      "sources": "https://github.com/SolidBlock-cn/reasonable-sorting"
+    "metadata": {
+      "name": "Reasonable Sorting",
+      "description": "Sorts blocks and items in the creative inventory reasonably.",
+      "authors": ["SolidBlock"],
+      "contributors": {
+        "SolidBlock": "Mod author"
+      },
+      "contact": {
+        "homepage": "https://space.bilibili.com/87328531",
+        "sources": "https://github.com/SolidBlock-cn/reasonable-sorting",
+        "issues": "https://github.com/SolidBlock-cn/reasonable-sorting/issues"
+      },
+      "license": "LGPL-3.0",
+      "icon": "assets/reasonable-sorting/icon.png"
     },
-    "license": "LGPLv3",
-    "icon": "assets/reasonable-sorting/icon.png",
     "intermediate_mappings": "net.fabricmc:intermediary",
     "environment": "*",
     "entrypoints": {
       "init": [
-        "pers.solid.mod.ReasonableSortingQuilt"
+        "pers.solid.mod.quilt.ReasonableSortingQuilt"
       ],
       "modmenu": [
-        "pers.solid.mod.ConfigScreen"
+        "pers.solid.mod.quilt.ReasonableSortingQuilt"
       ]
     },
     "depends": [
-      {
-        "id": "quilt_loader",
-        "version": "*"
-      },
-      {
-        "id": "quilt_base",
-        "version": "*"
-      },
+      "quilt_loader",
+      "quilt_base",
       {
         "id": "minecraft",
         "version": ">=1.18.2"
+      },
+      {
+        "id": "cloth-config2",
+        "version": ">=5.0.0"
       }
+    ],
+    "recommends": [
+      "modmenu"
     ]
   }
 }
