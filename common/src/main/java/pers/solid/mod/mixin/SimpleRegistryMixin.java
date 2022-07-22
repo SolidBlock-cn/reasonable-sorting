@@ -28,7 +28,7 @@ public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> {
   }
 
   @Inject(method = "iterator", at = @At("HEAD"), cancellable = true)
-  private void itemIterator(CallbackInfoReturnable<Iterator<T>> cir) {
+  private void reasonableSortedIterator(CallbackInfoReturnable<Iterator<T>> cir) {
     final Iterator<T> iterator = SortingRule.iteratorOfRegistry(getKey(), rawIdToEntry);
     if (iterator != null) {
       cir.setReturnValue(iterator);

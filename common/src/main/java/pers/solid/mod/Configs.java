@@ -5,11 +5,20 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.ConfigData;
+import me.shedaniel.autoconfig.ConfigHolder;
+import me.shedaniel.autoconfig.annotation.Config;
+import me.shedaniel.autoconfig.event.ConfigSerializeEvent;
+import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.minecraft.block.Block;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.util.ActionResult;
 import org.jetbrains.annotations.Unmodifiable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,11 +26,10 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * 此模组的配置储存。考虑到模组在不同的平台对配置的使用有所不同，因此不同平台的模组继承此类，并各自替换 {@link #instance} 字段。
- *
- * @author SolidBlock
+ * 此模组的配置储存。考虑到模组在不同的平台对配置的使用有所不同，因此不同平台的模组继承此类，并各自替换 {@link #instance} 字段。本模组使用 Auto Config 进行配置文件的读取与保存，但是配置界面仍是通过 Cloth Config 进行手动创建的。
  */
-public class Configs {
+@Config(name = "reasonable-sorting")
+public class Configs implements ConfigData {
   /**
    * 由方块变种名称到方块变种的不可变映射。模组配置时，可能需要使用方块变种的名称。
    */
@@ -62,10 +70,7 @@ public class Configs {
    * @see #variantsFollowingBaseBlocks
    */
   public static final ArrayList<BlockFamily.Variant> VARIANTS_FOLLOWING_BASE_BLOCKS = Lists.newArrayList(BlockFamily.Variant.STAIRS, BlockFamily.Variant.SLAB);
-  /**
-   * 这个配置的实例。初始为默认值，当加载和保存配置时，可能将本字段更改为其他的实例。
-   */
-  public static Configs instance = new Configs();
+  public static final ConfigHolder<Configs> CONFIG_HOLDER = AutoConfig.register(Configs.class, GsonConfigSerializer::new);
 
   /*
 
@@ -183,4 +188,40 @@ public class Configs {
    * 用于 Extended Block Shapes 模组，将蜜脾、菌光体等基础方块移至建筑方块。没有安装此模组时，此字段仍会正常加载和保存，但是不会显示在配置屏幕中。
    */
   public boolean baseBlocksInBuildingBlocks = true;
+  private static final Logger LOGGER = LoggerFactory.getLogger("ReasonableSorting Configs");
+  /**
+   * 这个配置的实例。通常这个值应该为 {@link ConfigHolder#getConfig()} 返回的结果。当被修改时，这个字段也相应修改。初始值为新的实例，然后再会在 {@link #loadAndUpdate()} 中替换。
+   */
+  public static Configs instance = new Configs();
+
+  public static void loadAndUpdate() {
+    // 初始化时先手动设置，之后在每次更新和保存时，都会在 listener 中自动更新这个字段的值。
+    Configs.instance = CONFIG_HOLDER.getConfig();
+
+    final ConfigSerializeEvent.Load<Configs> update = (configHolder, configs) -> {
+      ConfigsHelper.updateCustomSortingRules(configs.customSortingRules, Configs.CUSTOM_ITEM_SORTING_RULES);
+      ConfigsHelper.updateCustomTransferRule(configs.transferRules, Configs.CUSTOM_TRANSFER_RULE);
+      ConfigsHelper.updateCustomRegexTransferRules(configs.regexTransferRules, Configs.CUSTOM_REGEX_TRANSFER_RULE);
+      ConfigsHelper.updateCustomVariantTransferRules(configs.variantTransferRules, Configs.CUSTOM_VARIANT_TRANSFER_RULE);
+      ConfigsHelper.updateVariantsFollowingBaseBlocks(configs.variantsFollowingBaseBlocks, Configs.VARIANTS_FOLLOWING_BASE_BLOCKS);
+      ExtShapeBridge.INSTANCE.updateShapeList(configs.shapesFollowingBaseBlocks);
+      ExtShapeBridge.INSTANCE.updateShapeTransferRules(configs.shapeTransferRules);
+      return ActionResult.PASS;
+    };
+    CONFIG_HOLDER.registerLoadListener((configHolder, configs) -> {
+      Configs.instance = configs;
+      LOGGER.info("Loading Reasonable Sorting configs.");
+      update.onLoad(configHolder, configs);
+      return ActionResult.SUCCESS;
+    });
+
+    // ConfigManager 在构造的时候就会调用一次 load，但是当时还是没有注册 loadListener 的，因此需要手动调用一次。
+    update.onLoad(CONFIG_HOLDER, Configs.instance);
+
+    CONFIG_HOLDER.registerSaveListener((configHolder, configs) -> {
+      Configs.instance = configs;
+      LOGGER.info("Saving Reasonable Sorting configs.");
+      return ActionResult.SUCCESS;
+    });
+  }
 }

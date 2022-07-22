@@ -14,6 +14,10 @@ public class BridgeImpl {
   }
 
   public static boolean itemIdExists(Identifier identifier) {
-    return Registry.ITEM.containsId(identifier);
+    final boolean b = Registry.ITEM.containsId(identifier);
+    if (!b) {
+      ReasonableSortingFabric.LOGGER.warn("Unidentified item id: {}. This may be because the configuration is loaded before item is registered.", identifier);
+    }
+    return b;
   }
 }

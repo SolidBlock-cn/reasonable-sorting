@@ -1,10 +1,10 @@
 modLoader = "javafml"
 loaderVersion = "[38,)"
 issueTrackerURL = "https://github.com/SolidBlock-cn/reasonable-sorting/issues"
-license = "LGPLv3"
+license = "LGPL-3.0"
 
 [[mods]]
-modId = "reasonable-sorting"
+modId = "reasonable_sorting"
 version = "${version}"
 displayName = "Reasonable Sorting"
 authors = "SolidBlock"
@@ -13,16 +13,23 @@ Sorts blocks and items in the creative inventory reasonably.
 '''
 #logoFile = ""
 
-[[dependencies.reasonable-sorting]]
+[[dependencies.reasonable_sorting]]
 modId = "forge"
 mandatory = true
 versionRange = "[38,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.reasonable-sorting]]
+[[dependencies.reasonable_sorting]]
 modId = "minecraft"
 mandatory = true
 versionRange = "[1.18,1.18.2)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.reasonable_sorting]]
+modId = "cloth_config"
+mandatory = true
+versionRange = "[5.0.0,)"
 ordering = "NONE"
 side = "BOTH"
