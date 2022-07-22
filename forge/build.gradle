@@ -2,19 +2,19 @@ plugins {
     id "com.github.johnrengelman.shadow" version "7.1.2"
 }
 
+archivesBaseName += "-forge"
+
 architectury {
     platformSetupLoomIde()
     forge()
 }
 
 loom {
-//    accessWidenerPath = project(":common").loom.accessWidenerPath
-//
-//    forge {
-//        convertAccessWideners = true
-//        extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
-//    }
+    forge {
+        mixinConfig "reasonable-sorting.mixins.json", "reasonable-sorting-forge.mixins.json"
+    }
 }
+
 
 configurations {
     common
@@ -24,11 +24,17 @@ configurations {
     developmentForge.extendsFrom common
 }
 
+repositories {
+    maven { url "https://maven.shedaniel.me/" }
+}
+
 dependencies {
     forge "net.minecraftforge:forge:${rootProject.forge_version}"
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }
+
+    modApi("me.shedaniel.cloth:cloth-config-forge:${rootProject.cloth_config_version}")
 }
 
 processResources {
@@ -48,7 +54,7 @@ shadowJar {
 }
 
 remapJar {
-    input.set shadowJar.archiveFile
+    inputFile.set shadowJar.archiveFile
     dependsOn shadowJar
     classifier null
 }

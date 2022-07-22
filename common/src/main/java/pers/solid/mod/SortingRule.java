@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
@@ -34,20 +33,9 @@ import java.util.stream.Stream;
  */
 @FunctionalInterface
 public interface SortingRule<T> {
-  /**
-   * <p>当前已有的排序规则的集。每个注册表键都可以指定排序规则。一个规则可以指定某个对象被接下来的哪些对象跟随，也就是说这几个对象“紧挨在一起”。这个函数应该接收一个对象并返回跟随者的集合（可以为 {@code null}），以让这个对象与它的跟随者“紧挨一起”。
-   * <p>一个简单的例子是：对于方块注册表，应用类似如下的规则：</p>
-   * <blockquote>橡木木板 -> List.of(橡木楼梯, 橡木台阶)<br>
-   * 白桦木板 -> List.of(白桦木楼梯, 白桦木台阶)<br>
-   * ……</blockquote>
-   * <p>那么，迭代时，橡木楼梯就会跟随在橡木台阶的后面，以此类推。
-   * <p>当然，每个注册表可以指定多个规则，这多个规则集就会合并。
-   */
-  @ApiStatus.Internal
-  Multimap<RegistryKey<?>, SortingRule<?>> RULES = HashMultimap.create();
 
   @ApiStatus.Internal
-  Logger LOGGER = LoggerFactory.getLogger(SortingRules.class);
+  Logger LOGGER = LoggerFactory.getLogger(SortingRule.class);
 
   /**
    * 添加一个规则。迭代注册表时就会应用到此规则。
@@ -58,7 +46,7 @@ public interface SortingRule<T> {
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
   static <T> void addSortingRule(RegistryKey<? extends Registry<T>> registryKey, SortingRule<T> rule) {
-    ((Multimap<RegistryKey<? extends Registry<T>>, SortingRule<T>>) (Multimap) RULES).put(registryKey, rule);
+    ((Multimap<RegistryKey<? extends Registry<T>>, SortingRule<T>>) (Multimap) Internal.RULES).put(registryKey, rule);
   }
 
   /**
@@ -82,7 +70,7 @@ public interface SortingRule<T> {
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
   static <T> Collection<SortingRule<T>> getSortingRules(RegistryKey<? extends Registry<T>> registryKey) {
-    return ((Multimap<RegistryKey<? extends Registry<T>>, SortingRule<T>>) (Multimap) RULES).get(registryKey);
+    return ((Multimap<RegistryKey<? extends Registry<T>>, SortingRule<T>>) (Multimap) Internal.RULES).get(registryKey);
   }
 
   /**
@@ -112,6 +100,8 @@ public interface SortingRule<T> {
     if (ruleSets.isEmpty()) {
       // 如果没有为此注册表设置规则，那么直接返回 null，在 mixin 中表示依然按照原版的迭代方式迭代。
       return null;
+    } else {
+      LOGGER.info("{} sorting rules found in the iteration of {}.", ruleSets.size(), registryKey.getValue());
     }
 
     // 被确认跟随在另一对象之后，不因直接在一级迭代产生，而应在一级迭代产生其他对象时产生的对象。
@@ -136,18 +126,14 @@ public interface SortingRule<T> {
         .map(RegistryEntry.Reference::value)
         .filter(o -> !combinationFollowers.contains(o))
         .flatMap(o -> oneAndItsFollowers(o, valueToFollowers))
-        .filter(o -> {
-          if (iterated.contains(o)) {
-            LOGGER.warn("Object {} seems to have been iterated twice, ignored.", o);
-            return false;
-          } else return true;
-        })
+        .filter(o -> !iterated.contains(o))
         .peek(iterated::add);
 
     // 第一次未迭代完成的，在第二次迭代。
     final Stream<T> secondStream = rawIdToEntry.stream()
         .map(RegistryEntry.Reference::value)
-        .filter(((Predicate<T>) iterated::contains).negate());
+        .filter((x -> !iterated.contains(x)))
+        .peek(o -> LOGGER.info("Object {} not iterated in the first iteration. Iterated in the second iteration.", o));
 
     return Stream.concat(firstStream, secondStream).iterator();
   }
@@ -170,4 +156,21 @@ public interface SortingRule<T> {
    * @return 跟随该对象的对象集合。
    */
   @Nullable Iterable<T> getFollowers(T leadingObj);
+
+  @ApiStatus.Internal
+  class Internal {
+
+    /**
+     * <p>当前已有的排序规则的集。每个注册表键都可以指定排序规则。一个规则可以指定某个对象被接下来的哪些对象跟随，也就是说这几个对象“紧挨在一起”。这个函数应该接收一个对象并返回跟随者的集合（可以为 {@code null}），以让这个对象与它的跟随者“紧挨一起”。
+     * <p>一个简单的例子是：对于方块注册表，应用类似如下的规则：</p>
+     * <blockquote>橡木木板 -> List.of(橡木楼梯, 橡木台阶)<br>
+     * 白桦木板 -> List.of(白桦木楼梯, 白桦木台阶)<br>
+     * ……</blockquote>
+     * <p>那么，迭代时，橡木楼梯就会跟随在橡木台阶的后面，以此类推。
+     * <p>当然，每个注册表可以指定多个规则，这多个规则集就会合并。
+     */
+    @ApiStatus.Internal
+    public static final
+    Multimap<RegistryKey<?>, SortingRule<?>> RULES = HashMultimap.create();
+  }
 }

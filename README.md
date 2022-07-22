@@ -8,13 +8,11 @@ If you do not understand Chinese, you can read [English version](README-en.md).
 
 此外，本模组还提供修改物品所在物品组的功能。
 
-本模组的 Fabric 版本**依赖 Fabric API 和 Cloth Config 模组**，如果不安装这些模组将无法运行。此外**建议安装 Mod Menu 模组**以进行配置。（已经安装了上述模组的不要重复安装。另外，部分模组，如 Bedrockify、Edit Sign、Better F3 可能会内置 Cloth Config 模组，这些情况下可以不再单独安装 Cloth Config。）
+**本模組依赖 Cloth Config 模组**，如果不安装这些模组将无法运行。此外，对于 Fabric 和 Quilt 版本，**建议安装 Mod Menu 模组**以进行配置。
 
-本模组的 Quilt 版本依赖 Quilt Standard Libraries，不依赖 Cloth Config，暂无配置界面，但是可以手动修改位于 `config/reasonable-sorting.json` 的配置文件并重启游戏。Minecraft 1.18.1 以下版本没有 Quilt Stand Libraries，故不依赖。如果 Quilt 版本出现问题，请尝试使用 Fabric 版本的模组代替。
+本模组的 Fabric 版本依赖 Fabric API，Quilt 版本（Minecraft 1.18.2 以上）依赖 Quilt Standard Libraries。
 
-自 2.0.0 版本开始，本模组不再与 1.5.2 以下的扩展方块形状（Extended Block Shapes）模组联动（当然也不会冲突）。请等待扩展方块形状模组的新版本。
-
-注意：本模组正在开发 Forge 的版本。
+自 2.0.0 版本开始，本模组暂时不 1.5.2 以下的扩展方块形状（Extended Block Shapes）模组联动（当然也不会冲突）。请等待扩展方块形状模组的新版本。
 
 ## 配置
 

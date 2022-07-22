@@ -8,9 +8,9 @@ This mod adjusts the order that items are iterated in the registry, to adjust th
 
 Besides, this mod allows you to change the item groups to which items belong.
 
-The Fabric version of this mod **depends on Fabric API and Cloth Config mod**, without which this mod cannot work. Besides, **it's recommended to install Mod Menu** to configure. (If you have installed these mod please do not install duplicate ones. Moreover, some mods, like Bedrockify, Edit Sign, Better F3 may include nested Cloth Config mod. In these cases you do not need to install separately Cloth Config).
+The mod **depends on Cloth Config mod**, without which this mod cannot work. Besides, for Fabric and Quilt version, **it's recommended to install Mod Menu** to configure.
 
-The Quilt version of this mod relies on Quilt Standard Libraries but does not rely on Cloth Config. There is no config screen now, but you can manually modify the config located at `config/reasonable-sorting.json` and restart the game. Minecraft versions 1.18.1 and below have no Quilt Stand Libraries, in this case it is not depended. If you find issues with Quilt version, you may substitute with Fabric version.
+The Fabric version of this mod depends on Fabric API. The Quilt version of this mod (for 1.18.2 and above) depends on Quilt Standard Libraries.
 
 Since version 2.0.0, this mod does not work with Extended Block Shapes mod of version 1.5.2 or lower (yet still no conflict). Please wait for newer versions of Extended Block Shapes mod.
 
