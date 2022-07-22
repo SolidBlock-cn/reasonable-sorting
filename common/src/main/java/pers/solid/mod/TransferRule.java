@@ -26,7 +26,7 @@ public interface TransferRule {
    * @return 返回物品转移后的物品组产生的流，可能为空，也有可能产生重复元素。
    */
   static Stream<ItemGroup> streamTransferredGroupOf(Item item) {
-    return Registry.RULES.stream()
+    return Internal.RULES.stream()
         .map(transferRule -> transferRule.getTransferredGroups(item))
         .filter(Objects::nonNull)
         .flatMap(Streams::stream);
@@ -38,7 +38,7 @@ public interface TransferRule {
    * @param rule 一个物品组转移规则。
    */
   static void addTransferRule(TransferRule rule) {
-    Registry.RULES.add(rule);
+    Internal.RULES.add(rule);
   }
 
   /**
@@ -48,7 +48,7 @@ public interface TransferRule {
    * @param rule      一个物品组转移规则。
    */
   static void addConditionalTransferRule(BooleanSupplier condition, TransferRule rule) {
-    Registry.RULES.add(item -> condition.getAsBoolean() ? rule.getTransferredGroups(item) : null);
+    Internal.RULES.add(item -> condition.getAsBoolean() ? rule.getTransferredGroups(item) : null);
   }
 
   /**
@@ -60,7 +60,7 @@ public interface TransferRule {
   @Nullable Iterable<ItemGroup> getTransferredGroups(Item item);
 
   @ApiStatus.Internal
-  class Registry {
+  class Internal {
     @ApiStatus.Internal
     private static final
     List<TransferRule> RULES = new ArrayList<>();

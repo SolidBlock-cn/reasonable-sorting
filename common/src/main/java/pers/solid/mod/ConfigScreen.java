@@ -1,7 +1,5 @@
 package pers.solid.mod;
 
-import com.terraformersmc.modmenu.api.ConfigScreenFactory;
-import com.terraformersmc.modmenu.api.ModMenuApi;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
@@ -17,7 +15,10 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ConfigScreen implements ModMenuApi {
+/**
+ * @author SolidBlock
+ */
+public class ConfigScreen {
   public static List<String> formatted(List<String> list) {
     List<String> newList = new ArrayList<>();
     for (String s : list) {
@@ -30,22 +31,17 @@ public class ConfigScreen implements ModMenuApi {
     return newList;
   }
 
-  @Override
-  public ConfigScreenFactory<?> getModConfigScreenFactory() {
-    return this::createScreen;
-  }
-
   /**
    * 模组配置屏幕创建。
    *
    * @param previousScreen 上层屏幕。
    * @return 配置屏幕。
    */
-  private Screen createScreen(Screen previousScreen) {
-    final Configs config = FabricConfigs.CONFIG_HOLDER.getConfig();
+  public Screen createScreen(Screen previousScreen) {
+    final Configs config = Configs.CONFIG_HOLDER.getConfig();
     ConfigBuilder builder = ConfigBuilder.create()
         .setParentScreen(previousScreen)
-        .setSavingRunnable(FabricConfigs.CONFIG_HOLDER::save)
+        .setSavingRunnable(Configs.CONFIG_HOLDER::save)
         .setTitle(new TranslatableText("title.reasonable-sorting.config"));
 
     ConfigEntryBuilder entryBuilder = builder.entryBuilder();

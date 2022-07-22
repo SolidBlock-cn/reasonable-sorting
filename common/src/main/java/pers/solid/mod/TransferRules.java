@@ -67,7 +67,7 @@ public final class TransferRules {
   private TransferRules() {
   }
 
-  static void initialize() {
+  public static void initialize() {
     TransferRule.addConditionalTransferRule(() -> Configs.instance.buttonsInDecorations, BUTTON_IN_DECORATIONS);
     TransferRule.addConditionalTransferRule(() -> Configs.instance.fenceGatesInDecorations, FENCE_GATE_IN_DECORATIONS);
     TransferRule.addConditionalTransferRule(() -> Configs.instance.doorsInDecorations, DOORS_IN_DECORATIONS);
