@@ -8,6 +8,9 @@
     "ItemMixin",
     "SimpleRegistryMixin"
   ],
+  "client": [
+    "CreativeInventoryScreenMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

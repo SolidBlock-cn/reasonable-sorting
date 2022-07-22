@@ -71,7 +71,7 @@ public final class SortingRules {
   private SortingRules() {
   }
 
-  static void initialize() {
+  public static void initialize() {
     SortingRule.addSortingRule(Registry.BLOCK_KEY, Configs.CUSTOM_BLOCK_SORTING_RULES::get);
     SortingRule.addSortingRule(Registry.ITEM_KEY, Configs.CUSTOM_ITEM_SORTING_RULES::get);
     SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> Configs.instance.enableDefaultItemSortingRules && !Configs.instance.blockItemsOnly, DEFAULT_BLOCK_SORTING_RULE::get);
