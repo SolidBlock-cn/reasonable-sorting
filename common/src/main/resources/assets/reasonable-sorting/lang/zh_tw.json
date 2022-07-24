@@ -45,7 +45,7 @@
   "text.reasonable-sorting.enabled": "§a啟用",
   "title.reasonable-sorting.config": "合理排序模組配置",
   "option.reasonable-sorting.shapes_following_base_blocks": "緊隨基礎方塊的擴展方塊形狀",
-  "option.reasonable-sorting.shapes_following_base_blocks.tooltip": "擴展方塊形狀模組中，這些形狀將會緊隨基礎方塊。",
+  "option.reasonable-sorting.shapes_following_base_blocks.tooltip": "擴展方塊形狀模組中，這些形狀將會緊隨基礎方塊。§7如果此選項不生效，請檢查擴展方塊形狀模組配置的「添加至原版物品組」是否開啟。§r",
   "option.reasonable-sorting.describe_shapes": "有效的形狀名稱: %s。",
   "option.reasonable-sorting.error.invalid_shape_name": "無效的形狀名稱：%s。",
   "option.reasonable-sorting.custom_shape_transfer_rules": "自訂形狀轉移規則",

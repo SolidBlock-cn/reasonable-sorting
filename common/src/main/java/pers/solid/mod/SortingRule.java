@@ -4,7 +4,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Streams;
-import it.unimi.dsi.fastutil.objects.ObjectList;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.util.registry.SimpleRegistry;
@@ -85,14 +84,15 @@ public interface SortingRule<T> {
   }
 
   /**
-   * 替换一个普通注册表的迭代器，以应用排序规则。
+   * 替换一个普通注册表的流，以通过其迭代器应用排序规则。
    *
    * @see SimpleRegistry#iterator()
+   * @see SimpleRegistry#stream()
    * @see pers.solid.mod.mixin.SimpleRegistryMixin
    */
-  static <T> Iterator<T> iteratorOfRegistry(
+  static <T> Stream<T> streamOfRegistry(
       RegistryKey<? extends Registry<T>> registryKey,
-      ObjectList<T> rawIdToEntry) {
+      List<T> rawIdToEntry) {
     LinkedHashSet<T> iterated = new LinkedHashSet<>();
     final Collection<SortingRule<T>> ruleSets = getSortingRules(registryKey);
 
@@ -132,7 +132,7 @@ public interface SortingRule<T> {
         .filter((x -> !iterated.contains(x)))
         .peek(o -> LOGGER.info("Object {} not iterated in the first iteration. Iterated in the second iteration.", o));
 
-    return Stream.concat(firstStream, secondStream).iterator();
+    return Stream.concat(firstStream, secondStream);
   }
 
   /**

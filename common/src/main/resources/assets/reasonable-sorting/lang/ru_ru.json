@@ -48,7 +48,9 @@
   "option.reasonable-sorting.error.invalid_variant_name": "Некорректное название группы: %s.",
   "option.reasonable-sorting.error.invalid_regex": "Некорректное выражение: %s: %s.",
   "option.reasonable-sorting.shapes_following_base_blocks": "Вариации ExtShape-блоков, помещаемые рядом с основными",
-  "option.reasonable-sorting.shapes_following_base_blocks.tooltip": "Перенести вариации блоков из мода ExtShape к блокам их материалов.",
+  "option.reasonable-sorting.shapes_following_base_blocks.tooltip": "Перенести вариации блоков из мода ExtShape к блокам их материалов. §7If this option has no effect, please check the \"Add to vanilla groups\" option in the configuration of Extended Block Shapes mod.§r",
   "option.reasonable-sorting.describe_shapes": "Допустимые названия: %s。",
-  "option.reasonable-sorting.error.invalid_shape_name": "Некорректное название: %s."
+  "option.reasonable-sorting.error.invalid_shape_name": "Некорректное название: %s.",
+  "option.reasonable-sorting.block_items_only": "Block items only",
+  "option.reasonable-sorting.block_items_only.tooltip": "When on, only blocks in item forms (such as blocks in the Creative inventory) are affected by options above, and blocks in block forms (such as blocks in the Debug Mode) are not affected."
 }
