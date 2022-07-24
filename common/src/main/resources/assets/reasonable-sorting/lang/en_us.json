@@ -50,7 +50,7 @@
   "option.reasonable-sorting.error.invalid_variant_name": "Invalid variant name: %s.",
   "option.reasonable-sorting.error.invalid_regex": "Invalid regex: %s: %s.",
   "option.reasonable-sorting.shapes_following_base_blocks": "Shapes following base blocks",
-  "option.reasonable-sorting.shapes_following_base_blocks.tooltip": "Shapes in extshape mod following base blocks.",
+  "option.reasonable-sorting.shapes_following_base_blocks.tooltip": "Shapes in extshape mod following base blocks. \u00a77If this option has no effect, please check the \"Add to vanilla groups\" option in the configuration of Extended Block Shapes mod.\u00a7r",
   "option.reasonable-sorting.describe_shapes": "Valid shape names: %s。",
   "option.reasonable-sorting.error.invalid_shape_name": "Invalid shape name: %s."
 }
