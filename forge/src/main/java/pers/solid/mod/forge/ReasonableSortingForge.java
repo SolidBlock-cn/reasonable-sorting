@@ -1,12 +1,12 @@
 package pers.solid.mod.forge;
 
-import net.minecraftforge.client.ConfigScreenHandler;
+import net.minecraft.item.Item;
+import net.minecraftforge.client.ConfigGuiHandler;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegisterEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.solid.mod.ConfigScreen;
@@ -24,12 +24,12 @@ public class ReasonableSortingForge {
   }
 
   public ReasonableSortingForge() {
-    FMLJavaModLoadingContext.get().getModEventBus().addListener(EventPriority.LOWEST, (RegisterEvent event) -> event.register(ForgeRegistries.Keys.ITEMS, helper -> {
+    FMLJavaModLoadingContext.get().getModEventBus().addGenericListener(Item.class, EventPriority.LOWEST, (RegistryEvent.Register<Item> event) -> {
       SortingRules.initialize();
       TransferRules.initialize();
       Configs.loadAndUpdate();
-    }));
+    });
 
-    ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> new ConfigScreenHandler.ConfigScreenFactory((client, screen) -> CONFIG_SCREEN.createScreen(screen)));
+    ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class, () -> new ConfigGuiHandler.ConfigGuiFactory((client, screen) -> CONFIG_SCREEN.createScreen(screen)));
   }
 }
