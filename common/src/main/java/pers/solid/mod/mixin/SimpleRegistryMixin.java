@@ -42,14 +42,4 @@ public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> {
       cir.cancel();
     }
   }
-
-  @Inject(method = "getEntries", at = @At(value = "INVOKE_ASSIGN", target = "Ljava/util/stream/Stream;filter(Ljava/util/function/Predicate;)Ljava/util/stream/Stream;", shift = At.Shift.BEFORE), cancellable = true)
-  private void reasonableSortedGetEntries(CallbackInfoReturnable<List<RegistryEntry.Reference<T>>> cir) {
-    final Stream<T> stream = SortingRule.streamOfRegistry(getKey(), rawIdToEntry);
-    if (stream != null) {
-      cachedEntries = streamEntries().toList();
-      cir.setReturnValue(cachedEntries);
-      cir.cancel();
-    }
-  }
 }
