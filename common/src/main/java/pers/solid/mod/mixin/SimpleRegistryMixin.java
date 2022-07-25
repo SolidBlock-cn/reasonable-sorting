@@ -15,7 +15,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import pers.solid.mod.SortingRule;
 
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Mixin(SimpleRegistry.class)
@@ -24,8 +25,6 @@ public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> {
   @Shadow
   @Final
   private ObjectList<T> rawIdToEntry;
-
-  public abstract Stream<T> streamEntries();
 
   public SimpleRegistryMixin(RegistryKey<? extends Registry<T>> registryKey, Lifecycle lifecycle) {
     super(registryKey, lifecycle);
@@ -40,11 +39,12 @@ public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> {
     }
   }
 
-  @Inject(method = "getEntries", at = @At(value = "INVOKE_ASSIGN", target = "Ljava/util/Collections;unmodifiableMap(Ljava/util/Map;)Ljava/util/Map;", shift = At.Shift.BEFORE), cancellable = true)
-  private void reasonableSortedGetEntries(CallbackInfoReturnable<List<T>> cir) {
+  // to avoid potential errors, this is temporarily disabled.
+//  @Inject(method = "getEntries", at = @At(value = "INVOKE_ASSIGN", target = "Ljava/util/Collections;unmodifiableMap(Ljava/util/Map;)Ljava/util/Map;", shift = At.Shift.BEFORE), cancellable = true)
+  private void reasonableSortedGetEntries(CallbackInfoReturnable<Set<T>> cir) {
     final Stream<T> stream = SortingRule.streamOfRegistry(getKey(), rawIdToEntry);
     if (stream != null) {
-      cir.setReturnValue(streamEntries().toList());
+      cir.setReturnValue(stream.collect(Collectors.toSet()));
       cir.cancel();
     }
   }
