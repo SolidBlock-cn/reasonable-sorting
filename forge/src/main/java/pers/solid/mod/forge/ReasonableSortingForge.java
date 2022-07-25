@@ -7,8 +7,8 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import pers.solid.mod.ConfigScreen;
 import pers.solid.mod.Configs;
 import pers.solid.mod.SortingRules;
@@ -16,7 +16,7 @@ import pers.solid.mod.TransferRules;
 
 @Mod("reasonable_sorting")
 public class ReasonableSortingForge {
-  public static final Logger LOGGER = LoggerFactory.getLogger(ReasonableSortingForge.class);
+  public static final Logger LOGGER = LogManager.getLogger(ReasonableSortingForge.class);
   private static final ConfigScreen CONFIG_SCREEN = new ConfigScreen();
 
   static {
