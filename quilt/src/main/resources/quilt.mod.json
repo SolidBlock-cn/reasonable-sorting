@@ -36,11 +36,11 @@
       "quilt_loader",
       {
         "id": "minecraft",
-        "version": ">=1.16"
+        "version": ">=1.16.4"
       },
       {
         "id": "cloth-config2",
-        "version": ">=5.0.0"
+        "version": ">=4.0.0"
       }
     ],
     "recommends": [

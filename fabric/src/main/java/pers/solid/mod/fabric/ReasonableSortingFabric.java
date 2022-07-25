@@ -18,8 +18,12 @@ public class ReasonableSortingFabric implements ModInitializer {
     SortingRules.initialize();
     TransferRules.initialize();
     switch (FabricLoader.getInstance().getEnvironmentType()) {
-      case CLIENT -> ClientLifecycleEvents.CLIENT_STARTED.register(client -> Configs.loadAndUpdate());
-      case SERVER -> ServerLifecycleEvents.SERVER_STARTED.register(server -> Configs.loadAndUpdate());
+      case CLIENT:
+        ClientLifecycleEvents.CLIENT_STARTED.register(client -> Configs.loadAndUpdate());
+        break;
+      case SERVER:
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> Configs.loadAndUpdate());
+        break;
     }
   }
 }

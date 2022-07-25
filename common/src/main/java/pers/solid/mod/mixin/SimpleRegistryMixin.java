@@ -16,6 +16,7 @@ import pers.solid.mod.SortingRule;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Mixin(SimpleRegistry.class)
@@ -44,7 +45,7 @@ public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> {
   private void reasonableSortedGetEntries(CallbackInfoReturnable<List<T>> cir) {
     final Stream<T> stream = SortingRule.streamOfRegistry(getKey(), rawIdToEntry);
     if (stream != null) {
-      cir.setReturnValue(streamEntries().toList());
+      cir.setReturnValue(streamEntries().collect(Collectors.toList()));
       cir.cancel();
     }
   }

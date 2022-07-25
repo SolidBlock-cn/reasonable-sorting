@@ -15,9 +15,9 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.util.ActionResult;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Unmodifiable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -187,7 +187,7 @@ public class Configs implements ConfigData {
    * 用于 Extended Block Shapes 模组，将蜜脾、菌光体等基础方块移至建筑方块。没有安装此模组时，此字段仍会正常加载和保存，但是不会显示在配置屏幕中。
    */
   public boolean baseBlocksInBuildingBlocks = true;
-  private static final Logger LOGGER = LoggerFactory.getLogger("ReasonableSorting Configs");
+  private static final Logger LOGGER = LogManager.getLogger("ReasonableSorting Configs");
   /**
    * 这个配置的实例。通常这个值应该为 {@link ConfigHolder#getConfig()} 返回的结果。当被修改时，这个字段也相应修改。初始值为新的实例，然后再会在 {@link #loadAndUpdate()} 中替换。
    */
