@@ -1,5 +1,7 @@
 package pers.solid.mod.mixin;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemGroup;
@@ -21,6 +23,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.stream.Collectors;
 
+@Environment(EnvType.CLIENT)
 @Mixin(CreativeInventoryScreen.class)
 public abstract class CreativeInventoryScreenMixin {
 

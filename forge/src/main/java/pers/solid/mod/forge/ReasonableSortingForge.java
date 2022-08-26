@@ -1,8 +1,10 @@
 package pers.solid.mod.forge;
 
 import net.minecraft.item.Item;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.ExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -17,7 +19,6 @@ import pers.solid.mod.TransferRules;
 @Mod("reasonable_sorting")
 public class ReasonableSortingForge {
   public static final Logger LOGGER = LogManager.getLogger(ReasonableSortingForge.class);
-  private static final ConfigScreen CONFIG_SCREEN = new ConfigScreen();
 
   static {
     Configs.instance = new Configs();
@@ -30,6 +31,6 @@ public class ReasonableSortingForge {
       Configs.loadAndUpdate();
     });
 
-    ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.CONFIGGUIFACTORY, () -> (client, screen) -> CONFIG_SCREEN.createScreen(screen));
+    DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.CONFIGGUIFACTORY, () -> (client, screen) -> new ConfigScreen().createScreen(screen)));
   }
 }
