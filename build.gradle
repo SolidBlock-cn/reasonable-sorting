@@ -30,9 +30,9 @@ allprojects {
         maven {
             url 'https://maven.aliyun.com/nexus/content/groups/public'
         }
-        maven {
-            url 'https://repository.hanbings.io/proxy'
-        }
+//        maven {
+//            url 'https://repository.hanbings.io/proxy'
+//        }
         maven { url "https://maven.quiltmc.org/repository/release/" }
     }
 
