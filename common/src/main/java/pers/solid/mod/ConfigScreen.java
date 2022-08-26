@@ -3,6 +3,8 @@ package pers.solid.mod;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.ItemGroup;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 /**
  * @author SolidBlock
  */
+@Environment(EnvType.CLIENT)
 public class ConfigScreen {
   public static List<String> formatted(List<String> list) {
     List<String> newList = new ArrayList<>();

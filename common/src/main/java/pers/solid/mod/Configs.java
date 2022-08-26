@@ -121,7 +121,7 @@ public class Configs implements ConfigData {
   /**
    * 若开启，则上述规则只影响物品（包括物品形式的方块），不影响方块，也就是说，调试模式下的所有方块仍按照原版方式排序，但是创造模式物品栏里面的方块则依然受影响。
    */
-  public boolean blockItemsOnly = false;
+  public boolean blockItemsOnly = true;
   
   /*
   
