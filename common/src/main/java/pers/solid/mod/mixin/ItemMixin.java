@@ -21,7 +21,7 @@ public abstract class ItemMixin {
 
   @Shadow
   public abstract boolean isItemBarVisible(ItemStack stack);
-
+  
   /**
    * 判断物品是否在转移规则中指定的组中的任意一个。如果转移规则没有此物品，则按照原版进行。
    */
