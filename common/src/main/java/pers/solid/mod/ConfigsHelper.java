@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemGroups;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -33,8 +34,9 @@ public final class ConfigsHelper {
   @Contract(value = "!null -> _; null -> null", pure = true)
   static @Nullable ItemGroup getGroupFromId(String id) {
     if (id == null) return null;
-    for (ItemGroup group : ItemGroup.GROUPS) {
-      if (id.equals(group.getName())) {
+    for (ItemGroup group : ItemGroups.GROUPS) {
+      //if (id.equals(group.getName())) {
+      if (id.equals(group.getDisplayName().toString())) {
         return group;
       }
     }
