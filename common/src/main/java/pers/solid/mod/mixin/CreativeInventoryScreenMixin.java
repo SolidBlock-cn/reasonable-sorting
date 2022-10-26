@@ -44,11 +44,10 @@ public abstract class CreativeInventoryScreenMixin {
    * @return 物品所属的物品组所代表的文本。可能是原版的，也有可能是修改后的。
    */
   @Redirect(
-      method = "renderTooltip",
-      at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;getDisplayName()Lnet/minecraft/text/Text;"))
+          method = "renderTooltip",
+          at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;getDisplayName()Lnet/minecraft/text/Text;"))
   public Text renderTooltipMixin(ItemGroup instance) {
-    final Collection<ItemGroup> itemGroups =
-        TransferRule.streamTransferredGroupOf(stack.getItem()).toList();
+    final Collection<ItemGroup> itemGroups = TransferRule.streamTransferredGroupOf(stack.getItem()).toList();
     if (Configs.instance.enableGroupTransfer && !itemGroups.isEmpty()) {
       MutableText text = Text.literal("").styled(style -> style.withColor(0x88ccff));
       for (Iterator<ItemGroup> iterator = itemGroups.iterator(); iterator.hasNext(); ) {

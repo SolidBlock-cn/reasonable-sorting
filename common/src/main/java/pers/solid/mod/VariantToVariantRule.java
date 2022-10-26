@@ -3,6 +3,7 @@ package pers.solid.mod;
 import com.google.common.collect.Streams;
 import net.minecraft.block.Block;
 import net.minecraft.data.family.BlockFamily;
+import net.minecraft.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import pers.solid.mod.mixin.BlockFamiliesAccessor;
 
@@ -38,4 +39,5 @@ public record VariantToVariantRule(Predicate<Block> blockPredicate, BlockFamily.
     }
     return null;
   }
+
 }

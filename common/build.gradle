@@ -5,7 +5,7 @@ architectury {
 archivesBaseName += "-common"
 
 loom {
-//    accessWidenerPath = file("src/main/resources/examplemod.accesswidener")
+    accessWidenerPath = file("src/main/resources/reasonable-sorting.accessWidener")
 }
 
 dependencies {

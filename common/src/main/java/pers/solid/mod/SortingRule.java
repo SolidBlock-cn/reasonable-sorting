@@ -4,6 +4,11 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Streams;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemStackSet;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.util.registry.RegistryKey;
@@ -15,6 +20,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -30,8 +37,35 @@ import java.util.stream.Stream;
  *
  * @param <T>
  */
-@FunctionalInterface
 public interface SortingRule<T> {
+
+  static final Hash.Strategy<? super ItemStack> HASH_STRATEGY = new Hash.Strategy<ItemStack>() {
+    @Override
+    public int hashCode(ItemStack itemStack) {
+      return itemStack != null ? Objects.hash(new Object[]{itemStack.getItem(), itemStack.getNbt()}) : 0;
+    }
+
+    @Override
+    public boolean equals(ItemStack itemStack, ItemStack itemStack2) {
+      return itemStack == itemStack2 || itemStack != null && itemStack2 != null && ItemStack.areEqual(itemStack, itemStack2);
+    }
+  };
+
+  static final Hash.Strategy<? super Item> HASH_STRATEGY_ITEM = new Hash.Strategy<Item>() {
+    @Override public int hashCode(Item itemStack) {
+      return itemStack != null ? Objects.hash(itemStack) : 0;
+    }
+    @Override public boolean equals(Item itemStack, Item itemStack2) {
+      return itemStack == itemStack2;
+    }
+  };
+
+  // TODO! Needs correct sorting
+  public static ItemStackSet sortItemGroupEntries(ItemStackSet stack) {
+    var stackSet = new ItemStackSet();
+    stackSet.addAll(SortingRule.streamOfRegistry(Registry.ITEM_KEY, stack).toList());
+    return stackSet;
+  }
 
   @ApiStatus.Internal
   Logger LOGGER = LoggerFactory.getLogger(SortingRule.class);
@@ -82,6 +116,61 @@ public interface SortingRule<T> {
    */
   static <T> Stream<T> streamFollowersOf(Collection<SortingRule<T>> combinationRules, T object) {
     return combinationRules.stream().map(function -> function.getFollowers(object)).filter(Objects::nonNull).flatMap(Streams::stream);
+  }
+
+  // ???
+  static Stream<ItemStack> streamOfRegistry(RegistryKey<? extends Registry<Item>> registryKey, ObjectLinkedOpenCustomHashSet<ItemStack> rawIdToEntry) {
+    LinkedHashSet<ItemStack> iterated = new LinkedHashSet<>();
+    final Collection<SortingRule<Item>> ruleSets = getSortingRules(registryKey);
+
+    if (ruleSets.isEmpty()) {
+      // 如果没有为此注册表设置规则，那么直接返回 null，在 mixin 中表示依然按照原版的迭代方式迭代。
+      return null;
+    } else {
+      LOGGER.info("{} sorting rules found in the iteration of {}.", ruleSets.size(), registryKey.getValue());
+    }
+
+    // 被确认跟随在另一对象之后，不因直接在一级迭代产生，而应在一级迭代产生其他对象时产生的对象。
+    // 一级迭代时，就应该忽略这些对象。
+    // 本集合仅用于检测对象是否存在，故不考虑顺序。
+    final Set<ItemStack> combinationFollowers = new HashSet<>();
+
+    // 本集合的键为被跟随的对象，值为跟随者它的对象。
+    final Multimap<ItemStack, ItemStack> valueToFollowers = LinkedListMultimap.create();
+
+    // 初次直接迭代内部元素。
+    for (ItemStack value : rawIdToEntry) {
+      streamFollowersOf(ruleSets, value.getItem()).forEach(follower -> {
+
+        var followed = rawIdToEntry.stream()
+          .filter((itemStack)->{ return itemStack.getItem() == follower; });
+          //.filter((itemStack)->{ return itemStack == value; })
+          //.findFirst().orElse(value);
+
+        //valueToFollowers.put(value, followed);
+        //combinationFollowers.add(followed);
+
+        followed.forEachOrdered((itemStack)->{
+          valueToFollowers.put(value, itemStack);
+          combinationFollowers.add(itemStack);
+        });
+      });
+    }
+
+    // 结果流的第一部分。先将内容连同其跟随者都迭代一次，已经迭代过的不重复迭代。但是，这部分可能会丢下一些元素。
+    final Stream<ItemStack> firstStream = rawIdToEntry.stream()
+            .filter(o -> !combinationFollowers.contains(o))
+            .flatMap(o -> oneAndItsFollowers(o, valueToFollowers))
+            .filter(o -> !iterated.contains(o))
+            .peek(iterated::add);
+
+    // 第一次未迭代完成的，在第二次迭代。
+    final Stream<ItemStack> secondStream = rawIdToEntry.stream()
+            .filter((x -> !iterated.contains(x)))
+            .peek(o -> LOGGER.info("Object {} not iterated in the first iteration. Iterated in the second iteration.", o));
+
+    //
+    return Stream.concat(firstStream, secondStream);
   }
 
   /**
@@ -156,6 +245,8 @@ public interface SortingRule<T> {
    * @return 跟随该对象的对象集合。
    */
   @Nullable Iterable<T> getFollowers(T leadingObj);
+
+  //@Nullable Iterable<T> getFollowersItemStack(T leadingObj);
 
   @ApiStatus.Internal
   class Internal {

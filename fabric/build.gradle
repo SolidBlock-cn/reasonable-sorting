@@ -11,7 +11,7 @@ architectury {
 }
 
 loom {
-//    accessWidenerPath = project(":common").loom.accessWidenerPath
+    accessWidenerPath = file("../common/src/main/resources/reasonable-sorting.accessWidener")
 }
 
 configurations {

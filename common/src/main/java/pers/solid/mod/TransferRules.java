@@ -23,8 +23,8 @@ public final class TransferRules {
   // I don't know chinese :(
   public static boolean itemInGroup(Item item, ItemGroup itemGroup) {
     AtomicBoolean found = new AtomicBoolean(false);
-    itemGroup.getSearchTabStacks(FeatureSet.of(FeatureFlags.BUNDLE, FeatureFlags.UPDATE_1_20, FeatureFlags.VANILLA)).forEach((stack)->{
-      if (stack.getItem() == item) { found.set(true); };
+    itemGroup.getDisplayStacks(FeatureSet.of(FeatureFlags.BUNDLE, FeatureFlags.UPDATE_1_20, FeatureFlags.VANILLA)).forEach((stack)->{
+      if (stack != null && stack.getItem() == item) { found.set(true); };
     });
     return found.get();
   };

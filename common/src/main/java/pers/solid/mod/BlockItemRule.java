@@ -4,6 +4,7 @@ import com.google.common.collect.Iterables;
 import net.minecraft.block.Block;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -26,4 +27,5 @@ public record BlockItemRule(SortingRule<Block> rule) implements SortingRule<Item
     final Iterable<Block> followers = rule.getFollowers(blockItem.getBlock());
     return followers == null ? null : Iterables.filter(Iterables.transform(followers, Block::asItem), Objects::nonNull);
   }
+
 }

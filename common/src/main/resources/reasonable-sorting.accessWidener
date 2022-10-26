@@ -3,3 +3,6 @@ accessWidener   v1  named
 #accessible field net/minecraft/client/gui/widget/ButtonWidget onPress Lnet/minecraft/client/gui/widget/ButtonWidget$OnPress;
 #mutable field net/minecraft/client/gui/widget/ButtonWidget onPress Lnet/minecraft/client/gui/widget/ButtonWidget$OnPress;
 accessible class net/minecraft/item/ItemGroup$Entries
+accessible class net/minecraft/item/ItemGroup$EntriesImpl
+accessible method net/minecraft/item/ItemGroup addItems (Lnet/minecraft/resource/featuretoggle/FeatureSet;Lnet/minecraft/item/ItemGroup$Entries;)V
+accessible method net/minecraft/item/ItemGroup getStacks (Lnet/minecraft/resource/featuretoggle/FeatureSet;Z)Lnet/minecraft/item/ItemStackSet;

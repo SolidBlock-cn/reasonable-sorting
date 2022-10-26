@@ -1,27 +1,20 @@
 package pers.solid.mod.mixin;
 
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
-import net.minecraft.resource.featuretoggle.FeatureFlags;
-import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.tag.TagKey;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import pers.solid.mod.Configs;
-import pers.solid.mod.TransferRule;
-
-import java.util.Set;
-import java.util.stream.Collectors;
+import pers.solid.mod.interfaces.ItemStackInterface;
 
 @Mixin(ItemStack.class)
-public abstract class ItemStackMixin {
-    @Shadow
-    public abstract Item getItem();
+public abstract class ItemStackMixin implements ItemStackInterface {
+    //
+    @Shadow public abstract Item getItem();
 
     // Suggested alternative
 

@@ -7,9 +7,12 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.FenceBlock;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStackSet;
 import net.minecraft.item.Items;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Unmodifiable;
+import pers.solid.mod.interfaces.ItemGroupEntriesInterface;
 
 import java.util.Collections;
 
@@ -17,6 +20,7 @@ import java.util.Collections;
  * 本模组自带的一些排序规则。
  */
 public final class SortingRules {
+
   /**
    * 此模组默认内置的方块排序规则。
    */
