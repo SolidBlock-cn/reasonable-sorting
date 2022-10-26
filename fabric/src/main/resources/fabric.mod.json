@@ -25,9 +25,7 @@
       "pers.solid.mod.fabric.ConfigScreenFabric"
     ]
   },
-  "mixins": [
-    "reasonable-sorting.mixins.json"
-  ],
+  "mixins": ["reasonable-sorting.mixins.json"],
   "depends": {
     "fabricloader": ">=0.11.3",
     "fabric": "*",
