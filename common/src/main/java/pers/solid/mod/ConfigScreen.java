@@ -6,6 +6,7 @@ import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemGroups;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -241,12 +242,14 @@ public class ConfigScreen {
             .setSaveConsumer(b -> config.doorsInDecorations = b)
             .build());
 
+    // DANGER! Renaming getName to getDisplayName
+
     categoryTransfer.addEntry(
         entryBuilder
             .startTextDescription(
                 Text.translatable(
                     "option.reasonable-sorting.describe_item_groups",
-                    Text.literal(Arrays.stream(ItemGroup.GROUPS).map(ItemGroup::getName).collect(Collectors.joining(" ")))
+                    Text.literal(Arrays.stream(ItemGroups.GROUPS).map(ItemGroup::getName).collect(Collectors.joining(" ")))
                         .formatted(Formatting.YELLOW)))
             .build());
 

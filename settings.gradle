@@ -8,5 +8,5 @@ pluginManagement {
     }
 }
 
-include "common", "fabric", "forge", "quilt"
+include "common", "fabric"
 rootProject.name = "reasonable-sorting"

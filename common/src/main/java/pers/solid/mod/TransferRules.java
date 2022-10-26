@@ -5,35 +5,46 @@ import net.minecraft.block.Block;
 import net.minecraft.block.DoorBlock;
 import net.minecraft.block.FenceGateBlock;
 import net.minecraft.data.family.BlockFamily;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.SwordItem;
+import net.minecraft.item.*;
+import net.minecraft.resource.featuretoggle.FeatureFlags;
+import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.util.Identifier;
 import pers.solid.mod.mixin.BlockFamiliesAccessor;
 
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 /**
  * 本模组内置的一些物品组转移规则。
  */
 public final class TransferRules {
+
+  // I don't know chinese :(
+  public static boolean itemInGroup(Item item, ItemGroup itemGroup) {
+    AtomicBoolean found = new AtomicBoolean(false);
+    itemGroup.getSearchTabStacks(FeatureSet.of(FeatureFlags.BUNDLE, FeatureFlags.UPDATE_1_20, FeatureFlags.VANILLA)).forEach((stack)->{
+      if (stack.getItem() == item) { found.set(true); };
+    });
+    return found.get();
+  };
+
   /**
    * 将原本位于“红石”中的按钮转移至“装饰性方块”。
    */
-  public static final TransferRule BUTTON_IN_DECORATIONS = item -> item.getGroup() == ItemGroup.REDSTONE && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof AbstractButtonBlock ? Collections.singleton(ItemGroup.DECORATIONS) : null;
+  public static final TransferRule BUTTON_IN_DECORATIONS = item -> itemInGroup(item, ItemGroups.REDSTONE) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof AbstractButtonBlock ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
   /**
    * 将原本位于“红石”中的栅栏门转移至“装饰性方块”。
    */
-  public static final TransferRule FENCE_GATE_IN_DECORATIONS = item -> item.getGroup() == ItemGroup.REDSTONE && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof FenceGateBlock ? Collections.singleton(ItemGroup.DECORATIONS) : null;
+  public static final TransferRule FENCE_GATE_IN_DECORATIONS = item -> itemInGroup(item, ItemGroups.REDSTONE) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof FenceGateBlock ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
   /**
    * 将原本位于“红石”中的门转移至“装饰性方块”。
    */
-  public static final TransferRule DOORS_IN_DECORATIONS = item -> item.getGroup() == ItemGroup.REDSTONE && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof DoorBlock ? Collections.singleton(ItemGroup.DECORATIONS) : null;
+  public static final TransferRule DOORS_IN_DECORATIONS = item -> itemInGroup(item, ItemGroups.REDSTONE) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof DoorBlock ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
   /**
    * 将原本位于“工具”中的剑转移至“装饰性方块”。
    */
-  public static final TransferRule SWORDS_IN_TOOLS = item -> item instanceof SwordItem && item.getGroup() == ItemGroup.COMBAT ? Collections.singleton(ItemGroup.TOOLS) : null;
+  public static final TransferRule SWORDS_IN_TOOLS = item -> (item instanceof SwordItem && itemInGroup(item, ItemGroups.COMBAT)) ? Collections.singleton(ItemGroups.TOOLS) : null;
   /**
    * 自定义的变种转移规则。仅限方块物品。
    */

@@ -1,0 +1,5 @@
+accessWidener   v1  named
+#accessible method net/minecraft/client/font/Font renderText (Ljava/lang/String;FFIZLcom/mojang/math/Matrix4f;Lnet/minecraft/client/renderer/MultiBufferSource;ZII)F
+#accessible field net/minecraft/client/gui/widget/ButtonWidget onPress Lnet/minecraft/client/gui/widget/ButtonWidget$OnPress;
+#mutable field net/minecraft/client/gui/widget/ButtonWidget onPress Lnet/minecraft/client/gui/widget/ButtonWidget$OnPress;
+accessible class net/minecraft/item/ItemGroup$Entries
