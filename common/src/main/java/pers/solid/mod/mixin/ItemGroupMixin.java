@@ -94,10 +94,8 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     // clear cached
     @Inject(method = "clearStacks", at = @At("HEAD"))
     public void onClear(CallbackInfo ci) {
-        if (!this.ignoreInjection) {
-            this.cachedSearchTabStacks = null;
-            this.cachedParentTabStacks = null;
-        }
+        this.cachedSearchTabStacks = null;
+        this.cachedParentTabStacks = null;
     }
 
     //

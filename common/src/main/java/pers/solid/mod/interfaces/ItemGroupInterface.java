@@ -19,18 +19,13 @@ public interface ItemGroupInterface {
     public static ItemStackSet sortingAndTransfer(ItemStackSet itemStackSet, ItemGroup group, FeatureSet enabledFeatures) {
         // add conditional transfer items
         Arrays.stream(ItemGroups.GROUPS).toList().stream().forEachOrdered((itemGroup) -> {
-            ((ItemGroupInterface) (Object) itemGroup).setIgnoreInjection(true);
             if (itemGroup == group || itemGroup == ItemGroups.INVENTORY || itemGroup == ItemGroups.SEARCH || itemGroup == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer) return;
             ((ItemGroupInterface)(Object)itemGroup).getCachedParentTabStacks(enabledFeatures).stream().forEachOrdered((stack) -> {
                 if (stack == null) return;
 
                 Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
-
-                if (!groups.isEmpty() && groups.contains(group)) {
-                    itemStackSet.add(stack); // works buggy!
-                }
+                if (groups.contains(group)) { itemStackSet.add(stack); }
             });
-            ((ItemGroupInterface) (Object) itemGroup).setIgnoreInjection(false);
         });
 
         // remove non-conditional transfer items
@@ -38,10 +33,7 @@ public interface ItemGroupInterface {
             itemStackSet.stream().forEachOrdered((stack) -> {
                 if (stack != null) {
                     Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
-
-                    if (!groups.isEmpty() && !groups.contains(group)) {
-                        itemStackSet.remove(stack);
-                    }
+                    if (!groups.isEmpty() && !groups.contains(group)) { itemStackSet.remove(stack); }
                 }
             });
         }
@@ -50,6 +42,25 @@ public interface ItemGroupInterface {
         var sortedStackSet = SortingRule.sortItemGroupEntries(itemStackSet);
         return (ItemStackSet)(sortedStackSet != null ? sortedStackSet : itemStackSet).clone();
     }
+
+    public static void updateGroups(@Nullable FeatureSet featureSet, @Nullable ItemGroup group) {
+        Arrays.stream(ItemGroups.GROUPS).forEach((g)->{
+            if (g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR) return;
+            if (group == null || group != g) {
+                ((ItemGroupInterface) g).setDisplayStacks(null);
+                ((ItemGroupInterface) g).setSearchTabStacks(null);
+            }
+        });
+        Arrays.stream(ItemGroups.GROUPS).forEach((g)->{
+            if (g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR) return;
+            if (group == null || group != g) {
+                ((ItemGroupInterface) g).getDisplayStacks(featureSet);
+            }
+        });
+    }
+
+    public default void setDisplayStacks(ItemStackSet set) {  };
+    public default void setSearchTabStacks(ItemStackSet set){  };
 
     public default ItemStackSet getDisplayStacks() {
         return null;

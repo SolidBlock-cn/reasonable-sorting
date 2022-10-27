@@ -7,10 +7,12 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemGroups;
+import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.StringUtils;
+import pers.solid.mod.interfaces.ItemGroupInterface;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -44,6 +46,7 @@ public class ConfigScreen {
         .setSavingRunnable(Configs.CONFIG_HOLDER::save)
         .setTitle(Text.translatable("title.reasonable-sorting.config"));
 
+    // TODO! Optimize updating!
     ConfigEntryBuilder entryBuilder = builder.entryBuilder();
     ConfigCategory categorySorting =
         builder.getOrCreateCategory(Text.translatable("category.reasonable-sorting.sorting"));
@@ -74,7 +77,10 @@ public class ConfigScreen {
             .setYesNoTextSupplier(
                 b -> Text.translatable(b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
             .setDefaultValue(true)
-            .setSaveConsumer(b -> config.enableSorting = b)
+            .setSaveConsumer(b -> {
+                config.enableSorting = b;
+                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+            })
             .build());
 
     categorySorting.addEntry(
@@ -88,7 +94,10 @@ public class ConfigScreen {
             .setYesNoTextSupplier(
                 b -> Text.translatable(b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
             .setDefaultValue(true)
-            .setSaveConsumer(b -> config.enableDefaultItemSortingRules = b)
+            .setSaveConsumer(b -> {
+                config.enableDefaultItemSortingRules = b;
+                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+            })
             .build());
 
     categorySorting.addEntry(
@@ -136,8 +145,9 @@ public class ConfigScreen {
             .setErrorSupplier(ConfigsHelper::validateVariantFollowsBaseBlocks)
             .setSaveConsumer(
                 s -> {
-                  config.variantsFollowingBaseBlocks = s;
-                  ConfigsHelper.updateVariantsFollowingBaseBlocks(s, Configs.VARIANTS_FOLLOWING_BASE_BLOCKS);
+                    config.variantsFollowingBaseBlocks = s;
+                    ConfigsHelper.updateVariantsFollowingBaseBlocks(s, Configs.VARIANTS_FOLLOWING_BASE_BLOCKS);
+                    ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
                 })
             .build());
 
@@ -164,6 +174,7 @@ public class ConfigScreen {
                   s3 -> {
                     config.shapesFollowingBaseBlocks = s3;
                     ExtShapeBridge.INSTANCE.updateShapeList(s3);
+                    ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
                   })
               .build());
     }
@@ -173,7 +184,10 @@ public class ConfigScreen {
             .startBooleanToggle(
                 Text.translatable("option.reasonable-sorting.fence_gate_follows_fence"),
                 config.fenceGateFollowsFence)
-            .setSaveConsumer(b -> config.fenceGateFollowsFence = b)
+            .setSaveConsumer(b -> {
+                config.fenceGateFollowsFence = b;
+                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+            })
             .setDefaultValue(true)
             .setTooltip(
                 Text.translatable("option.reasonable-sorting.fence_gate_follows_fence.tooltip"))
@@ -183,7 +197,10 @@ public class ConfigScreen {
             .startBooleanToggle(
                 Text.translatable("option.reasonable-sorting.block_items_only"),
                 config.blockItemsOnly)
-            .setSaveConsumer(b -> config.blockItemsOnly = b)
+            .setSaveConsumer(b -> {
+                config.blockItemsOnly = b;
+                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+            })
             .setDefaultValue(false)
             .setTooltip(
                 Text.translatable("option.reasonable-sorting.block_items_only.tooltip"))
@@ -206,7 +223,10 @@ public class ConfigScreen {
                 Text.translatable("option.reasonable-sorting.enable_group_transfer.tooltip"))
             .setYesNoTextSupplier(
                 b -> Text.translatable(b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
-            .setSaveConsumer(b -> config.enableGroupTransfer = b)
+            .setSaveConsumer(b -> {
+                config.enableGroupTransfer = b;
+                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+            })
             .build());
 
     categoryTransfer.addEntry(
@@ -215,7 +235,10 @@ public class ConfigScreen {
                 Text.translatable("option.reasonable-sorting.buttons_in_decorations"),
                 config.buttonsInDecorations)
             .setDefaultValue(false)
-            .setSaveConsumer(b -> config.buttonsInDecorations = b)
+            .setSaveConsumer(b -> {
+                config.buttonsInDecorations = b;
+                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+            })
             .build());
     categoryTransfer.addEntry(
         entryBuilder
@@ -223,7 +246,10 @@ public class ConfigScreen {
                 Text.translatable("option.reasonable-sorting.fence_gates_in_decorations"),
                 config.fenceGatesInDecorations)
             .setDefaultValue(true)
-            .setSaveConsumer(b -> config.fenceGatesInDecorations = b)
+            .setSaveConsumer(b -> {
+                config.fenceGatesInDecorations = b;
+                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+            })
             .build());
     categoryTransfer.addEntry(
         entryBuilder
@@ -231,7 +257,10 @@ public class ConfigScreen {
                 Text.translatable("option.reasonable-sorting.swords_in_tools"),
                 config.swordsInTools)
             .setDefaultValue(false)
-            .setSaveConsumer(b -> config.swordsInTools = b)
+            .setSaveConsumer(b -> {
+                config.swordsInTools = b;
+                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+            })
             .build());
     categoryTransfer.addEntry(
         entryBuilder
@@ -239,7 +268,10 @@ public class ConfigScreen {
                 Text.translatable("option.reasonable-sorting.doors_in_decorations"),
                 config.doorsInDecorations)
             .setDefaultValue(false)
-            .setSaveConsumer(b -> config.doorsInDecorations = b)
+            .setSaveConsumer(b -> {
+                config.doorsInDecorations = b;
+                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+            })
             .build());
 
     // DANGER! Renaming getName to getDisplayName
@@ -270,8 +302,9 @@ public class ConfigScreen {
             .setDefaultValue(Collections.emptyList())
             .setSaveConsumer(
                 list -> {
-                  config.transferRules = list;
-                  ConfigsHelper.updateCustomTransferRule(list, Configs.CUSTOM_TRANSFER_RULE);
+                    config.transferRules = list;
+                    ConfigsHelper.updateCustomTransferRule(list, Configs.CUSTOM_TRANSFER_RULE);
+                    ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
                 })
             .build());
 
@@ -293,9 +326,9 @@ public class ConfigScreen {
             .setDefaultValue(Collections.emptyList())
             .setSaveConsumer(
                 list -> {
-                  config.variantTransferRules = list;
-                  ConfigsHelper.updateCustomVariantTransferRules(
-                      list, Configs.CUSTOM_VARIANT_TRANSFER_RULE);
+                    config.variantTransferRules = list;
+                    ConfigsHelper.updateCustomVariantTransferRules(list, Configs.CUSTOM_VARIANT_TRANSFER_RULE);
+                    ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
                 })
             .build());
 
@@ -317,8 +350,9 @@ public class ConfigScreen {
             .setDefaultValue(Collections.emptyList())
             .setSaveConsumer(
                 list -> {
-                  config.regexTransferRules = list;
-                  ConfigsHelper.updateCustomRegexTransferRules(list, Configs.CUSTOM_REGEX_TRANSFER_RULE);
+                    config.regexTransferRules = list;
+                    ConfigsHelper.updateCustomRegexTransferRules(list, Configs.CUSTOM_REGEX_TRANSFER_RULE);
+                    ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
                 })
             .build());
 
@@ -343,8 +377,9 @@ public class ConfigScreen {
                   .setCellErrorSupplier(ConfigsHelper::validateCustomShapeTransferRule)
                   .setSaveConsumer(
                       list -> {
-                        config.shapeTransferRules = list;
-                        ExtShapeBridge.INSTANCE.updateShapeTransferRules(list);
+                            config.shapeTransferRules = list;
+                            ExtShapeBridge.INSTANCE.updateShapeTransferRules(list);
+                            ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
                       })
                   .build())
           .addEntry(
@@ -358,7 +393,10 @@ public class ConfigScreen {
                       Text.translatable(
                           "option.reasonable-sorting.base_blocks_in_building_blocks.tooltip"))
                   .setSaveConsumer(
-                      b -> config.baseBlocksInBuildingBlocks = b)
+                      b -> {
+                          config.baseBlocksInBuildingBlocks = b;
+                          ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                      })
                   .build());
     }
 

@@ -12,4 +12,7 @@ import pers.solid.mod.interfaces.ItemGroupInterface;
 public interface ItemGroupAccessor extends ItemGroupInterface {
     @Override @Accessor("displayStacks") public ItemStackSet getDisplayStacks();
     @Override @Accessor("searchTabStacks") public ItemStackSet getSearchTabStacks();
+
+    @Override @Accessor("displayStacks") public void setDisplayStacks(ItemStackSet set);
+    @Override @Accessor("searchTabStacks") public void setSearchTabStacks(ItemStackSet set);
 }
