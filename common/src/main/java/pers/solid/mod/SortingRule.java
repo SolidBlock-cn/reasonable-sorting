@@ -127,7 +127,7 @@ public interface SortingRule<T> {
       // 如果没有为此注册表设置规则，那么直接返回 null，在 mixin 中表示依然按照原版的迭代方式迭代。
       return null;
     } else {
-      LOGGER.info("{} sorting rules found in the iteration of {}.", ruleSets.size(), registryKey.getValue());
+      //LOGGER.info("{} sorting rules found in the iteration of {}.", ruleSets.size(), registryKey.getValue());
     }
 
     // 被确认跟随在另一对象之后，不因直接在一级迭代产生，而应在一级迭代产生其他对象时产生的对象。
@@ -190,7 +190,7 @@ public interface SortingRule<T> {
       // 如果没有为此注册表设置规则，那么直接返回 null，在 mixin 中表示依然按照原版的迭代方式迭代。
       return null;
     } else {
-      LOGGER.info("{} sorting rules found in the iteration of {}.", ruleSets.size(), registryKey.getValue());
+      //LOGGER.info("{} sorting rules found in the iteration of {}.", ruleSets.size(), registryKey.getValue());
     }
 
     // 被确认跟随在另一对象之后，不因直接在一级迭代产生，而应在一级迭代产生其他对象时产生的对象。
