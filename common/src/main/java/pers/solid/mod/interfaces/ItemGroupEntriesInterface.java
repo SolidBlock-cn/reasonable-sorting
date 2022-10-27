@@ -4,6 +4,7 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStackSet;
 import net.minecraft.resource.featuretoggle.FeatureSet;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
 public interface ItemGroupEntriesInterface {
     public default ItemStackSet getParentTabStacks() { return null; };
@@ -11,5 +12,8 @@ public interface ItemGroupEntriesInterface {
     public default FeatureSet getEnabledFeatures() { return null; };
     public default ItemGroup getGroup() { return null; };
 
+    public default void setParentTabStacks(ItemStackSet set) {};
+    public default void setSearchTabStacks(ItemStackSet set) {};
 
+    public default ItemStackSet transferAndSorting(ItemStackSet itemStackSet) { return (ItemStackSet)itemStackSet.clone(); };
 };

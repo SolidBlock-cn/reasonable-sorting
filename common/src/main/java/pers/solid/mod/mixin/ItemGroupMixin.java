@@ -6,6 +6,7 @@ import net.minecraft.resource.featuretoggle.FeatureSet;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -15,6 +16,7 @@ import pers.solid.mod.Configs;
 import pers.solid.mod.SortingRule;
 import pers.solid.mod.TransferRule;
 import pers.solid.mod.TransferRules;
+import pers.solid.mod.interfaces.ItemGroupEntriesInterface;
 import pers.solid.mod.interfaces.ItemGroupInterface;
 
 import javax.annotation.Nullable;
@@ -30,15 +32,25 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     @Unique ItemStackSet cachedSearchTabStacks = null;
     @Unique ItemStackSet cachedParentTabStacks = null;
 
+    @Shadow @Override
+    public ItemStackSet getDisplayStacks(@Nullable FeatureSet enabledFeatures) {
+        return ((ItemGroup)(Object)this).getDisplayStacks(enabledFeatures != null ? enabledFeatures : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
+    }
+
+    @Shadow @Override
+    public ItemStackSet getSearchTabStacks(@Nullable FeatureSet enabledFeatures) {
+        return ((ItemGroup)(Object)this).getSearchTabStacks(enabledFeatures != null ? enabledFeatures : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
+    }
+
     // AVOID LOOPING! FASTER PERFORMANCE!
     @Unique @Override public ItemStackSet getCachedSearchTabStacks(@Nullable FeatureSet featureSet) {
         if (this.cachedSearchTabStacks == null) {
             Arrays.stream(ItemGroups.GROUPS).forEachOrdered((itemGroupX)->{ ((ItemGroupInterface) (Object) itemGroupX).setIgnoreInjection(true); });
-            ((ItemGroup)(Object)this).getSearchTabStacks(featureSet != null ? featureSet : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
+            ((ItemGroup)(Object)this).getSearchTabStacks(null);
             Arrays.stream(ItemGroups.GROUPS).forEachOrdered((itemGroupX)->{ ((ItemGroupInterface) (Object) itemGroupX).setIgnoreInjection(false); });
         }
         return (this.cachedSearchTabStacks = (ItemStackSet)this.cachedSearchTabStacks.clone()); // avoid reference issues
-    };
+    }
 
     // AVOID LOOPING! FASTER PERFORMANCE!
     @Unique @Override public ItemStackSet getCachedParentTabStacks(@Nullable FeatureSet featureSet) {
@@ -48,7 +60,7 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
             Arrays.stream(ItemGroups.GROUPS).forEachOrdered((itemGroupX)->{ ((ItemGroupInterface) (Object) itemGroupX).setIgnoreInjection(false); });
         }
         return (this.cachedParentTabStacks = (ItemStackSet)this.cachedParentTabStacks.clone()); // avoid reference issues
-    };
+    }
 
     // AVOID LOOPING! FASTER PERFORMANCE!
     @Unique @Override public ItemStackSet getCachedSearchTabStacks() { return this.getCachedSearchTabStacks(FeatureFlags.FEATURE_MANAGER.getFeatureSet()); };
@@ -77,7 +89,7 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     //
     @Unique @Override public void setIgnoreInjection(boolean ignoreInjection) {
         this.ignoreInjection = ignoreInjection;
-    };
+    }
 
     // clear cached
     @Inject(method = "clearStacks", at = @At("HEAD"))
@@ -85,53 +97,38 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         if (!this.ignoreInjection) {
             this.cachedSearchTabStacks = null;
             this.cachedParentTabStacks = null;
-        };
-    };
+        }
+    }
 
     //
     @Inject(method = "getStacks", at = @At("RETURN"), cancellable=true)
     public void getStackInject(FeatureSet enabledFeatures, boolean search, CallbackInfoReturnable<ItemStackSet> cir) {
-        final ItemStackSet itemStackSet = cir.getReturnValue();
-        if ( search && this.cachedSearchTabStacks == null) { this.cachedSearchTabStacks = (ItemStackSet)itemStackSet.clone(); };
-        if (!search && this.cachedParentTabStacks == null) { this.cachedParentTabStacks = (ItemStackSet)itemStackSet.clone(); };
+        final ItemStackSet setSorted = ItemGroupInterface.sortingAndTransfer(cir.getReturnValue(), (ItemGroup) (Object) this, enabledFeatures);
 
-        //
-        ItemGroup group = (ItemGroup) (Object) this;
-
-        // add conditional transfer items
-        Arrays.stream(ItemGroups.GROUPS).toList().stream().forEachOrdered((itemGroup) -> {
-            ((ItemGroupMixin) (Object) itemGroup).ignoreInjection = true;
-            if (itemGroup == group || itemGroup == ItemGroups.INVENTORY || itemGroup == ItemGroups.SEARCH || itemGroup == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer) return;
-            ((ItemGroupMixin)(Object)itemGroup).getCachedParentTabStacks(enabledFeatures).stream().forEachOrdered((stack) -> {
-                if (stack == null) return;
-
-                Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
-
-                if (!groups.isEmpty() && groups.contains(group)) {
-                    itemStackSet.add(stack); // works buggy!
-                }
-            });
-            ((ItemGroupMixin) (Object) itemGroup).ignoreInjection = false;
-        });
-
-        // remove non-conditional transfer items
-        if (!(group == ItemGroups.INVENTORY || group == ItemGroups.SEARCH || group == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer)) {
-            itemStackSet.stream().forEachOrdered((stack) -> {
-                if (stack != null) {
-                    Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
-
-                    if (!groups.isEmpty() && !groups.contains(group)) {
-                        itemStackSet.remove(stack);
-                    }
-                }
-            });
-        }
-
-        //
-        var sortedStackSet = SortingRule.sortItemGroupEntries(itemStackSet);
-        if ((sortedStackSet = sortedStackSet != null ? sortedStackSet : itemStackSet) != null) {
-            cir.setReturnValue(sortedStackSet);
+        if (setSorted != null) {
+            cir.setReturnValue(setSorted);
             cir.cancel();
         }
+    }
+
+    //
+    @Redirect(method = "getStacks", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;addItems(Lnet/minecraft/resource/featuretoggle/FeatureSet;Lnet/minecraft/item/ItemGroup$Entries;)V"))
+    public void onItemAdd(ItemGroup instance, FeatureSet featureSet, ItemGroup.Entries entries) {
+        instance.addItems(featureSet, entries);
+
+        // interface
+        var entriesInterface = ((ItemGroupEntriesInterface) entries);
+        var entriesAccessor = (ItemGroupEntriesImplAccessor) entries;
+
+        if (this.cachedSearchTabStacks == null) {
+            this.cachedSearchTabStacks = (ItemStackSet) entriesAccessor.getParentTabStacks().clone();
+        }
+
+        if (this.cachedParentTabStacks == null) {
+            this.cachedParentTabStacks = (ItemStackSet) entriesAccessor.getSearchTabStacks().clone();
+        }
+
+        entriesInterface.setParentTabStacks(entriesInterface.transferAndSorting(entriesAccessor.getParentTabStacks()));
+        entriesInterface.setSearchTabStacks(entriesInterface.transferAndSorting(entriesAccessor.getSearchTabStacks()));
     }
 }
