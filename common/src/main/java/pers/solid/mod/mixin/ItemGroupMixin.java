@@ -1,5 +1,6 @@
 package pers.solid.mod.mixin;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.*;
 import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.resource.featuretoggle.FeatureSet;
@@ -34,19 +35,26 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
 
     @Shadow @Override
     public ItemStackSet getDisplayStacks(@Nullable FeatureSet enabledFeatures) {
-        return ((ItemGroup)(Object)this).getDisplayStacks(enabledFeatures != null ? enabledFeatures : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
+        var player = MinecraftClient.getInstance().player;
+        var currentFeatureSet = player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
+        return ((ItemGroup)(Object)this).getDisplayStacks(enabledFeatures != null ? enabledFeatures : currentFeatureSet);
     }
 
     @Shadow @Override
     public ItemStackSet getSearchTabStacks(@Nullable FeatureSet enabledFeatures) {
-        return ((ItemGroup)(Object)this).getSearchTabStacks(enabledFeatures != null ? enabledFeatures : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
+        var player = MinecraftClient.getInstance().player;
+        var currentFeatureSet = player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
+        return ((ItemGroup)(Object)this).getSearchTabStacks(enabledFeatures != null ? enabledFeatures : currentFeatureSet);
     }
 
     // AVOID LOOPING! FASTER PERFORMANCE!
     @Unique @Override public ItemStackSet getCachedSearchTabStacks(@Nullable FeatureSet featureSet) {
         if (this.cachedSearchTabStacks == null) {
+            var player = MinecraftClient.getInstance().player;
+            var currentFeatureSet = player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
+
             Arrays.stream(ItemGroups.GROUPS).forEachOrdered((itemGroupX)->{ ((ItemGroupInterface) (Object) itemGroupX).setIgnoreInjection(true); });
-            ((ItemGroup)(Object)this).getSearchTabStacks(null);
+            ((ItemGroup)(Object)this).getSearchTabStacks(featureSet != null ? featureSet : currentFeatureSet);
             Arrays.stream(ItemGroups.GROUPS).forEachOrdered((itemGroupX)->{ ((ItemGroupInterface) (Object) itemGroupX).setIgnoreInjection(false); });
         }
         return (this.cachedSearchTabStacks = (ItemStackSet)this.cachedSearchTabStacks.clone()); // avoid reference issues
@@ -55,16 +63,19 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     // AVOID LOOPING! FASTER PERFORMANCE!
     @Unique @Override public ItemStackSet getCachedParentTabStacks(@Nullable FeatureSet featureSet) {
         if (this.cachedParentTabStacks == null) {
+            var player = MinecraftClient.getInstance().player;
+            var currentFeatureSet = player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
+
             Arrays.stream(ItemGroups.GROUPS).forEachOrdered((itemGroupX)->{ ((ItemGroupInterface) (Object) itemGroupX).setIgnoreInjection(true); });
-            ((ItemGroup)(Object)this).getDisplayStacks(featureSet != null ? featureSet : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
+            ((ItemGroup)(Object)this).getDisplayStacks(featureSet != null ? featureSet : currentFeatureSet);
             Arrays.stream(ItemGroups.GROUPS).forEachOrdered((itemGroupX)->{ ((ItemGroupInterface) (Object) itemGroupX).setIgnoreInjection(false); });
         }
         return (this.cachedParentTabStacks = (ItemStackSet)this.cachedParentTabStacks.clone()); // avoid reference issues
     }
 
     // AVOID LOOPING! FASTER PERFORMANCE!
-    @Unique @Override public ItemStackSet getCachedSearchTabStacks() { return this.getCachedSearchTabStacks(FeatureFlags.FEATURE_MANAGER.getFeatureSet()); };
-    @Unique @Override public ItemStackSet getCachedParentTabStacks() { return this.getCachedParentTabStacks(FeatureFlags.FEATURE_MANAGER.getFeatureSet()); };
+    @Unique @Override public ItemStackSet getCachedSearchTabStacks() { return this.getCachedSearchTabStacks(null); };
+    @Unique @Override public ItemStackSet getCachedParentTabStacks() { return this.getCachedParentTabStacks(null); };
 
     /**
      * 判断物品是否在转移规则中指定的组中的任意一个。如果转移规则没有此物品，则按照原版进行。

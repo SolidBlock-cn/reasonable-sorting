@@ -3,6 +3,7 @@ package pers.solid.mod;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.ItemGroup;
@@ -79,7 +80,7 @@ public class ConfigScreen {
             .setDefaultValue(true)
             .setSaveConsumer(b -> {
                 config.enableSorting = b;
-                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                ItemGroupInterface.updateGroups(null, null);
             })
             .build());
 
@@ -96,7 +97,7 @@ public class ConfigScreen {
             .setDefaultValue(true)
             .setSaveConsumer(b -> {
                 config.enableDefaultItemSortingRules = b;
-                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                ItemGroupInterface.updateGroups(null, null);
             })
             .build());
 
@@ -147,7 +148,7 @@ public class ConfigScreen {
                 s -> {
                     config.variantsFollowingBaseBlocks = s;
                     ConfigsHelper.updateVariantsFollowingBaseBlocks(s, Configs.VARIANTS_FOLLOWING_BASE_BLOCKS);
-                    ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                    ItemGroupInterface.updateGroups(null, null);
                 })
             .build());
 
@@ -174,7 +175,7 @@ public class ConfigScreen {
                   s3 -> {
                     config.shapesFollowingBaseBlocks = s3;
                     ExtShapeBridge.INSTANCE.updateShapeList(s3);
-                    ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                    ItemGroupInterface.updateGroups(null, null);
                   })
               .build());
     }
@@ -186,7 +187,7 @@ public class ConfigScreen {
                 config.fenceGateFollowsFence)
             .setSaveConsumer(b -> {
                 config.fenceGateFollowsFence = b;
-                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                ItemGroupInterface.updateGroups(null, null);
             })
             .setDefaultValue(true)
             .setTooltip(
@@ -199,7 +200,7 @@ public class ConfigScreen {
                 config.blockItemsOnly)
             .setSaveConsumer(b -> {
                 config.blockItemsOnly = b;
-                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                ItemGroupInterface.updateGroups(null, null);
             })
             .setDefaultValue(false)
             .setTooltip(
@@ -225,7 +226,7 @@ public class ConfigScreen {
                 b -> Text.translatable(b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
             .setSaveConsumer(b -> {
                 config.enableGroupTransfer = b;
-                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                ItemGroupInterface.updateGroups(null, null);
             })
             .build());
 
@@ -237,7 +238,7 @@ public class ConfigScreen {
             .setDefaultValue(false)
             .setSaveConsumer(b -> {
                 config.buttonsInDecorations = b;
-                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                ItemGroupInterface.updateGroups(null, null);
             })
             .build());
     categoryTransfer.addEntry(
@@ -248,7 +249,7 @@ public class ConfigScreen {
             .setDefaultValue(true)
             .setSaveConsumer(b -> {
                 config.fenceGatesInDecorations = b;
-                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                ItemGroupInterface.updateGroups(null, null);
             })
             .build());
     categoryTransfer.addEntry(
@@ -259,7 +260,7 @@ public class ConfigScreen {
             .setDefaultValue(false)
             .setSaveConsumer(b -> {
                 config.swordsInTools = b;
-                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                ItemGroupInterface.updateGroups(null, null);
             })
             .build());
     categoryTransfer.addEntry(
@@ -270,7 +271,7 @@ public class ConfigScreen {
             .setDefaultValue(false)
             .setSaveConsumer(b -> {
                 config.doorsInDecorations = b;
-                ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                ItemGroupInterface.updateGroups(null, null);
             })
             .build());
 
@@ -304,7 +305,7 @@ public class ConfigScreen {
                 list -> {
                     config.transferRules = list;
                     ConfigsHelper.updateCustomTransferRule(list, Configs.CUSTOM_TRANSFER_RULE);
-                    ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                    ItemGroupInterface.updateGroups(null, null);
                 })
             .build());
 
@@ -328,7 +329,7 @@ public class ConfigScreen {
                 list -> {
                     config.variantTransferRules = list;
                     ConfigsHelper.updateCustomVariantTransferRules(list, Configs.CUSTOM_VARIANT_TRANSFER_RULE);
-                    ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                    ItemGroupInterface.updateGroups(null, null);
                 })
             .build());
 
@@ -352,7 +353,7 @@ public class ConfigScreen {
                 list -> {
                     config.regexTransferRules = list;
                     ConfigsHelper.updateCustomRegexTransferRules(list, Configs.CUSTOM_REGEX_TRANSFER_RULE);
-                    ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                    ItemGroupInterface.updateGroups(null, null);
                 })
             .build());
 
@@ -379,7 +380,7 @@ public class ConfigScreen {
                       list -> {
                             config.shapeTransferRules = list;
                             ExtShapeBridge.INSTANCE.updateShapeTransferRules(list);
-                            ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                            ItemGroupInterface.updateGroups(null, null);
                       })
                   .build())
           .addEntry(
@@ -395,7 +396,7 @@ public class ConfigScreen {
                   .setSaveConsumer(
                       b -> {
                           config.baseBlocksInBuildingBlocks = b;
-                          ItemGroupInterface.updateGroups(FeatureFlags.FEATURE_MANAGER.getFeatureSet(), null);
+                          ItemGroupInterface.updateGroups(null, null);
                       })
                   .build());
     }
