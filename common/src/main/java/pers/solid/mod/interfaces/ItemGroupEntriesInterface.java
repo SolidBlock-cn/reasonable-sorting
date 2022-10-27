@@ -10,4 +10,6 @@ public interface ItemGroupEntriesInterface {
     public default ItemStackSet getSearchTabStacks() { return null; };
     public default FeatureSet getEnabledFeatures() { return null; };
     public default ItemGroup getGroup() { return null; };
+
+
 };

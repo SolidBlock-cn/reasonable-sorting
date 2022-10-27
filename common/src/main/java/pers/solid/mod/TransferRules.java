@@ -9,8 +9,11 @@ import net.minecraft.item.*;
 import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.util.Identifier;
+import pers.solid.mod.interfaces.ItemGroupInterface;
 import pers.solid.mod.mixin.BlockFamiliesAccessor;
+import pers.solid.mod.mixin.ItemGroupMixin;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
@@ -21,12 +24,22 @@ import java.util.regex.Pattern;
 public final class TransferRules {
 
   // I don't know chinese :(
-  public static boolean itemInGroup(Item item, ItemGroup itemGroup) {
+  public static boolean itemInGroup(Item item, ItemGroup itemGroup, @Nullable FeatureSet features) {
     AtomicBoolean found = new AtomicBoolean(false);
-    itemGroup.getDisplayStacks(FeatureSet.of(FeatureFlags.BUNDLE, FeatureFlags.UPDATE_1_20, FeatureFlags.VANILLA)).forEach((stack)->{
-      if (stack != null && stack.getItem() == item) { found.set(true); };
-    });
+    if (itemGroup != null) {
+      //((ItemGroupInterface) (Object) itemGroup).setIgnoreInjection(true);
+      ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(features).forEach((stack) -> {
+        if (stack != null && stack.getItem() == item) {
+          found.set(true);
+        }
+      });
+      //((ItemGroupInterface) (Object) itemGroup).setIgnoreInjection(false);
+    }
     return found.get();
+  };
+
+  public static boolean itemInGroup(Item item, ItemGroup itemGroup) {
+    return itemInGroup(item, itemGroup, null);
   };
 
   /**
