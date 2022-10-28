@@ -67,6 +67,8 @@ public interface ItemGroupInterface {
 
     public default void setDisplayStacks(ItemStackSet set) {  };
     public default void setSearchTabStacks(ItemStackSet set){  };
+    public default void setNeedsUpdate(boolean update) { };
+
 
     public default ItemStackSet getDisplayStacks() {
         return null;

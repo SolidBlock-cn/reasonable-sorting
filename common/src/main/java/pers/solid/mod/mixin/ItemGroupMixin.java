@@ -96,6 +96,11 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
 
     //
     @Unique public boolean ignoreInjection = false;
+    @Unique public boolean needsToUpdate = false;
+
+    @Unique @Override public void setNeedsUpdate(boolean update) {
+        this.needsToUpdate = update;
+    };
 
     //
     @Unique @Override public void setIgnoreInjection(boolean ignoreInjection) {
@@ -109,16 +114,18 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         this.cachedParentTabStacks = null;
     }
 
-    //
-    //@Inject(method = "getStacks", at = @At("RETURN"), cancellable=true)
-    //public void getStackInject(FeatureSet enabledFeatures, boolean search, CallbackInfoReturnable<ItemStackSet> cir) {
-        //final ItemStackSet setSorted = ItemGroupInterface.sortingAndTransfer(cir.getReturnValue(), (ItemGroup) (Object) this, enabledFeatures);
-
-        //if (setSorted != null) {
-            //cir.setReturnValue(setSorted);
-            //cir.cancel();
-        //}
-    //}
+    @Inject(method = "getStacks", at = @At("HEAD"))
+    public void getStackInject(FeatureSet featureSet, boolean search, CallbackInfoReturnable<ItemStackSet> cir) {
+        if (this.needsToUpdate) {
+            var player = MinecraftClient.getInstance().player;
+            var currentFeatureSet = featureSet != null ? featureSet : (player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
+            if (player != null) {
+                ((ItemGroupInterface) this).setDisplayStacks(null);
+                ((ItemGroupInterface) this).setSearchTabStacks(null);
+            }
+        }
+        this.needsToUpdate = false;
+    }
 
     //
     @Redirect(method = "getStacks", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;addItems(Lnet/minecraft/resource/featuretoggle/FeatureSet;Lnet/minecraft/item/ItemGroup$Entries;)V"))
