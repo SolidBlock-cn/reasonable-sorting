@@ -144,7 +144,7 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
             this.cachedParentTabStacks = (ItemStackSet) entriesAccessor.getParentTabStacks().clone();
         }
 
-        entriesInterface.setParentTabStacks(entriesInterface.transferAndSorting(entriesAccessor.getParentTabStacks()));
-        entriesInterface.setSearchTabStacks(entriesInterface.transferAndSorting(entriesAccessor.getSearchTabStacks()));
+        entriesInterface.setParentTabStacks(entriesInterface.transferAndSorting((ItemStackSet)entriesAccessor.getParentTabStacks().clone()));
+        entriesInterface.setSearchTabStacks(entriesInterface.transferAndSorting((ItemStackSet)entriesAccessor.getSearchTabStacks().clone()));
     }
 }
