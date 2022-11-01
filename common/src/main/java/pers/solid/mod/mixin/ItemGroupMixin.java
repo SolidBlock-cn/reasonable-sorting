@@ -27,12 +27,19 @@ import java.util.stream.Collectors;
 
 @Mixin(ItemGroup.class)
 public abstract class ItemGroupMixin implements ItemGroupInterface {
-    @Shadow public abstract void addItems(FeatureSet enabledFeatures, ItemGroup.Entries entries);
 
-    // AVOID LOOPING! FASTER PERFORMANCE!
+    // 
     @Unique ItemStackSet cachedSearchTabStacks = null;
     @Unique ItemStackSet cachedParentTabStacks = null;
     @Unique boolean needsToUpdate = false;
+
+    //
+    @Shadow public abstract void addItems(FeatureSet enabledFeatures, ItemGroup.Entries entries);
+    @Unique @Override public ItemStackSet getCachedSearchTabStacks() { return this.getCachedSearchTabStacks(null); };
+    @Unique @Override public ItemStackSet getCachedParentTabStacks() { return this.getCachedParentTabStacks(null); };
+    @Unique @Override public void setNeedsUpdate(boolean update) {
+        this.needsToUpdate = update;
+    };
 
     @Shadow @Override
     public ItemStackSet getDisplayStacks(@Nullable FeatureSet enabledFeatures) {
@@ -68,10 +75,6 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         return (this.cachedParentTabStacks = (ItemStackSet)this.cachedParentTabStacks.clone()); // avoid reference issues
     }
 
-    //
-    @Unique @Override public ItemStackSet getCachedSearchTabStacks() { return this.getCachedSearchTabStacks(null); };
-    @Unique @Override public ItemStackSet getCachedParentTabStacks() { return this.getCachedParentTabStacks(null); };
-
     /**
      * 判断物品是否在转移规则中指定的组中的任意一个。如果转移规则没有此物品，则按照原版进行。
      */
@@ -89,9 +92,6 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         }
     }
 
-    @Unique @Override public void setNeedsUpdate(boolean update) {
-        this.needsToUpdate = update;
-    };
 
     // clear cached
     @Inject(method = "clearStacks", at = @At("HEAD"))
@@ -117,7 +117,6 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     @Redirect(method = "getStacks", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;addItems(Lnet/minecraft/resource/featuretoggle/FeatureSet;Lnet/minecraft/item/ItemGroup$Entries;)V"))
     public void onItemAdd(ItemGroup instance, FeatureSet featureSet, ItemGroup.Entries entries) {
         instance.addItems(featureSet, entries);
-        if (instance == ItemGroups.INVENTORY || instance == ItemGroups.SEARCH || instance == ItemGroups.HOTBAR) return;
 
         // interface
         var entriesInterface = ((ItemGroupEntriesInterface) entries);
@@ -131,6 +130,7 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
             this.cachedParentTabStacks = (ItemStackSet) entriesAccessor.getParentTabStacks().clone();
         }
 
+        if (instance == ItemGroups.INVENTORY || instance == ItemGroups.SEARCH || instance == ItemGroups.HOTBAR) return;
         entriesInterface.setParentTabStacks(entriesInterface.transferAndSorting((ItemStackSet)entriesAccessor.getParentTabStacks().clone()));
         entriesInterface.setSearchTabStacks(entriesInterface.transferAndSorting((ItemStackSet)entriesAccessor.getSearchTabStacks().clone()));
     }
