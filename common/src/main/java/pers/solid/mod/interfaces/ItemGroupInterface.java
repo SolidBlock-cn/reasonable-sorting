@@ -31,7 +31,7 @@ public interface ItemGroupInterface {
     public default void setSearchTabStacks(ItemStackSet set){  };
     public default void setNeedsUpdate(boolean update) { };
 
-    public static ItemStackSet sortingAndTransfer(ItemStackSet itemStackSet, ItemGroup group, FeatureSet enabledFeatures) {
+    public static ItemStackSet transferAndSorting(ItemStackSet itemStackSet, ItemGroup group, FeatureSet enabledFeatures) {
         // add conditional transfer items
         Arrays.stream(ItemGroups.GROUPS).toList().stream().forEachOrdered((itemGroup) -> {
             if (itemGroup == group || itemGroup == ItemGroups.INVENTORY || itemGroup == ItemGroups.SEARCH || itemGroup == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer) return;

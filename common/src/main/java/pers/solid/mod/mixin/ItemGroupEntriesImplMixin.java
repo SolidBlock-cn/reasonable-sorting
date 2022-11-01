@@ -26,7 +26,7 @@ public class ItemGroupEntriesImplMixin implements ItemGroupEntriesInterface {
     public ItemStackSet transferAndSorting(ItemStackSet itemStackSet) {
         var group = ((ItemGroupEntriesImplAccessor)this).getGroup();
         var enabledFeatures = ((ItemGroupEntriesImplAccessor)this).getEnabledFeatures();
-        return ItemGroupInterface.sortingAndTransfer(itemStackSet, group, enabledFeatures);
+        return ItemGroupInterface.transferAndSorting(itemStackSet, group, enabledFeatures);
     }
 
 }

@@ -117,6 +117,7 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     @Redirect(method = "getStacks", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;addItems(Lnet/minecraft/resource/featuretoggle/FeatureSet;Lnet/minecraft/item/ItemGroup$Entries;)V"))
     public void onItemAdd(ItemGroup instance, FeatureSet featureSet, ItemGroup.Entries entries) {
         instance.addItems(featureSet, entries);
+        if (instance == ItemGroups.INVENTORY || instance == ItemGroups.SEARCH || instance == ItemGroups.HOTBAR) return;
 
         // interface
         var entriesInterface = ((ItemGroupEntriesInterface) entries);
