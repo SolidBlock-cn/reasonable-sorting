@@ -116,22 +116,44 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     //
     @Redirect(method = "getStacks", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;addItems(Lnet/minecraft/resource/featuretoggle/FeatureSet;Lnet/minecraft/item/ItemGroup$Entries;)V"))
     public void onItemAdd(ItemGroup instance, FeatureSet featureSet, ItemGroup.Entries entries) {
-        instance.addItems(featureSet, entries);
-
         // interface
         var entriesInterface = ((ItemGroupEntriesInterface) entries);
         var entriesAccessor = (ItemGroupEntriesImplAccessor) entries;
 
-        if (this.cachedSearchTabStacks == null) {
-            this.cachedSearchTabStacks = (ItemStackSet) entriesAccessor.getSearchTabStacks().clone();
-        }
+        // reference, from empty
+        var originalParentStacksRef = (ItemStackSet)entriesAccessor.getParentTabStacks();
+        var originalSearchStacksRef = (ItemStackSet)entriesAccessor.getSearchTabStacks();
 
+        // !empty!
+        var transferParentStacks = (ItemStackSet)originalParentStacksRef.clone();
+        var transferSearchStacks = (ItemStackSet)originalSearchStacksRef.clone();
+
+        // system function, add to original...Ref
+        instance.addItems(featureSet, entries);
+
+        // only after added items
         if (this.cachedParentTabStacks == null) {
-            this.cachedParentTabStacks = (ItemStackSet) entriesAccessor.getParentTabStacks().clone();
+            this.cachedParentTabStacks = (ItemStackSet)originalParentStacksRef.clone();
         }
 
+        // only after added items
+        if (this.cachedSearchTabStacks == null) {
+            this.cachedSearchTabStacks = (ItemStackSet)originalSearchStacksRef.clone();
+        }
+
+        //
         if (instance == ItemGroups.INVENTORY || instance == ItemGroups.SEARCH || instance == ItemGroups.HOTBAR) return;
-        entriesInterface.setParentTabStacks(entriesInterface.transferAndSorting((ItemStackSet)entriesAccessor.getParentTabStacks().clone()));
-        entriesInterface.setSearchTabStacks(entriesInterface.transferAndSorting((ItemStackSet)entriesAccessor.getSearchTabStacks().clone()));
+
+        // parent stacks
+        transferParentStacks = ItemGroupInterface.transfer((ItemStackSet)transferParentStacks.clone(), instance, featureSet);
+        transferParentStacks.addAll(originalParentStacksRef);
+        transferParentStacks = ItemGroupInterface.exclude((ItemStackSet)transferParentStacks.clone(), instance, featureSet);
+        entriesInterface.setParentTabStacks(ItemGroupInterface.sorting((ItemStackSet)transferParentStacks.clone(), instance, featureSet));
+
+        // search stacks
+        transferSearchStacks = ItemGroupInterface.transfer((ItemStackSet)transferSearchStacks.clone(), instance, featureSet);
+        transferSearchStacks.addAll(originalSearchStacksRef);
+        transferSearchStacks = ItemGroupInterface.exclude((ItemStackSet)transferSearchStacks.clone(), instance, featureSet);
+        entriesInterface.setSearchTabStacks(ItemGroupInterface.sorting((ItemStackSet)transferSearchStacks.clone(), instance, featureSet));
     }
 }
