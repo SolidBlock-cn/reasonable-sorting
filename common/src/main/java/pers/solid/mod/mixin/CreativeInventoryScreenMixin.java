@@ -64,8 +64,5 @@ public abstract class CreativeInventoryScreenMixin {
     }
     return instance.getDisplayName();
   }
-
-  @Inject(method="isClickInTab", at = @At(value="RETURN"))
-  void whenTabClicked(ItemGroup group, double mouseX, double mouseY, CallbackInfoReturnable<Boolean> cir) {
-  }
+  
 }

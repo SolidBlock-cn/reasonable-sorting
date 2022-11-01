@@ -16,6 +16,20 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public interface ItemGroupInterface {
+    public default ItemStackSet getCachedSearchTabStacks() { return null; };
+    public default ItemStackSet getCachedParentTabStacks() { return null; };
+    public default ItemStackSet getCachedSearchTabStacks(FeatureSet featureSet) { return null; };
+    public default ItemStackSet getCachedParentTabStacks(FeatureSet featureSet) { return null; };
+    public default ItemStackSet getDisplayStacks() {
+        return null;
+    }
+    public default ItemStackSet getSearchTabStacks() {
+        return null;
+    }
+
+    public default void setDisplayStacks(ItemStackSet set) {  };
+    public default void setSearchTabStacks(ItemStackSet set){  };
+    public default void setNeedsUpdate(boolean update) { };
 
     public static ItemStackSet sortingAndTransfer(ItemStackSet itemStackSet, ItemGroup group, FeatureSet enabledFeatures) {
         // add conditional transfer items
@@ -65,19 +79,6 @@ public interface ItemGroupInterface {
         }
     }
 
-    public default void setDisplayStacks(ItemStackSet set) {  };
-    public default void setSearchTabStacks(ItemStackSet set){  };
-    public default void setNeedsUpdate(boolean update) { };
-
-
-    public default ItemStackSet getDisplayStacks() {
-        return null;
-    }
-
-    public default ItemStackSet getSearchTabStacks() {
-        return null;
-    }
-
     public default ItemStackSet getDisplayStacks(@Nullable FeatureSet enabledFeatures) {
         var player = MinecraftClient.getInstance().player;
         var currentFeatureSet = player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
@@ -90,9 +91,4 @@ public interface ItemGroupInterface {
         return ((ItemGroup)(Object)this).getSearchTabStacks(enabledFeatures != null ? enabledFeatures : currentFeatureSet);
     }
 
-    public void setIgnoreInjection(boolean ignoreInjection);
-    public default ItemStackSet getCachedSearchTabStacks() { return null; };
-    public default ItemStackSet getCachedParentTabStacks() { return null; };
-    public default ItemStackSet getCachedSearchTabStacks(FeatureSet featureSet) { return null; };
-    public default ItemStackSet getCachedParentTabStacks(FeatureSet featureSet) { return null; };
 }

@@ -18,17 +18,9 @@ import java.util.stream.Stream;
 
 @Mixin(SimpleRegistry.class)
 public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> {
-
-  @Shadow
-  @Final
-  private ObjectList<RegistryEntry.Reference<T>> rawIdToEntry;
-
-  @Shadow
-  @Nullable
-  private List<RegistryEntry.Reference<T>> cachedEntries;
-
-  @Shadow
-  public abstract Stream<RegistryEntry.Reference<T>> streamEntries();
+  @Shadow @Final private ObjectList<RegistryEntry.Reference<T>> rawIdToEntry;
+  @Shadow @Nullable private List<RegistryEntry.Reference<T>> cachedEntries;
+  @Shadow public abstract Stream<RegistryEntry.Reference<T>> streamEntries();
 
   public SimpleRegistryMixin(RegistryKey<? extends Registry<T>> registryKey, Lifecycle lifecycle) {
     super(registryKey, lifecycle);

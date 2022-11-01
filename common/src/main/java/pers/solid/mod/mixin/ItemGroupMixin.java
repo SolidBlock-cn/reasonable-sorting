@@ -32,6 +32,7 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     // AVOID LOOPING! FASTER PERFORMANCE!
     @Unique ItemStackSet cachedSearchTabStacks = null;
     @Unique ItemStackSet cachedParentTabStacks = null;
+    @Unique boolean needsToUpdate = false;
 
     @Shadow @Override
     public ItemStackSet getDisplayStacks(@Nullable FeatureSet enabledFeatures) {
@@ -47,33 +48,27 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         return ((ItemGroup)(Object)this).getSearchTabStacks(enabledFeatures != null ? enabledFeatures : currentFeatureSet);
     }
 
-    // AVOID LOOPING! FASTER PERFORMANCE!
+    //
     @Unique @Override public ItemStackSet getCachedSearchTabStacks(@Nullable FeatureSet featureSet) {
         if (this.cachedSearchTabStacks == null) {
             var player = MinecraftClient.getInstance().player;
             var currentFeatureSet = player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
-
-            Arrays.stream(ItemGroups.GROUPS).forEachOrdered((itemGroupX)->{ ((ItemGroupInterface) (Object) itemGroupX).setIgnoreInjection(true); });
             ((ItemGroup)(Object)this).getSearchTabStacks(featureSet != null ? featureSet : currentFeatureSet);
-            Arrays.stream(ItemGroups.GROUPS).forEachOrdered((itemGroupX)->{ ((ItemGroupInterface) (Object) itemGroupX).setIgnoreInjection(false); });
         }
         return (this.cachedSearchTabStacks = (ItemStackSet)this.cachedSearchTabStacks.clone()); // avoid reference issues
     }
 
-    // AVOID LOOPING! FASTER PERFORMANCE!
+    //
     @Unique @Override public ItemStackSet getCachedParentTabStacks(@Nullable FeatureSet featureSet) {
         if (this.cachedParentTabStacks == null) {
             var player = MinecraftClient.getInstance().player;
             var currentFeatureSet = player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
-
-            Arrays.stream(ItemGroups.GROUPS).forEachOrdered((itemGroupX)->{ ((ItemGroupInterface) (Object) itemGroupX).setIgnoreInjection(true); });
             ((ItemGroup)(Object)this).getDisplayStacks(featureSet != null ? featureSet : currentFeatureSet);
-            Arrays.stream(ItemGroups.GROUPS).forEachOrdered((itemGroupX)->{ ((ItemGroupInterface) (Object) itemGroupX).setIgnoreInjection(false); });
         }
         return (this.cachedParentTabStacks = (ItemStackSet)this.cachedParentTabStacks.clone()); // avoid reference issues
     }
 
-    // AVOID LOOPING! FASTER PERFORMANCE!
+    //
     @Unique @Override public ItemStackSet getCachedSearchTabStacks() { return this.getCachedSearchTabStacks(null); };
     @Unique @Override public ItemStackSet getCachedParentTabStacks() { return this.getCachedParentTabStacks(null); };
 
@@ -94,18 +89,9 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         }
     }
 
-    //
-    @Unique public boolean ignoreInjection = false;
-    @Unique public boolean needsToUpdate = false;
-
     @Unique @Override public void setNeedsUpdate(boolean update) {
         this.needsToUpdate = update;
     };
-
-    //
-    @Unique @Override public void setIgnoreInjection(boolean ignoreInjection) {
-        this.ignoreInjection = ignoreInjection;
-    }
 
     // clear cached
     @Inject(method = "clearStacks", at = @At("HEAD"))
