@@ -55,6 +55,21 @@ public final class SortingRules {
       .putAll(Items.ARROW, Items.TRIDENT, Items.SHIELD, Items.TOTEM_OF_UNDYING)
       .putAll(Items.GHAST_TEAR, Items.FERMENTED_SPIDER_EYE, Items.BLAZE_POWDER, Items.MAGMA_CREAM, Items.BREWING_STAND, Items.CAULDRON, Items.GLISTERING_MELON_SLICE, Items.GOLDEN_CARROT, Items.RABBIT_FOOT, Items.PHANTOM_MEMBRANE, Items.GLASS_BOTTLE, Items.DRAGON_BREATH)
       .putAll(Items.FLINT, Items.SNOWBALL, Items.LEATHER)
+
+      // due works buggy in snapshots (weapon in tools)
+      .put(Items.WOODEN_SWORD, Items.WOODEN_SHOVEL)
+      .put(Items.STONE_SWORD, Items.STONE_SHOVEL)
+      .put(Items.IRON_SWORD, Items.IRON_SHOVEL)
+      .put(Items.GOLDEN_SWORD, Items.GOLDEN_SHOVEL)
+      .put(Items.DIAMOND_SWORD, Items.DIAMOND_SHOVEL)
+      .put(Items.NETHERITE_SWORD, Items.NETHERITE_SHOVEL)
+      .putAll(Items.WOODEN_SHOVEL, Items.WOODEN_PICKAXE, Items.WOODEN_AXE, Items.WOODEN_HOE)
+      .putAll(Items.STONE_SHOVEL, Items.STONE_PICKAXE, Items.STONE_AXE, Items.STONE_HOE)
+      .putAll(Items.IRON_SHOVEL, Items.IRON_PICKAXE, Items.IRON_AXE, Items.IRON_HOE)
+      .putAll(Items.GOLDEN_SHOVEL, Items.GOLDEN_PICKAXE, Items.GOLDEN_AXE, Items.GOLDEN_HOE)
+      .putAll(Items.DIAMOND_SHOVEL, Items.DIAMOND_PICKAXE, Items.DIAMOND_AXE, Items.DIAMOND_HOE)
+      .putAll(Items.NETHERITE_SHOVEL, Items.NETHERITE_PICKAXE, Items.NETHERITE_AXE, Items.NETHERITE_HOE)
+
       .build();
   /**
    * 在 {@link Configs#VARIANTS_FOLLOWING_BASE_BLOCKS} 中的各个变种的方块，应该跟随其基础方块。
