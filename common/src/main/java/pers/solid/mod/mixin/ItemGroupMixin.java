@@ -145,26 +145,14 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         if (instance == ItemGroups.INVENTORY || instance == ItemGroups.SEARCH || instance == ItemGroups.HOTBAR) return;
 
         // empty!
-        transferParentStacks = (ItemStackSet)transferParentStacks.clone();
-        transferSearchStacks = (ItemStackSet)transferSearchStacks.clone();
-
-        //
-        //((ItemGroupInterface)instance).setDisplayStacks(transferParentStacks);
-        //((ItemGroupInterface)instance).setSearchTabStacks(transferSearchStacks);
-
-        //
-        entriesInterface.setParentTabStacks(transferParentStacks);
-        entriesInterface.setSearchTabStacks(transferSearchStacks);
+        entriesInterface.setParentTabStacks(transferParentStacks = (ItemStackSet)transferParentStacks.clone());
+        entriesInterface.setSearchTabStacks(transferSearchStacks = (ItemStackSet)transferSearchStacks.clone());
 
         //
         ItemGroupInterface.transfer(new ItemStackSet[]{transferParentStacks, transferSearchStacks}, instance, featureSet, entries);
 
-        // parent stacks
-        transferParentStacks = ItemGroupInterface.exclude(transferParentStacks, instance, featureSet);
-        transferSearchStacks = ItemGroupInterface.exclude(transferSearchStacks, instance, featureSet);
-
         //
-        entriesInterface.setParentTabStacks(ItemGroupInterface.sorting(transferParentStacks, instance, featureSet));
-        entriesInterface.setSearchTabStacks(ItemGroupInterface.sorting(transferSearchStacks, instance, featureSet));
+        entriesInterface.setParentTabStacks(ItemGroupInterface.sorting(transferParentStacks = ItemGroupInterface.exclude(transferParentStacks, instance, featureSet), instance, featureSet));
+        entriesInterface.setSearchTabStacks(ItemGroupInterface.sorting(transferSearchStacks = ItemGroupInterface.exclude(transferSearchStacks, instance, featureSet), instance, featureSet));
     }
 }
