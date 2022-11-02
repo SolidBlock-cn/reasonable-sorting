@@ -23,13 +23,6 @@ import java.util.stream.Collectors;
 public class ItemGroupEntriesImplMixin implements ItemGroupEntriesInterface {
 
     @Unique @Override
-    public ItemStackSet transfer(ItemStackSet itemStackSet) {
-        var group = ((ItemGroupEntriesImplAccessor)this).getGroup();
-        var enabledFeatures = ((ItemGroupEntriesImplAccessor)this).getEnabledFeatures();
-        return ItemGroupInterface.transfer(itemStackSet, group, enabledFeatures);
-    }
-
-    @Unique @Override
     public ItemStackSet sorting(ItemStackSet itemStackSet) {
         var group = ((ItemGroupEntriesImplAccessor)this).getGroup();
         var enabledFeatures = ((ItemGroupEntriesImplAccessor)this).getEnabledFeatures();

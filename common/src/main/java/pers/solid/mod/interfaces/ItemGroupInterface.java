@@ -12,8 +12,11 @@ import pers.solid.mod.TransferRule;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public interface ItemGroupInterface {
     public default ItemStackSet getCachedSearchTabStacks() { return null; };
@@ -49,18 +52,32 @@ public interface ItemGroupInterface {
         return (ItemStackSet)itemStackSet.clone();
     }
 
-    public static ItemStackSet transfer(ItemStackSet itemStackSet, ItemGroup group, FeatureSet enabledFeatures) {
-        // add conditional transfer items
-        Arrays.stream(ItemGroups.GROUPS).toList().stream().forEachOrdered((itemGroup) -> {
-            if (itemGroup == group || itemGroup == ItemGroups.INVENTORY || itemGroup == ItemGroups.SEARCH || itemGroup == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer) return;
-            ((ItemGroupInterface)(Object)itemGroup).getCachedParentTabStacks(enabledFeatures).stream().forEachOrdered((stack) -> {
-                if (stack == null) return;
+    @SuppressWarnings("unchecked")
+    static <T> Stream<T> reverse(Stream<T> input) {
+        Object[] temp = input.toArray();
+        return (Stream<T>) IntStream.range(0, temp.length)
+                .mapToObj(i -> temp[temp.length - i - 1]);
+    }
 
-                Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
-                if (groups.contains(group)) { itemStackSet.add(stack); }
-            });
+    public static void transfer(ItemStackSet itemStackSet[], ItemGroup group, FeatureSet enabledFeatures, ItemGroup.Entries entries) {
+        // add conditional transfer items
+        reverse(Arrays.stream(ItemGroups.GROUPS).toList().stream()).forEachOrdered((itemGroup) -> {
+            if (itemGroup != group) {
+                if (itemGroup == ItemGroups.INVENTORY || itemGroup == ItemGroups.SEARCH || itemGroup == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer) return;
+                ((ItemGroupInterface) (Object) itemGroup).getCachedParentTabStacks(enabledFeatures).stream().forEachOrdered((stack) -> {
+                    if (stack == null) return;
+
+                    Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
+                    if (groups.contains(group)) {
+                        itemStackSet[0].add(stack);
+                        itemStackSet[1].add(stack);
+                    }
+                });
+            } else {
+                group.addItems(enabledFeatures, entries);
+            }
         });
-        return (ItemStackSet)itemStackSet.clone();
+        //return (ItemStackSet)itemStackSet.clone();
     }
 
     public static void updateGroups(@Nullable FeatureSet featureSet, @Nullable ItemGroup group) {

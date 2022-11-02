@@ -144,16 +144,27 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         //
         if (instance == ItemGroups.INVENTORY || instance == ItemGroups.SEARCH || instance == ItemGroups.HOTBAR) return;
 
-        // parent stacks
-        transferParentStacks = ItemGroupInterface.transfer((ItemStackSet)transferParentStacks.clone(), instance, featureSet);
-        transferParentStacks.addAll(originalParentStacksRef);
-        transferParentStacks = ItemGroupInterface.exclude((ItemStackSet)transferParentStacks.clone(), instance, featureSet);
-        entriesInterface.setParentTabStacks(ItemGroupInterface.sorting((ItemStackSet)transferParentStacks.clone(), instance, featureSet));
+        // empty!
+        transferParentStacks = (ItemStackSet)transferParentStacks.clone();
+        transferSearchStacks = (ItemStackSet)transferSearchStacks.clone();
 
-        // search stacks
-        transferSearchStacks = ItemGroupInterface.transfer((ItemStackSet)transferSearchStacks.clone(), instance, featureSet);
-        transferSearchStacks.addAll(originalSearchStacksRef);
-        transferSearchStacks = ItemGroupInterface.exclude((ItemStackSet)transferSearchStacks.clone(), instance, featureSet);
-        entriesInterface.setSearchTabStacks(ItemGroupInterface.sorting((ItemStackSet)transferSearchStacks.clone(), instance, featureSet));
+        //
+        //((ItemGroupInterface)instance).setDisplayStacks(transferParentStacks);
+        //((ItemGroupInterface)instance).setSearchTabStacks(transferSearchStacks);
+
+        //
+        entriesInterface.setParentTabStacks(transferParentStacks);
+        entriesInterface.setSearchTabStacks(transferSearchStacks);
+
+        //
+        ItemGroupInterface.transfer(new ItemStackSet[]{transferParentStacks, transferSearchStacks}, instance, featureSet, entries);
+
+        // parent stacks
+        transferParentStacks = ItemGroupInterface.exclude(transferParentStacks, instance, featureSet);
+        transferSearchStacks = ItemGroupInterface.exclude(transferSearchStacks, instance, featureSet);
+
+        //
+        entriesInterface.setParentTabStacks(ItemGroupInterface.sorting(transferParentStacks, instance, featureSet));
+        entriesInterface.setSearchTabStacks(ItemGroupInterface.sorting(transferSearchStacks, instance, featureSet));
     }
 }
