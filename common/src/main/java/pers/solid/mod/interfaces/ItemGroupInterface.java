@@ -1,11 +1,14 @@
 package pers.solid.mod.interfaces;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStackSet;
 import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.resource.featuretoggle.FeatureSet;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
 import pers.solid.mod.Configs;
 import pers.solid.mod.SortingRule;
 import pers.solid.mod.TransferRule;
@@ -36,7 +39,7 @@ public interface ItemGroupInterface {
 
     public static ItemStackSet sorting(ItemStackSet itemStackSet, ItemGroup group, FeatureSet enabledFeatures) {
         var sortedStackSet = SortingRule.sortItemGroupEntries(itemStackSet);
-        return (ItemStackSet)(sortedStackSet != null ? sortedStackSet : itemStackSet).clone();
+        return (sortedStackSet != null ? sortedStackSet : itemStackSet);
     }
 
     public static ItemStackSet exclude(ItemStackSet itemStackSet, ItemGroup group, FeatureSet enabledFeatures) {
@@ -49,7 +52,7 @@ public interface ItemGroupInterface {
                 }
             });
         }
-        return (ItemStackSet)itemStackSet.clone();
+        return itemStackSet;
     }
 
     @SuppressWarnings("unchecked")
@@ -59,32 +62,32 @@ public interface ItemGroupInterface {
                 .mapToObj(i -> temp[temp.length - i - 1]);
     }
 
-    public static void transfer(ItemStackSet itemStackSet[], ItemGroup group, FeatureSet enabledFeatures, ItemGroup.Entries entries) {
+    public static void transfer(ItemStackSet transferParentStacks, ItemStackSet transferSearchStacks, ItemGroup group, FeatureSet enabledFeatures, ItemGroup.Entries entries) {
         // add conditional transfer items
         reverse(Arrays.stream(ItemGroups.GROUPS).toList().stream()).forEachOrdered((itemGroup) -> {
             if (itemGroup != group) {
                 if (itemGroup == ItemGroups.INVENTORY || itemGroup == ItemGroups.SEARCH || itemGroup == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer) return;
-                ((ItemGroupInterface) (Object) itemGroup).getCachedParentTabStacks(enabledFeatures).stream().forEachOrdered((stack) -> {
+                //SortingRule.streamOfRegistry(Registry.ITEM_KEY, ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(enabledFeatures))
+                ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(enabledFeatures).stream()
+                .forEachOrdered((stack) -> {
                     if (stack == null) return;
-
                     Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
                     if (groups.contains(group)) {
-                        itemStackSet[0].add(stack);
-                        itemStackSet[1].add(stack);
+                        transferParentStacks.add(stack);
+                        transferSearchStacks.add(stack);
                     }
                 });
             } else {
                 group.addItems(enabledFeatures, entries);
             }
         });
-        //return (ItemStackSet)itemStackSet.clone();
     }
 
     public static void updateGroups(@Nullable FeatureSet featureSet, @Nullable ItemGroup group) {
         var player = MinecraftClient.getInstance().player;
         var currentFeatureSet = featureSet != null ? featureSet : (player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
         if (player != null) {
-            Arrays.stream(ItemGroups.GROUPS).forEach((g) -> {
+            Arrays.stream(ItemGroups.GROUPS).forEachOrdered((g) -> {
                 if (g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR) return;
                 if (group == null || group != g) {
                     ((ItemGroupInterface) g).setDisplayStacks(null);
@@ -92,7 +95,7 @@ public interface ItemGroupInterface {
                 }
             });
 
-            Arrays.stream(ItemGroups.GROUPS).forEach((g) -> {
+            Arrays.stream(ItemGroups.GROUPS).forEachOrdered((g) -> {
                 if (g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR) return;
                 if (group == null || group != g) {
                     ((ItemGroupInterface) g).getDisplayStacks(currentFeatureSet);

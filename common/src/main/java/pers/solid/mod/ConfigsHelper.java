@@ -50,7 +50,7 @@ public final class ConfigsHelper {
         .filter(name -> !name.isEmpty())
         .map(Configs.NAME_TO_VARIANT::get)
         .filter(Objects::nonNull)
-        .forEach(Configs.VARIANTS_FOLLOWING_BASE_BLOCKS::add);
+        .forEachOrdered(Configs.VARIANTS_FOLLOWING_BASE_BLOCKS::add);
   }
 
   @Contract(mutates = "param2")
@@ -88,7 +88,7 @@ public final class ConfigsHelper {
         }
         final String[] split2 = split1[1].split("\\s+");
         final Pattern compile = Pattern.compile(split1[0]);
-        Arrays.stream(split2).map(ConfigsHelper::getGroupFromId).filter(Objects::nonNull).forEach(group -> Configs.CUSTOM_REGEX_TRANSFER_RULE.put(compile, group));
+        Arrays.stream(split2).map(ConfigsHelper::getGroupFromId).filter(Objects::nonNull).forEachOrdered(group -> Configs.CUSTOM_REGEX_TRANSFER_RULE.put(compile, group));
       } catch (PatternSyntaxException ignored) {
       }
     }
@@ -105,7 +105,7 @@ public final class ConfigsHelper {
       final String[] split2 = split1[1].split("\\s+");
       final BlockFamily.Variant variant = Configs.NAME_TO_VARIANT.get(split1[0]);
       if (variant == null) continue;
-      Arrays.stream(split2).map(ConfigsHelper::getGroupFromId).filter(Objects::nonNull).forEach(group -> Configs.CUSTOM_VARIANT_TRANSFER_RULE.put(variant, group));
+      Arrays.stream(split2).map(ConfigsHelper::getGroupFromId).filter(Objects::nonNull).forEachOrdered(group -> Configs.CUSTOM_VARIANT_TRANSFER_RULE.put(variant, group));
 
     }
   }
@@ -124,7 +124,7 @@ public final class ConfigsHelper {
         continue;
       }
       final Item item = Bridge.getItemById(id);
-      Arrays.stream(split2).map(ConfigsHelper::getGroupFromId).filter(Objects::nonNull).forEach(group -> mutableMap.put(item, group));
+      Arrays.stream(split2).map(ConfigsHelper::getGroupFromId).filter(Objects::nonNull).forEachOrdered(group -> mutableMap.put(item, group));
     }
   }
 
@@ -148,7 +148,7 @@ public final class ConfigsHelper {
     Arrays.stream(s.split("\\s+"))
         .filter(StringUtils::isNotEmpty)
         .filter(name -> !Configs.NAME_TO_VARIANT.containsKey(name))
-        .forEach(invalidNames::add);
+        .forEachOrdered(invalidNames::add);
     return invalidNames.isEmpty()
         ? Optional.empty()
         : Optional.of(

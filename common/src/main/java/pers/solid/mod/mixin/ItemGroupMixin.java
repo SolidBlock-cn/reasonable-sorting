@@ -62,7 +62,7 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
             var currentFeatureSet = player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
             ((ItemGroup)(Object)this).getSearchTabStacks(featureSet != null ? featureSet : currentFeatureSet);
         }
-        return (this.cachedSearchTabStacks = (ItemStackSet)this.cachedSearchTabStacks.clone()); // avoid reference issues
+        return this.cachedSearchTabStacks; // avoid reference issues
     }
 
     //
@@ -72,7 +72,7 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
             var currentFeatureSet = player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
             ((ItemGroup)(Object)this).getDisplayStacks(featureSet != null ? featureSet : currentFeatureSet);
         }
-        return (this.cachedParentTabStacks = (ItemStackSet)this.cachedParentTabStacks.clone()); // avoid reference issues
+        return this.cachedParentTabStacks; // avoid reference issues
     }
 
     /**
@@ -124,7 +124,7 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         var originalParentStacksRef = (ItemStackSet)entriesAccessor.getParentTabStacks();
         var originalSearchStacksRef = (ItemStackSet)entriesAccessor.getSearchTabStacks();
 
-        // !empty!
+        //
         var transferParentStacks = (ItemStackSet)originalParentStacksRef.clone();
         var transferSearchStacks = (ItemStackSet)originalSearchStacksRef.clone();
 
@@ -144,15 +144,15 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         //
         if (instance == ItemGroups.INVENTORY || instance == ItemGroups.SEARCH || instance == ItemGroups.HOTBAR) return;
 
-        // empty!
-        entriesInterface.setParentTabStacks(transferParentStacks = (ItemStackSet)transferParentStacks.clone());
-        entriesInterface.setSearchTabStacks(transferSearchStacks = (ItemStackSet)transferSearchStacks.clone());
+        //
+        entriesInterface.setParentTabStacks(transferParentStacks);
+        entriesInterface.setSearchTabStacks(transferSearchStacks);
 
         //
-        ItemGroupInterface.transfer(new ItemStackSet[]{transferParentStacks, transferSearchStacks}, instance, featureSet, entries);
+        ItemGroupInterface.transfer(transferParentStacks, transferSearchStacks, instance, featureSet, entries);
 
         //
-        entriesInterface.setParentTabStacks(ItemGroupInterface.sorting(transferParentStacks = ItemGroupInterface.exclude(transferParentStacks, instance, featureSet), instance, featureSet));
-        entriesInterface.setSearchTabStacks(ItemGroupInterface.sorting(transferSearchStacks = ItemGroupInterface.exclude(transferSearchStacks, instance, featureSet), instance, featureSet));
+        entriesInterface.setParentTabStacks(ItemGroupInterface.sorting((ItemStackSet)ItemGroupInterface.exclude(transferParentStacks, instance, featureSet).clone(), instance, featureSet));
+        entriesInterface.setSearchTabStacks(ItemGroupInterface.sorting((ItemStackSet)ItemGroupInterface.exclude(transferSearchStacks, instance, featureSet).clone(), instance, featureSet));
     }
 }

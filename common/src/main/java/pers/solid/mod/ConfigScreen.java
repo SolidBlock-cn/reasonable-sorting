@@ -38,7 +38,7 @@ public class ConfigScreen {
       var player = MinecraftClient.getInstance().player;
       var currentFeatureSet = (player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
       if (player != null) {
-          Arrays.stream(ItemGroups.GROUPS).forEach((g) -> {
+          Arrays.stream(ItemGroups.GROUPS).forEachOrdered((g) -> {
               if (g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR) return;
                   ((ItemGroupInterface) g).setNeedsUpdate(true);
           });

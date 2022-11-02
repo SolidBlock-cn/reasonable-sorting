@@ -140,7 +140,7 @@ public interface SortingRule<T> {
 
     // 初次直接迭代内部元素。
     for (ItemStack value : rawIdToEntry) {
-      streamFollowersOf(ruleSets, value.getItem()).forEach(follower -> {
+      streamFollowersOf(ruleSets, value.getItem()).forEachOrdered(follower -> {
 
         var followed = rawIdToEntry.stream()
           .filter((itemStack)->{ return itemStack.getItem() == follower; });
@@ -204,7 +204,7 @@ public interface SortingRule<T> {
     // 初次直接迭代内部元素。
     for (RegistryEntry.Reference<T> entry : rawIdToEntry) {
       final T value = entry.value();
-      streamFollowersOf(ruleSets, value).forEach(follower -> {
+      streamFollowersOf(ruleSets, value).forEachOrdered(follower -> {
         valueToFollowers.put(value, follower);
         combinationFollowers.add(follower);
       });
