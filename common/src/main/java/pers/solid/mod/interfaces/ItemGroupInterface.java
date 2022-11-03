@@ -11,10 +11,7 @@ import pers.solid.mod.SortingRule;
 import pers.solid.mod.TransferRule;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -57,7 +54,7 @@ public interface ItemGroupInterface {
                 Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(_stack.getItem()).collect(Collectors.toSet());
                 if (!groups.isEmpty()) { return groups.contains(itemGroup); }
             }
-            return ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(features).contains(_stack);
+            return ((ItemGroupInterface)itemGroup).getCachedSearchTabStacks(features).contains(_stack);
         }
         return false;
     }
@@ -75,7 +72,7 @@ public interface ItemGroupInterface {
         AtomicBoolean found = new AtomicBoolean(false);
         if (itemGroup != null) {
             //((ItemGroupInterface) (Object) itemGroup).setIgnoreInjection(true);
-            ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(features).forEach((stack) -> {
+            ((ItemGroupInterface)itemGroup).getCachedSearchTabStacks(features).forEach((stack) -> {
                 if (stack != null && stack.getItem() == item) {
                     found.set(true);
                 }
@@ -96,40 +93,76 @@ public interface ItemGroupInterface {
                 .mapToObj(i -> temp[temp.length - i - 1]);
     }
 
+    public static void swap(ArrayList<ItemGroup> groups, ItemGroup g1, ItemGroup g2) {
+        int i1 = groups.indexOf(g1);
+        int i2 = groups.indexOf(g2);
+        if (i1 >= 0 && i2 >= 0) { Collections.swap(groups, i1, i2); };
+    }
+
+    public static void putBefore_(List<?> collection, int indexToMoveFrom, int indexToMoveAt) {
+        if (indexToMoveAt >= indexToMoveFrom) {
+            Collections.rotate(collection.subList(indexToMoveFrom, indexToMoveAt + 1), -1);
+        } else {
+            Collections.rotate(collection.subList(indexToMoveAt, indexToMoveFrom + 1), 1);
+        }
+    }
+
+    public static ItemGroup putBefore(ArrayList<ItemGroup> groups, ItemGroup beforeOf, ItemGroup el) {
+        int i1 = groups.indexOf(beforeOf);
+        int i2 = groups.indexOf(el);
+        if (i1 >= 0 && i2 >= 0) { putBefore_(groups, i1, i2); };
+        return beforeOf;
+    }
+
     public static void transfer(ItemStackSet transferParentStacks, ItemStackSet transferSearchStacks, ItemGroup group, FeatureSet enabledFeatures, ItemGroup.Entries entries) {
         var cachedParent = (ItemStackSet)transferParentStacks.clone();
         var cachedSearch = (ItemStackSet)transferSearchStacks.clone();
 
-        //
+        // add items from original groups
         ((ItemGroupEntriesInterface)entries).setParentTabStacks(cachedParent);
         ((ItemGroupEntriesInterface)entries).setSearchTabStacks(cachedSearch);
-
-        // add items and remove not in groups
         group.addItems(enabledFeatures, entries);
-        exclude(cachedParent, group, enabledFeatures);
-        exclude(cachedSearch, group, enabledFeatures);
 
-        // add conditional transfer items
-        reverse(Arrays.stream(ItemGroups.GROUPS).toList().stream()).forEachOrdered((itemGroup) -> {
-            if (!(itemGroup == group && itemGroup == ItemGroups.INVENTORY || itemGroup == ItemGroups.SEARCH || itemGroup == ItemGroups.HOTBAR)) {
-                //SortingRule.streamOfRegistry(Registry.ITEM_KEY, ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(enabledFeatures))
-                ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(enabledFeatures).stream()
-                .filter(Objects::nonNull).forEachOrdered((stack) -> {
-                    if (itemStackInGroup(stack, group, enabledFeatures)) { // now embeded
-                        if (!cachedParent.contains(stack)) { transferParentStacks.add(stack); };
-                        if (!cachedSearch.contains(stack)) { transferSearchStacks.add(stack); };
-                    }
-                });
-            }
-        });
-
-        //
-        transferParentStacks.addAll(cachedParent);
-        transferSearchStacks.addAll(cachedSearch);
-
-        //
+        // set transferred reference
         ((ItemGroupEntriesInterface)entries).setParentTabStacks(transferParentStacks);
         ((ItemGroupEntriesInterface)entries).setSearchTabStacks(transferSearchStacks);
+
+        // add conditional transfer items
+        ArrayList<ItemGroup> groupList = new ArrayList(List.of(ItemGroups.GROUPS));
+
+        // remove not needed
+        groupList.remove(ItemGroups.HOTBAR);
+        groupList.remove(ItemGroups.INVENTORY);
+        groupList.remove(ItemGroups.SEARCH);
+
+        // correct order for defaults
+        //groupList.remove(group);
+        //putBefore(groupList, ItemGroups.BUILDING_BLOCKS,
+            //putBefore(groupList, ItemGroups.FUNCTIONAL,
+                //putBefore(groupList, ItemGroups.REDSTONE,
+                    //putBefore(groupList, ItemGroups.TOOLS, ItemGroups.COMBAT))));
+        groupList = new ArrayList(reverse(groupList.stream()).toList());
+        //groupList.add(group);
+
+        // iterate groups
+        groupList.forEach((itemGroup) -> {
+            var stream =
+                //SortingRule.streamOfRegistry(Registry.ITEM_KEY, ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(enabledFeatures))
+                itemGroup == group ? cachedSearch.stream() : ((ItemGroupInterface) itemGroup).getCachedSearchTabStacks(enabledFeatures).clone().stream();
+
+            //
+            stream.forEachOrdered((stack) -> {
+                Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
+                if ((!groups.isEmpty() ? groups.contains(group) : (group == itemGroup)) && itemStackInGroup(stack, group, enabledFeatures)) { // now embeded
+                    if (!transferParentStacks.contains(stack)) {
+                        transferParentStacks.add(stack);
+                    }
+                    if (!transferSearchStacks.contains(stack)) {
+                        transferSearchStacks.add(stack);
+                    }
+                }
+            });
+        });
     }
 
     public static void updateGroups(@Nullable FeatureSet featureSet, @Nullable ItemGroup group) {
