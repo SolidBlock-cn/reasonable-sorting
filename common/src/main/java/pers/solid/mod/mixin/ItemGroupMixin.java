@@ -145,8 +145,12 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         if (instance == ItemGroups.INVENTORY || instance == ItemGroups.SEARCH || instance == ItemGroups.HOTBAR) return;
 
         // transfer and sorting
-        ItemGroupInterface.transfer(transferParentStacks, transferSearchStacks, instance, featureSet, entries);
-        entriesInterface.setParentTabStacks(ItemGroupInterface.sorting((ItemStackSet)transferParentStacks, instance, featureSet));
-        entriesInterface.setSearchTabStacks(ItemGroupInterface.sorting((ItemStackSet)transferSearchStacks, instance, featureSet));
+        if (Configs.instance.enableGroupTransfer) {
+            ItemGroupInterface.transfer(transferParentStacks, transferSearchStacks, instance, featureSet, entries);
+        }
+
+        //
+        entriesInterface.setParentTabStacks(ItemGroupInterface.sorting((ItemStackSet)entriesAccessor.getParentTabStacks().clone(), instance, featureSet));
+        entriesInterface.setSearchTabStacks(ItemGroupInterface.sorting((ItemStackSet)entriesAccessor.getSearchTabStacks().clone(), instance, featureSet));
     }
 }

@@ -13,6 +13,7 @@ import pers.solid.mod.TransferRule;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -42,26 +43,33 @@ public interface ItemGroupInterface {
 
     public static ItemStackSet exclude(ItemStackSet itemStackSet, ItemGroup group, FeatureSet enabledFeatures) {
         // remove non-conditional transfer items
-        if (!(group == ItemGroups.INVENTORY || group == ItemGroups.SEARCH || group == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer)) {
+        if (!(group == ItemGroups.INVENTORY || group == ItemGroups.SEARCH || group == ItemGroups.HOTBAR)) {
             itemStackSet.stream().forEachOrdered((stack) -> {
-                if (stack != null) {
-                    Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
-                    if (!groups.isEmpty() && !groups.contains(group)) { itemStackSet.remove(stack); }
-                }
+                if (!itemStackInGroup(stack, group, enabledFeatures)) { itemStackSet.remove(stack); }
             });
         }
         return itemStackSet;
     }
 
     public static boolean itemStackInGroup(ItemStack _stack, ItemGroup itemGroup, @Nullable FeatureSet features) {
-        AtomicBoolean found = new AtomicBoolean(false);
-        if (itemGroup != null) {
-            //((ItemGroupInterface) (Object) itemGroup).setIgnoreInjection(true);
+        if (itemGroup != null && _stack != null) {
+            if (!(itemGroup == ItemGroups.INVENTORY || itemGroup == ItemGroups.SEARCH || itemGroup == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer)) {
+                Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(_stack.getItem()).collect(Collectors.toSet());
+                if (!groups.isEmpty()) { return groups.contains(itemGroup); }
+            }
             return ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(features).contains(_stack);
-            //((ItemGroupInterface) (Object) itemGroup).setIgnoreInjection(false);
         }
-        return found.get();
+        return false;
     }
+
+    /*
+    Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
+
+        if (!groups.isEmpty()) {
+            cir.setReturnValue(groups.contains(group));
+            cir.cancel();
+        }
+     */
 
     public static boolean itemInGroup(Item item, ItemGroup itemGroup, @Nullable FeatureSet features) {
         AtomicBoolean found = new AtomicBoolean(false);
@@ -89,30 +97,39 @@ public interface ItemGroupInterface {
     }
 
     public static void transfer(ItemStackSet transferParentStacks, ItemStackSet transferSearchStacks, ItemGroup group, FeatureSet enabledFeatures, ItemGroup.Entries entries) {
-        // add conditional transfer items
+        var cachedParent = (ItemStackSet)transferParentStacks.clone();
+        var cachedSearch = (ItemStackSet)transferSearchStacks.clone();
 
+        //
+        ((ItemGroupEntriesInterface)entries).setParentTabStacks(cachedParent);
+        ((ItemGroupEntriesInterface)entries).setSearchTabStacks(cachedSearch);
+
+        // add items and remove not in groups
+        group.addItems(enabledFeatures, entries);
+        exclude(cachedParent, group, enabledFeatures);
+        exclude(cachedSearch, group, enabledFeatures);
+
+        // add conditional transfer items
         reverse(Arrays.stream(ItemGroups.GROUPS).toList().stream()).forEachOrdered((itemGroup) -> {
-            if (itemGroup != group) {
-                if (itemGroup == ItemGroups.INVENTORY || itemGroup == ItemGroups.SEARCH || itemGroup == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer) return;
+            if (!(itemGroup == group && itemGroup == ItemGroups.INVENTORY || itemGroup == ItemGroups.SEARCH || itemGroup == ItemGroups.HOTBAR)) {
                 //SortingRule.streamOfRegistry(Registry.ITEM_KEY, ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(enabledFeatures))
                 ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(enabledFeatures).stream()
-                .forEachOrdered((stack) -> {
-                    if (stack == null) return;
-                    Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
-                    if (groups.contains(group) && !itemStackInGroup(stack, group, enabledFeatures)) {
-                        transferParentStacks.add(stack);
-                        transferSearchStacks.add(stack);
+                .filter(Objects::nonNull).forEachOrdered((stack) -> {
+                    if (itemStackInGroup(stack, group, enabledFeatures)) { // now embeded
+                        if (!cachedParent.contains(stack)) { transferParentStacks.add(stack); };
+                        if (!cachedSearch.contains(stack)) { transferSearchStacks.add(stack); };
                     }
                 });
-            } else {
-                // current group
-                ((ItemGroupEntriesInterface)entries).setParentTabStacks(transferParentStacks);
-                ((ItemGroupEntriesInterface)entries).setSearchTabStacks(transferSearchStacks);
-                group.addItems(enabledFeatures, entries);
-                exclude(transferParentStacks, group, enabledFeatures);
-                exclude(transferSearchStacks, group, enabledFeatures);
             }
         });
+
+        //
+        transferParentStacks.addAll(cachedParent);
+        transferSearchStacks.addAll(cachedSearch);
+
+        //
+        ((ItemGroupEntriesInterface)entries).setParentTabStacks(transferParentStacks);
+        ((ItemGroupEntriesInterface)entries).setSearchTabStacks(transferSearchStacks);
     }
 
     public static void updateGroups(@Nullable FeatureSet featureSet, @Nullable ItemGroup group) {
