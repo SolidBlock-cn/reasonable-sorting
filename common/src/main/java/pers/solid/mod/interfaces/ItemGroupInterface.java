@@ -1,10 +1,7 @@
 package pers.solid.mod.interfaces;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemGroups;
-import net.minecraft.item.ItemStackSet;
+import net.minecraft.item.*;
 import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.util.registry.Registry;
@@ -17,6 +14,7 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -55,6 +53,34 @@ public interface ItemGroupInterface {
         return itemStackSet;
     }
 
+    public static boolean itemStackInGroup(ItemStack _stack, ItemGroup itemGroup, @Nullable FeatureSet features) {
+        AtomicBoolean found = new AtomicBoolean(false);
+        if (itemGroup != null) {
+            //((ItemGroupInterface) (Object) itemGroup).setIgnoreInjection(true);
+            return ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(features).contains(_stack);
+            //((ItemGroupInterface) (Object) itemGroup).setIgnoreInjection(false);
+        }
+        return found.get();
+    }
+
+    public static boolean itemInGroup(Item item, ItemGroup itemGroup, @Nullable FeatureSet features) {
+        AtomicBoolean found = new AtomicBoolean(false);
+        if (itemGroup != null) {
+            //((ItemGroupInterface) (Object) itemGroup).setIgnoreInjection(true);
+            ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(features).forEach((stack) -> {
+                if (stack != null && stack.getItem() == item) {
+                    found.set(true);
+                }
+            });
+            //((ItemGroupInterface) (Object) itemGroup).setIgnoreInjection(false);
+        }
+        return found.get();
+    }
+
+    public static boolean itemInGroup(Item item, ItemGroup itemGroup) {
+        return itemInGroup(item, itemGroup, null);
+    }
+
     @SuppressWarnings("unchecked")
     static <T> Stream<T> reverse(Stream<T> input) {
         Object[] temp = input.toArray();
@@ -64,6 +90,7 @@ public interface ItemGroupInterface {
 
     public static void transfer(ItemStackSet transferParentStacks, ItemStackSet transferSearchStacks, ItemGroup group, FeatureSet enabledFeatures, ItemGroup.Entries entries) {
         // add conditional transfer items
+
         reverse(Arrays.stream(ItemGroups.GROUPS).toList().stream()).forEachOrdered((itemGroup) -> {
             if (itemGroup != group) {
                 if (itemGroup == ItemGroups.INVENTORY || itemGroup == ItemGroups.SEARCH || itemGroup == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer) return;
@@ -72,13 +99,18 @@ public interface ItemGroupInterface {
                 .forEachOrdered((stack) -> {
                     if (stack == null) return;
                     Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
-                    if (groups.contains(group)) {
+                    if (groups.contains(group) && !itemStackInGroup(stack, group, enabledFeatures)) {
                         transferParentStacks.add(stack);
                         transferSearchStacks.add(stack);
                     }
                 });
             } else {
+                // current group
+                ((ItemGroupEntriesInterface)entries).setParentTabStacks(transferParentStacks);
+                ((ItemGroupEntriesInterface)entries).setSearchTabStacks(transferSearchStacks);
                 group.addItems(enabledFeatures, entries);
+                exclude(transferParentStacks, group, enabledFeatures);
+                exclude(transferSearchStacks, group, enabledFeatures);
             }
         });
     }

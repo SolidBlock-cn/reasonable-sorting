@@ -24,40 +24,26 @@ import java.util.regex.Pattern;
 public final class TransferRules {
 
   // I don't know chinese :(
-  public static boolean itemInGroup(Item item, ItemGroup itemGroup, @Nullable FeatureSet features) {
-    AtomicBoolean found = new AtomicBoolean(false);
-    if (itemGroup != null) {
-      //((ItemGroupInterface) (Object) itemGroup).setIgnoreInjection(true);
-      ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(features).forEach((stack) -> {
-        if (stack != null && stack.getItem() == item) {
-          found.set(true);
-        }
-      });
-      //((ItemGroupInterface) (Object) itemGroup).setIgnoreInjection(false);
-    }
-    return found.get();
-  };
 
-  public static boolean itemInGroup(Item item, ItemGroup itemGroup) {
-    return itemInGroup(item, itemGroup, null);
-  };
+
+
 
   /**
    * 将原本位于“红石”中的按钮转移至“装饰性方块”。
    */
-  public static final TransferRule BUTTON_IN_DECORATIONS = item -> itemInGroup(item, ItemGroups.REDSTONE) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof AbstractButtonBlock && Configs.instance.buttonsInDecorations ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
+  public static final TransferRule BUTTON_IN_DECORATIONS = item -> ItemGroupInterface.itemInGroup(item, ItemGroups.REDSTONE) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof AbstractButtonBlock && Configs.instance.buttonsInDecorations ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
   /**
    * 将原本位于“红石”中的栅栏门转移至“装饰性方块”。
    */
-  public static final TransferRule FENCE_GATE_IN_DECORATIONS = item -> itemInGroup(item, ItemGroups.REDSTONE) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof FenceGateBlock && Configs.instance.fenceGatesInDecorations ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
+  public static final TransferRule FENCE_GATE_IN_DECORATIONS = item -> ItemGroupInterface.itemInGroup(item, ItemGroups.REDSTONE) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof FenceGateBlock && Configs.instance.fenceGatesInDecorations ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
   /**
    * 将原本位于“红石”中的门转移至“装饰性方块”。
    */
-  public static final TransferRule DOORS_IN_DECORATIONS = item -> itemInGroup(item, ItemGroups.REDSTONE) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof DoorBlock && Configs.instance.doorsInDecorations ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
+  public static final TransferRule DOORS_IN_DECORATIONS = item -> ItemGroupInterface.itemInGroup(item, ItemGroups.REDSTONE) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof DoorBlock && Configs.instance.doorsInDecorations ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
   /**
    * 将原本位于“工具”中的剑转移至“装饰性方块”。
    */
-  public static final TransferRule SWORDS_IN_TOOLS = item -> (item instanceof SwordItem && itemInGroup(item, ItemGroups.COMBAT)) && Configs.instance.swordsInTools ? Collections.singleton(ItemGroups.TOOLS) : null;
+  public static final TransferRule SWORDS_IN_TOOLS = item -> (item instanceof SwordItem && ItemGroupInterface.itemInGroup(item, ItemGroups.COMBAT)) && Configs.instance.swordsInTools ? Collections.singleton(ItemGroups.TOOLS) : null;
   /**
    * 自定义的变种转移规则。仅限方块物品。
    */
