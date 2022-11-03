@@ -82,14 +82,8 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     // will no works anymore
     @Inject(method = "contains", at = @At("HEAD"), cancellable = true)
     public void isInMixin(FeatureSet enabledFeatures, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-        ItemGroup group = (ItemGroup) (Object) this;
-        if (group == ItemGroups.INVENTORY || group == ItemGroups.SEARCH || group == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer) return;
-        Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
-
-        if (!groups.isEmpty()) {
-            cir.setReturnValue(groups.contains(group));
-            cir.cancel();
-        }
+        cir.setReturnValue(ItemGroupInterface.itemStackInGroup(stack, (ItemGroup)(Object)this, enabledFeatures));
+        cir.cancel();
     }
 
 
