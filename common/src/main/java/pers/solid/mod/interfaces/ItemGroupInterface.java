@@ -188,16 +188,13 @@ public interface ItemGroupInterface {
         var currentFeatureSet = featureSet != null ? featureSet : (player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
         if (player != null) {
             Arrays.stream(ItemGroups.GROUPS).forEachOrdered((g) -> {
-                if (g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR) return;
-                if (group == null || group != g) {
+                if ((group == null || group != g) && !(g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR)) {
                     ((ItemGroupInterface) g).setDisplayStacks(null);
                     ((ItemGroupInterface) g).setSearchTabStacks(null);
                 }
             });
-
             Arrays.stream(ItemGroups.GROUPS).forEachOrdered((g) -> {
-                if (g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR) return;
-                if (group == null || group != g) {
+                if ((group == null || group != g) && !(g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR)) {
                     ((ItemGroupInterface) g).getSearchTabStacks(currentFeatureSet, hasPermissions);
                     ((ItemGroupInterface) g).getDisplayStacks(currentFeatureSet, hasPermissions);
                 }

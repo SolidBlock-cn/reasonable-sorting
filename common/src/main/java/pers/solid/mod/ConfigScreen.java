@@ -39,8 +39,9 @@ public class ConfigScreen {
       var currentFeatureSet = (player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
       if (player != null) {
           Arrays.stream(ItemGroups.GROUPS).forEachOrdered((g) -> {
-              if (g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR) return;
+              if (!(g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR)) {
                   ((ItemGroupInterface) g).setNeedsUpdate(true);
+              }
           });
       }
   }

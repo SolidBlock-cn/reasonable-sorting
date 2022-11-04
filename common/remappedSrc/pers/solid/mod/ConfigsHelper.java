@@ -36,7 +36,7 @@ public final class ConfigsHelper {
     if (id == null) return null;
     for (ItemGroup group : ItemGroups.GROUPS) {
       //if (id.equals(group.getName())) {
-      if (id.equals(group.getDisplayName().toString())) {
+      if (id.equals(group.getDisplayName().toString().toLowerCase())) {
         return group;
       }
     }
