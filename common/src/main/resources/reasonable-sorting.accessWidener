@@ -4,8 +4,8 @@ accessWidener   v1  named
 #mutable field net/minecraft/client/gui/widget/ButtonWidget onPress Lnet/minecraft/client/gui/widget/ButtonWidget$OnPress;
 accessible class net/minecraft/item/ItemGroup$Entries
 accessible class net/minecraft/item/ItemGroup$EntriesImpl
-accessible method net/minecraft/item/ItemGroup addItems (Lnet/minecraft/resource/featuretoggle/FeatureSet;Lnet/minecraft/item/ItemGroup$Entries;)V
-accessible method net/minecraft/item/ItemGroup getStacks (Lnet/minecraft/resource/featuretoggle/FeatureSet;Z)Lnet/minecraft/item/ItemStackSet;
+accessible method net/minecraft/item/ItemGroup addItems (Lnet/minecraft/resource/featuretoggle/FeatureSet;Lnet/minecraft/item/ItemGroup$Entries;Z)V
+accessible method net/minecraft/item/ItemGroup getStacks (Lnet/minecraft/resource/featuretoggle/FeatureSet;ZZ)Lnet/minecraft/item/ItemStackSet;
 mutable field net/minecraft/item/ItemGroup$EntriesImpl parentTabStacks Lnet/minecraft/item/ItemStackSet;
 mutable field net/minecraft/item/ItemGroup$EntriesImpl searchTabStacks Lnet/minecraft/item/ItemStackSet;
 mutable field net/minecraft/item/ItemGroup$EntriesImpl group Lnet/minecraft/item/ItemGroup;

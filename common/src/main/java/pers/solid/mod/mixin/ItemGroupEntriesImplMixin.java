@@ -23,17 +23,17 @@ import java.util.stream.Collectors;
 public class ItemGroupEntriesImplMixin implements ItemGroupEntriesInterface {
 
     @Unique @Override
-    public ItemStackSet sorting(ItemStackSet itemStackSet) {
+    public ItemStackSet sorting(ItemStackSet itemStackSet, boolean hasPermission) {
         var group = ((ItemGroupEntriesImplAccessor)this).getGroup();
         var enabledFeatures = ((ItemGroupEntriesImplAccessor)this).getEnabledFeatures();
-        return ItemGroupInterface.sorting(itemStackSet, group, enabledFeatures);
+        return ItemGroupInterface.sorting(itemStackSet, group, enabledFeatures, hasPermission);
     }
 
     @Unique @Override
-    public ItemStackSet exclude(ItemStackSet itemStackSet) {
+    public ItemStackSet exclude(ItemStackSet itemStackSet, boolean hasPermission) {
         var group = ((ItemGroupEntriesImplAccessor)this).getGroup();
         var enabledFeatures = ((ItemGroupEntriesImplAccessor)this).getEnabledFeatures();
-        return ItemGroupInterface.exclude(itemStackSet, group, enabledFeatures);
+        return ItemGroupInterface.exclude(itemStackSet, group, enabledFeatures, hasPermission);
     }
 
 }

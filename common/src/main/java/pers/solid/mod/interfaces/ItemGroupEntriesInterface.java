@@ -16,7 +16,7 @@ public interface ItemGroupEntriesInterface {
     public default void setSearchTabStacks(ItemStackSet set) {};
 
     //
-    public default ItemStackSet exclude(ItemStackSet itemStackSet) { return (ItemStackSet)itemStackSet.clone(); };
-    public default ItemStackSet transfer(ItemStackSet itemStackSet) { return (ItemStackSet)itemStackSet.clone(); };
-    public default ItemStackSet sorting(ItemStackSet itemStackSet) { return (ItemStackSet)itemStackSet.clone(); };
+    public default ItemStackSet exclude(ItemStackSet itemStackSet, boolean hasPermission) { return (ItemStackSet)itemStackSet.clone(); };
+    public default ItemStackSet transfer(ItemStackSet itemStackSet, boolean hasPermission) { return (ItemStackSet)itemStackSet.clone(); };
+    public default ItemStackSet sorting(ItemStackSet itemStackSet, boolean hasPermission) { return (ItemStackSet)itemStackSet.clone(); };
 };
