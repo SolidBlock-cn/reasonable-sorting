@@ -192,6 +192,7 @@ public interface ItemGroupInterface {
             Arrays.stream(ItemGroups.GROUPS).forEachOrdered((g) -> {
                 if (g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR) return;
                 if (group == null || group != g) {
+                    ((ItemGroupInterface) g).getSearchTabStacks(currentFeatureSet, hasPermissions);
                     ((ItemGroupInterface) g).getDisplayStacks(currentFeatureSet, hasPermissions);
                 }
             });
