@@ -20,7 +20,6 @@ import pers.solid.mod.TransferRules;
 import pers.solid.mod.interfaces.ItemGroupEntriesInterface;
 import pers.solid.mod.interfaces.ItemGroupInterface;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,42 +33,41 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     @Unique boolean needsToUpdate = false;
 
     //
-    @Shadow public abstract void addItems(FeatureSet enabledFeatures, ItemGroup.Entries entries);
     @Unique @Override public ItemStackSet getCachedSearchTabStacks() { return this.getCachedSearchTabStacks(null); };
     @Unique @Override public ItemStackSet getCachedParentTabStacks() { return this.getCachedParentTabStacks(null); };
     @Unique @Override public void setNeedsUpdate(boolean update) {
         this.needsToUpdate = update;
     };
 
-    @Shadow @Override
-    public ItemStackSet getDisplayStacks(@Nullable FeatureSet enabledFeatures) {
+    @Override
+    public ItemStackSet getDisplayStacks(FeatureSet enabledFeatures) {
         var player = MinecraftClient.getInstance().player;
-        var currentFeatureSet = player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
+        var currentFeatureSet = player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
         return ((ItemGroup)(Object)this).getDisplayStacks(enabledFeatures != null ? enabledFeatures : currentFeatureSet);
     }
 
-    @Shadow @Override
-    public ItemStackSet getSearchTabStacks(@Nullable FeatureSet enabledFeatures) {
+    @Override
+    public ItemStackSet getSearchTabStacks(FeatureSet enabledFeatures) {
         var player = MinecraftClient.getInstance().player;
-        var currentFeatureSet = player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
+        var currentFeatureSet = player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
         return ((ItemGroup)(Object)this).getSearchTabStacks(enabledFeatures != null ? enabledFeatures : currentFeatureSet);
     }
 
     //
-    @Unique @Override public ItemStackSet getCachedSearchTabStacks(@Nullable FeatureSet featureSet) {
+    @Unique @Override public ItemStackSet getCachedSearchTabStacks(FeatureSet featureSet) {
         if (this.cachedSearchTabStacks == null) {
             var player = MinecraftClient.getInstance().player;
-            var currentFeatureSet = player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
+            var currentFeatureSet = player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
             ((ItemGroup)(Object)this).getSearchTabStacks(featureSet != null ? featureSet : currentFeatureSet);
         }
         return this.cachedSearchTabStacks; // avoid reference issues
     }
 
     //
-    @Unique @Override public ItemStackSet getCachedParentTabStacks(@Nullable FeatureSet featureSet) {
+    @Unique @Override public ItemStackSet getCachedParentTabStacks(FeatureSet featureSet) {
         if (this.cachedParentTabStacks == null) {
             var player = MinecraftClient.getInstance().player;
-            var currentFeatureSet = player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
+            var currentFeatureSet = player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
             ((ItemGroup)(Object)this).getDisplayStacks(featureSet != null ? featureSet : currentFeatureSet);
         }
         return this.cachedParentTabStacks; // avoid reference issues
@@ -98,7 +96,7 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     public void getStackInject(FeatureSet featureSet, boolean search, CallbackInfoReturnable<ItemStackSet> cir) {
         if (this.needsToUpdate) {
             var player = MinecraftClient.getInstance().player;
-            var currentFeatureSet = featureSet != null ? featureSet : (player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
+            var currentFeatureSet = featureSet != null ? featureSet : (player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
             if (player != null) {
                 ((ItemGroupInterface) this).setDisplayStacks(null);
                 ((ItemGroupInterface) this).setSearchTabStacks(null);

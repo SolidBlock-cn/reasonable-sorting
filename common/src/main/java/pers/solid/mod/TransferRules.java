@@ -1,7 +1,7 @@
 package pers.solid.mod;
 
-import net.minecraft.block.AbstractButtonBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.ButtonBlock;
 import net.minecraft.block.DoorBlock;
 import net.minecraft.block.FenceGateBlock;
 import net.minecraft.data.family.BlockFamily;
@@ -13,7 +13,6 @@ import pers.solid.mod.interfaces.ItemGroupInterface;
 import pers.solid.mod.mixin.BlockFamiliesAccessor;
 import pers.solid.mod.mixin.ItemGroupMixin;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
@@ -31,7 +30,7 @@ public final class TransferRules {
   /**
    * 将原本位于“红石”中的按钮转移至“装饰性方块”。
    */
-  public static final TransferRule BUTTON_IN_DECORATIONS = item -> ItemGroupInterface.itemInGroup(item, ItemGroups.REDSTONE) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof AbstractButtonBlock && Configs.instance.buttonsInDecorations ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
+  public static final TransferRule BUTTON_IN_DECORATIONS = item -> ItemGroupInterface.itemInGroup(item, ItemGroups.REDSTONE) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof ButtonBlock && Configs.instance.buttonsInDecorations ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
   /**
    * 将原本位于“红石”中的栅栏门转移至“装饰性方块”。
    */

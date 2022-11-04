@@ -10,7 +10,6 @@ import pers.solid.mod.Configs;
 import pers.solid.mod.SortingRule;
 import pers.solid.mod.TransferRule;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -48,7 +47,7 @@ public interface ItemGroupInterface {
         return itemStackSet;
     }
 
-    public static boolean itemStackInGroup(ItemStack _stack, ItemGroup itemGroup, @Nullable FeatureSet features) {
+    public static boolean itemStackInGroup(ItemStack _stack, ItemGroup itemGroup, FeatureSet features) {
         if (itemGroup != null && _stack != null) {
             if (!(itemGroup == ItemGroups.INVENTORY || itemGroup == ItemGroups.SEARCH || itemGroup == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer)) {
                 Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(_stack.getItem()).collect(Collectors.toSet());
@@ -68,7 +67,7 @@ public interface ItemGroupInterface {
         }
      */
 
-    public static boolean itemInGroup(Item item, ItemGroup itemGroup, @Nullable FeatureSet features) {
+    public static boolean itemInGroup(Item item, ItemGroup itemGroup, FeatureSet features) {
         AtomicBoolean found = new AtomicBoolean(false);
         if (itemGroup != null) {
             //((ItemGroupInterface) (Object) itemGroup).setIgnoreInjection(true);
@@ -165,9 +164,9 @@ public interface ItemGroupInterface {
         });
     }
 
-    public static void updateGroups(@Nullable FeatureSet featureSet, @Nullable ItemGroup group) {
+    public static void updateGroups(FeatureSet featureSet, ItemGroup group) {
         var player = MinecraftClient.getInstance().player;
-        var currentFeatureSet = featureSet != null ? featureSet : (player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
+        var currentFeatureSet = featureSet != null ? featureSet : (player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
         if (player != null) {
             Arrays.stream(ItemGroups.GROUPS).forEachOrdered((g) -> {
                 if (g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR) return;
@@ -186,15 +185,15 @@ public interface ItemGroupInterface {
         }
     }
 
-    public default ItemStackSet getDisplayStacks(@Nullable FeatureSet enabledFeatures) {
+    public default ItemStackSet getDisplayStacks(FeatureSet enabledFeatures) {
         var player = MinecraftClient.getInstance().player;
-        var currentFeatureSet = player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
+        var currentFeatureSet = player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
         return ((ItemGroup)(Object)this).getDisplayStacks(enabledFeatures != null ? enabledFeatures : currentFeatureSet);
     }
 
-    public default ItemStackSet getSearchTabStacks(@Nullable FeatureSet enabledFeatures) {
+    public default ItemStackSet getSearchTabStacks(FeatureSet enabledFeatures) {
         var player = MinecraftClient.getInstance().player;
-        var currentFeatureSet = player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
+        var currentFeatureSet = player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
         return ((ItemGroup)(Object)this).getSearchTabStacks(enabledFeatures != null ? enabledFeatures : currentFeatureSet);
     }
 

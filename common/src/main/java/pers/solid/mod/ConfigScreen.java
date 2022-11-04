@@ -36,7 +36,7 @@ public class ConfigScreen {
 
   public static void resetGroups() {
       var player = MinecraftClient.getInstance().player;
-      var currentFeatureSet = (player != null ? player.networkHandler.getFeatureSet() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
+      var currentFeatureSet = (player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
       if (player != null) {
           Arrays.stream(ItemGroups.GROUPS).forEachOrdered((g) -> {
               if (g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR) return;

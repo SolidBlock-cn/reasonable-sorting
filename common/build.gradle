@@ -1,3 +1,8 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "7.0.0"
+    id 'fabric-loom' version '1.0-SNAPSHOT'
+}
+
 architectury {
     common(rootProject.enabled_platforms.split(","))
 }
