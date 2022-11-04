@@ -30,7 +30,7 @@ public final class TransferRules {
   /**
    * 将原本位于“红石”中的按钮转移至“装饰性方块”。
    */
-  public static final TransferRule BUTTON_IN_DECORATIONS = (item, group) -> ItemGroupInterface.itemInGroup(item, ItemGroups.REDSTONE) && (group != null ? group == ItemGroups.REDSTONE : true) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof ButtonBlock && Configs.instance.buttonsInDecorations ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
+  public static final TransferRule BUTTON_IN_DECORATIONS = (item, group) -> { return ItemGroupInterface.itemInGroup(item, ItemGroups.REDSTONE) && (group != null ? group == ItemGroups.REDSTONE : true) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof ButtonBlock && Configs.instance.buttonsInDecorations ? Collections.singleton(ItemGroups.FUNCTIONAL) : null; };
   /**
    * 将原本位于“红石”中的栅栏门转移至“装饰性方块”。
    */

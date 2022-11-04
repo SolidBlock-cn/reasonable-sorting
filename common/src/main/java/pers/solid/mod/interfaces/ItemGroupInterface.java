@@ -72,7 +72,6 @@ public interface ItemGroupInterface {
         return false;
     }
 
-
     public static ItemStackSet sorting(ItemStackSet itemStackSet, ItemGroup group, ItemGroup itemGroup, FeatureSet enabledFeatures, boolean hasPermissions) {
         var sortedStackSet = SortingRule.sortItemGroupEntries(itemStackSet);
         return (sortedStackSet != null ? sortedStackSet : itemStackSet);
@@ -130,12 +129,14 @@ public interface ItemGroupInterface {
         var cachedParent = (ItemStackSet)transferParentStacks.clone();
         var cachedSearch = (ItemStackSet)transferSearchStacks.clone();
 
-        // add items from original groups
+        // add items from original groups as cache
         ((ItemGroupEntriesInterface)entries).setParentTabStacks(cachedParent);
         ((ItemGroupEntriesInterface)entries).setSearchTabStacks(cachedSearch);
+
+        // add to special cache
         group.addItems(enabledFeatures, entries, hasPermissions);
 
-        // set transferred reference
+        // back items
         ((ItemGroupEntriesInterface)entries).setParentTabStacks(transferParentStacks);
         ((ItemGroupEntriesInterface)entries).setSearchTabStacks(transferSearchStacks);
 
@@ -147,31 +148,30 @@ public interface ItemGroupInterface {
         groupList.remove(ItemGroups.INVENTORY);
         groupList.remove(ItemGroups.SEARCH);
 
-        // correct order for defaults
-        //groupList.remove(group);
-        //putBefore(groupList, ItemGroups.BUILDING_BLOCKS,
-            //putBefore(groupList, ItemGroups.FUNCTIONAL,
-                //putBefore(groupList, ItemGroups.REDSTONE,
-                    //putBefore(groupList, ItemGroups.TOOLS, ItemGroups.COMBAT))));
-        groupList = new ArrayList(reverse(groupList.stream()).toList());
-        //groupList.add(group);
+        //
+        putBefore(groupList = new ArrayList(reverse(groupList.stream()).toList()), ItemGroups.BUILDING_BLOCKS, ItemGroups.FUNCTIONAL);
 
         // iterate groups
         groupList.forEach((itemGroup) -> {
+            var cachedSearch_ = ((ItemGroupInterface) itemGroup).getCachedSearchTabStacks(enabledFeatures, hasPermissions).clone();
+            var cachedParent_ = ((ItemGroupInterface) itemGroup).getCachedParentTabStacks(enabledFeatures, hasPermissions).clone();
+
+            // sorting those items
+            //if (Configs.instance.enableSorting) {
+                //ItemGroupInterface.sorting((ItemStackSet)cachedParent_, itemGroup, null, enabledFeatures, hasPermissions);
+                //ItemGroupInterface.sorting((ItemStackSet)cachedSearch_, itemGroup, null, enabledFeatures, hasPermissions);
+            //}
+
             var stream =
-                //SortingRule.streamOfRegistry(Registry.ITEM_KEY, ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(enabledFeatures))
-                itemGroup == group ? cachedSearch.stream() : ((ItemGroupInterface) itemGroup).getCachedSearchTabStacks(enabledFeatures, hasPermissions).clone().stream();
+                    //SortingRule.streamOfRegistry(Registry.ITEM_KEY, ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(enabledFeatures))
+                    itemGroup == group ? cachedSearch.stream() : cachedSearch_.stream();
 
             //
             stream.forEachOrdered((stack) -> {
                 Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem(), itemGroup).collect(Collectors.toSet());
                 if ((!groups.isEmpty() ? groups.contains(group) : (group == itemGroup)) && itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions)) { // now embeded
-                    if (!transferParentStacks.contains(stack)) {
-                        transferParentStacks.add(stack);
-                    }
-                    if (!transferSearchStacks.contains(stack)) {
-                        transferSearchStacks.add(stack);
-                    }
+                    if (!transferParentStacks.contains(stack)) { transferParentStacks.add(stack); }
+                    if (!transferSearchStacks.contains(stack)) { transferSearchStacks.add(stack); }
                 }
             });
         });

@@ -75,7 +75,7 @@ public final class SortingRules {
   /**
    * 让所有的栅栏门紧随在栅栏的后面。
    */
-  public static final VariantToVariantRule FENCE_GATE_FOLLOWS_FENCE = new VariantToVariantRule(block -> block instanceof FenceBlock, BlockFamily.Variant.FENCE, Collections.singleton(BlockFamily.Variant.FENCE_GATE));
+  public static final VariantToVariantRule FENCE_GATE_FOLLOWS_FENCE = new VariantToVariantRule((block) -> { return block instanceof FenceBlock; }, BlockFamily.Variant.FENCE, Collections.singleton(BlockFamily.Variant.FENCE_GATE));
   /**
    * {@link #FENCE_GATE_FOLLOWS_FENCE} 对应的物品规则，影响方块物品。
    */

@@ -35,8 +35,7 @@ public final class ConfigsHelper {
   static @Nullable ItemGroup getGroupFromId(String id) {
     if (id == null) return null;
     for (ItemGroup group : ItemGroups.GROUPS) {
-      //if (id.equals(group.getName())) {
-      if (id.equals(group.getDisplayName().toString())) {
+      if (id.equals(group.getDisplayName().toString().replaceAll(" ", "_").toLowerCase())) {
         return group;
       }
     }

@@ -294,7 +294,7 @@ public class ConfigScreen {
                 Text.translatable(
                     "option.reasonable-sorting.describe_item_groups",
                     //Text.literal(Arrays.stream(ItemGroups.GROUPS).map(ItemGroup::getName).collect(Collectors.joining(" ")))
-                        Text.literal(Arrays.stream(ItemGroups.GROUPS).map((itemGroup)->{ return itemGroup.getDisplayName().getString(); }).collect(Collectors.joining(" ")))
+                        Text.literal(Arrays.stream(ItemGroups.GROUPS).map((itemGroup)->{ return itemGroup.getDisplayName().getString().replaceAll(" ", "_").toLowerCase(); }).collect(Collectors.joining(" ")))
                         .formatted(Formatting.YELLOW)))
             .build());
 

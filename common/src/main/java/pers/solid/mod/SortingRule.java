@@ -64,7 +64,9 @@ public interface SortingRule<T> {
   public static ItemStackSet sortItemGroupEntries(ItemStackSet stack) {
     var stackSet = new ItemStackSet();
     stackSet.addAll(SortingRule.streamOfRegistry(Registry.ITEM_KEY, stack).toList());
-    return stackSet;
+    stack.removeAll(stack);
+    stack.addAll(stackSet);
+    return stack;
   }
 
   @ApiStatus.Internal
