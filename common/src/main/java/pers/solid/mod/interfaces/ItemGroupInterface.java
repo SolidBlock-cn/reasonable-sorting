@@ -61,27 +61,27 @@ public interface ItemGroupInterface {
     }
 
 
-    public static boolean itemStackInGroup(ItemStack _stack, ItemGroup group, ItemGroup itemGroup, FeatureSet features, boolean hasPermissions) {
+    public static boolean itemStackInGroup(ItemStack _stack, ItemGroup group, ItemGroup itemGroup, FeatureSet features, boolean hasPermissions, boolean search) {
         if (group != null && _stack != null) {
             if (!(group == ItemGroups.INVENTORY || group == ItemGroups.SEARCH || group == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer)) {
                 Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(_stack.getItem(), itemGroup).collect(Collectors.toSet());
                 if (!groups.isEmpty()) { return groups.contains(group); }
             }
-            return ((ItemGroupInterface)group).getCachedSearchTabStacks(features, hasPermissions).contains(_stack);
+            if (search) { return ((ItemGroupInterface)group).getCachedSearchTabStacks(features, hasPermissions).contains(_stack); };
+            return ((ItemGroupInterface)group).getCachedParentTabStacks(features, hasPermissions).contains(_stack);
         }
         return false;
     }
 
     public static ItemStackSet sorting(ItemStackSet itemStackSet, ItemGroup group, ItemGroup itemGroup, FeatureSet enabledFeatures, boolean hasPermissions) {
-        var sortedStackSet = SortingRule.sortItemGroupEntries(itemStackSet);
-        return (sortedStackSet != null ? sortedStackSet : itemStackSet);
+        return SortingRule.sortItemGroupEntries(itemStackSet);
     }
 
     public static ItemStackSet exclude(ItemStackSet itemStackSet, ItemGroup group, ItemGroup itemGroup, FeatureSet enabledFeatures, boolean hasPermissions) {
         // remove non-conditional transfer items
         if (!(group == ItemGroups.INVENTORY || group == ItemGroups.SEARCH || group == ItemGroups.HOTBAR)) {
             itemStackSet.stream().forEachOrdered((stack) -> {
-                if (!itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions)) { itemStackSet.remove(stack); }
+                if (!itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions, true)) { itemStackSet.remove(stack); }
             });
         }
         return itemStackSet;
@@ -162,15 +162,21 @@ public interface ItemGroupInterface {
                 //ItemGroupInterface.sorting((ItemStackSet)cachedSearch_, itemGroup, null, enabledFeatures, hasPermissions);
             //}
 
-            var stream =
-                    //SortingRule.streamOfRegistry(Registry.ITEM_KEY, ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(enabledFeatures))
-                    itemGroup == group ? cachedSearch.stream() : cachedSearch_.stream();
+            //var stream = SortingRule.streamOfRegistry(Registry.ITEM_KEY, ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(enabledFeatures))
+
 
             //
-            stream.forEachOrdered((stack) -> {
+            (itemGroup == group ? cachedParent.stream() : cachedParent_.stream()).forEachOrdered((stack) -> {
                 Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem(), itemGroup).collect(Collectors.toSet());
-                if ((!groups.isEmpty() ? groups.contains(group) : (group == itemGroup)) && itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions)) { // now embeded
+                if ((!groups.isEmpty() ? groups.contains(group) : (group == itemGroup)) && itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions, false)) { // now embeded
                     if (!transferParentStacks.contains(stack)) { transferParentStacks.add(stack); }
+                }
+            });
+
+            //
+            (itemGroup == group ? cachedSearch.stream() : cachedSearch_.stream()).forEachOrdered((stack) -> {
+                Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem(), itemGroup).collect(Collectors.toSet());
+                if ((!groups.isEmpty() ? groups.contains(group) : (group == itemGroup)) && itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions, true)) { // now embeded
                     if (!transferSearchStacks.contains(stack)) { transferSearchStacks.add(stack); }
                 }
             });

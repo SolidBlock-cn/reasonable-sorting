@@ -122,57 +122,55 @@ public interface SortingRule<T> {
 
   // ???
   static Stream<ItemStack> streamOfRegistry(RegistryKey<? extends Registry<Item>> registryKey, ObjectLinkedOpenCustomHashSet<ItemStack> rawIdToEntry) {
-    LinkedHashSet<ItemStack> iterated = new LinkedHashSet<>();
     final Collection<SortingRule<Item>> ruleSets = getSortingRules(registryKey);
+    if (!ruleSets.isEmpty()) {
+      ruleSets.stream().forEachOrdered((rule) -> {
+        LinkedHashSet<ItemStack> iterated = new LinkedHashSet<>();
+        // 被确认跟随在另一对象之后，不因直接在一级迭代产生，而应在一级迭代产生其他对象时产生的对象。
+        // 一级迭代时，就应该忽略这些对象。
+        // 本集合仅用于检测对象是否存在，故不考虑顺序。
+        final Set<ItemStack> combinationFollowers = new HashSet<>();
 
-    if (ruleSets.isEmpty()) {
-      // 如果没有为此注册表设置规则，那么直接返回 null，在 mixin 中表示依然按照原版的迭代方式迭代。
-      return null;
-    } else {
-      //LOGGER.info("{} sorting rules found in the iteration of {}.", ruleSets.size(), registryKey.getValue());
-    }
+        // 本集合的键为被跟随的对象，值为跟随者它的对象。
+        final Multimap<ItemStack, ItemStack> valueToFollowers = LinkedListMultimap.create();
 
-    // 被确认跟随在另一对象之后，不因直接在一级迭代产生，而应在一级迭代产生其他对象时产生的对象。
-    // 一级迭代时，就应该忽略这些对象。
-    // 本集合仅用于检测对象是否存在，故不考虑顺序。
-    final Set<ItemStack> combinationFollowers = new HashSet<>();
+        // 初次直接迭代内部元素。
+        for (ItemStack value : rawIdToEntry) { if (value != null) {
+          streamFollowersOf(Collections.singleton(rule), value.getItem()).forEachOrdered(follower -> {
+            var followed = rawIdToEntry.stream()
+                    .filter((itemStack) -> {
+                      return itemStack.getItem() == follower;
+                    });
 
-    // 本集合的键为被跟随的对象，值为跟随者它的对象。
-    final Multimap<ItemStack, ItemStack> valueToFollowers = LinkedListMultimap.create();
+            followed.forEachOrdered((itemStack) -> {
+              valueToFollowers.put(value, itemStack);
+              combinationFollowers.add(itemStack);
+            });
+          });
+        }}
 
-    // 初次直接迭代内部元素。
-    for (ItemStack value : rawIdToEntry) {
-      streamFollowersOf(ruleSets, value.getItem()).forEachOrdered(follower -> {
+        // 结果流的第一部分。先将内容连同其跟随者都迭代一次，已经迭代过的不重复迭代。但是，这部分可能会丢下一些元素。
+        final Stream<ItemStack> firstStream = rawIdToEntry.stream()
+                .filter(o -> !combinationFollowers.contains(o))
+                .flatMap(o -> oneAndItsFollowers(o, valueToFollowers))
+                .filter(o -> !iterated.contains(o))
+                .peek(iterated::add);
 
-        var followed = rawIdToEntry.stream()
-          .filter((itemStack)->{ return itemStack.getItem() == follower; });
-          //.filter((itemStack)->{ return itemStack == value; })
-          //.findFirst().orElse(value);
+        // 第一次未迭代完成的，在第二次迭代。
+        final Stream<ItemStack> secondStream = rawIdToEntry.stream()
+                .filter((x -> !iterated.contains(x)))
+                .peek(o -> LOGGER.info("Object {} not iterated in the first iteration. Iterated in the second iteration.", o));
 
-        //valueToFollowers.put(value, followed);
-        //combinationFollowers.add(followed);
+        //
+        var stream = new ArrayList(Stream.concat(firstStream, secondStream).toList());
 
-        followed.forEachOrdered((itemStack)->{
-          valueToFollowers.put(value, itemStack);
-          combinationFollowers.add(itemStack);
-        });
+        //
+        rawIdToEntry.removeAll(rawIdToEntry);
+        rawIdToEntry.addAll(stream);
       });
     }
 
-    // 结果流的第一部分。先将内容连同其跟随者都迭代一次，已经迭代过的不重复迭代。但是，这部分可能会丢下一些元素。
-    final Stream<ItemStack> firstStream = rawIdToEntry.stream()
-            .filter(o -> !combinationFollowers.contains(o))
-            .flatMap(o -> oneAndItsFollowers(o, valueToFollowers))
-            .filter(o -> !iterated.contains(o))
-            .peek(iterated::add);
-
-    // 第一次未迭代完成的，在第二次迭代。
-    final Stream<ItemStack> secondStream = rawIdToEntry.stream()
-            .filter((x -> !iterated.contains(x)))
-            .peek(o -> LOGGER.info("Object {} not iterated in the first iteration. Iterated in the second iteration.", o));
-
-    //
-    return Stream.concat(firstStream, secondStream);
+    return rawIdToEntry.stream();
   }
 
   /**

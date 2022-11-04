@@ -80,7 +80,7 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     // will no works anymore
     @Inject(method = "contains", at = @At("HEAD"), cancellable = true)
     public void isInMixin(FeatureSet enabledFeatures, ItemStack stack, boolean hasPermissions, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(ItemGroupInterface.itemStackInGroup(stack, (ItemGroup)(Object)this, null, enabledFeatures, hasPermissions));
+        cir.setReturnValue(ItemGroupInterface.itemStackInGroup(stack, (ItemGroup)(Object)this, null, enabledFeatures, hasPermissions, true));
         cir.cancel();
     }
 
