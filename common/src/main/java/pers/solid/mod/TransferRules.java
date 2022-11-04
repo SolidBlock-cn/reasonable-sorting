@@ -30,23 +30,23 @@ public final class TransferRules {
   /**
    * 将原本位于“红石”中的按钮转移至“装饰性方块”。
    */
-  public static final TransferRule BUTTON_IN_DECORATIONS = item -> ItemGroupInterface.itemInGroup(item, ItemGroups.REDSTONE) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof ButtonBlock && Configs.instance.buttonsInDecorations ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
+  public static final TransferRule BUTTON_IN_DECORATIONS = (item, group) -> ItemGroupInterface.itemInGroup(item, ItemGroups.REDSTONE) && (group != null ? group == ItemGroups.REDSTONE : true) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof ButtonBlock && Configs.instance.buttonsInDecorations ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
   /**
    * 将原本位于“红石”中的栅栏门转移至“装饰性方块”。
    */
-  public static final TransferRule FENCE_GATE_IN_DECORATIONS = item -> ItemGroupInterface.itemInGroup(item, ItemGroups.REDSTONE) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof FenceGateBlock && Configs.instance.fenceGatesInDecorations ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
+  public static final TransferRule FENCE_GATE_IN_DECORATIONS = (item, group) -> { return (ItemGroupInterface.itemInGroup(item, ItemGroups.REDSTONE) && (group != null ? group == ItemGroups.REDSTONE : true) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof FenceGateBlock && Configs.instance.fenceGatesInDecorations) ? Collections.singleton(ItemGroups.FUNCTIONAL) : null; };
   /**
    * 将原本位于“红石”中的门转移至“装饰性方块”。
    */
-  public static final TransferRule DOORS_IN_DECORATIONS = item -> ItemGroupInterface.itemInGroup(item, ItemGroups.REDSTONE) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof DoorBlock && Configs.instance.doorsInDecorations ? Collections.singleton(ItemGroups.FUNCTIONAL) : null;
+  public static final TransferRule DOORS_IN_DECORATIONS = (item, group) -> { return (ItemGroupInterface.itemInGroup(item, ItemGroups.REDSTONE) && (group != null ? group == ItemGroups.REDSTONE : true) && item instanceof BlockItem blockItem && blockItem.getBlock() instanceof DoorBlock && Configs.instance.doorsInDecorations) ? Collections.singleton(ItemGroups.FUNCTIONAL) : null; };
   /**
    * 将原本位于“工具”中的剑转移至“装饰性方块”。
    */
-  public static final TransferRule SWORDS_IN_TOOLS = item -> (item instanceof SwordItem && ItemGroupInterface.itemInGroup(item, ItemGroups.COMBAT)) && Configs.instance.swordsInTools ? Collections.singleton(ItemGroups.TOOLS) : null;
+  public static final TransferRule SWORDS_IN_TOOLS = (item, group) -> { return (item instanceof SwordItem && ItemGroupInterface.itemInGroup(item, ItemGroups.COMBAT)) && (group != null ? group == ItemGroups.COMBAT : true) && Configs.instance.swordsInTools ? Collections.singleton(ItemGroups.TOOLS) : null; };
   /**
    * 自定义的变种转移规则。仅限方块物品。
    */
-  public static final TransferRule CUSTOM_VARIANT_TRANSFER_RULE = item -> {
+  public static final TransferRule CUSTOM_VARIANT_TRANSFER_RULE = (item, group) -> {
     if (!(item instanceof BlockItem blockItem)) return null;
     final Block block = blockItem.getBlock();
     BlockFamily.Variant variant = null;
@@ -65,7 +65,7 @@ public final class TransferRules {
   /**
    * 自定义的正则表达式转移规则。
    */
-  public static final TransferRule CUSTOM_REGEX_TRANSFER_RULE = item -> {
+  public static final TransferRule CUSTOM_REGEX_TRANSFER_RULE = (item, group) -> {
     final Identifier identifier = Bridge.getItemId(item);
     for (final Pattern pattern : Configs.CUSTOM_REGEX_TRANSFER_RULE.keySet()) {
       if (pattern.matcher(identifier.toString()).matches()) return Configs.CUSTOM_REGEX_TRANSFER_RULE.get(pattern);
@@ -81,7 +81,7 @@ public final class TransferRules {
     TransferRule.addConditionalTransferRule(() -> Configs.instance.fenceGatesInDecorations, FENCE_GATE_IN_DECORATIONS);
     TransferRule.addConditionalTransferRule(() -> Configs.instance.doorsInDecorations, DOORS_IN_DECORATIONS);
     TransferRule.addConditionalTransferRule(() -> Configs.instance.swordsInTools, SWORDS_IN_TOOLS);
-    TransferRule.addTransferRule(Configs.CUSTOM_TRANSFER_RULE::get);
+    TransferRule.addTransferRule((item, group) -> { return Configs.CUSTOM_TRANSFER_RULE.get(item); });
     TransferRule.addConditionalTransferRule(() -> !Configs.CUSTOM_VARIANT_TRANSFER_RULE.isEmpty(), CUSTOM_VARIANT_TRANSFER_RULE);
     TransferRule.addConditionalTransferRule(() -> !Configs.CUSTOM_REGEX_TRANSFER_RULE.isEmpty(), CUSTOM_REGEX_TRANSFER_RULE);
   }

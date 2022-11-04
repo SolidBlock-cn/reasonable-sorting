@@ -32,40 +32,10 @@ public interface ItemGroupInterface {
     public default void setSearchTabStacks(ItemStackSet set){  };
     public default void setNeedsUpdate(boolean update) { };
 
-    public static ItemStackSet sorting(ItemStackSet itemStackSet, ItemGroup group, FeatureSet enabledFeatures, boolean hasPermissions) {
-        var sortedStackSet = SortingRule.sortItemGroupEntries(itemStackSet);
-        return (sortedStackSet != null ? sortedStackSet : itemStackSet);
-    }
 
-    public static ItemStackSet exclude(ItemStackSet itemStackSet, ItemGroup group, FeatureSet enabledFeatures, boolean hasPermissions) {
-        // remove non-conditional transfer items
-        if (!(group == ItemGroups.INVENTORY || group == ItemGroups.SEARCH || group == ItemGroups.HOTBAR)) {
-            itemStackSet.stream().forEachOrdered((stack) -> {
-                if (!itemStackInGroup(stack, group, enabledFeatures, hasPermissions)) { itemStackSet.remove(stack); }
-            });
-        }
-        return itemStackSet;
-    }
 
-    public static boolean itemStackInGroup(ItemStack _stack, ItemGroup itemGroup, FeatureSet features, boolean hasPermissions) {
-        if (itemGroup != null && _stack != null) {
-            if (!(itemGroup == ItemGroups.INVENTORY || itemGroup == ItemGroups.SEARCH || itemGroup == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer)) {
-                Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(_stack.getItem()).collect(Collectors.toSet());
-                if (!groups.isEmpty()) { return groups.contains(itemGroup); }
-            }
-            return ((ItemGroupInterface)itemGroup).getCachedSearchTabStacks(features, hasPermissions).contains(_stack);
-        }
-        return false;
-    }
 
-    /*
-    Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
 
-        if (!groups.isEmpty()) {
-            cir.setReturnValue(groups.contains(group));
-            cir.cancel();
-        }
-     */
 
     public static boolean itemInGroup(Item item, ItemGroup itemGroup, FeatureSet features, boolean hasPermissions) {
         AtomicBoolean found = new AtomicBoolean(false);
@@ -89,6 +59,44 @@ public interface ItemGroupInterface {
         var player = MinecraftClient.getInstance().player;
         return itemInGroup(item, itemGroup, player != null ? player.hasPermissionLevel(1) : false);
     }
+
+
+    public static boolean itemStackInGroup(ItemStack _stack, ItemGroup group, ItemGroup itemGroup, FeatureSet features, boolean hasPermissions) {
+        if (group != null && _stack != null) {
+            if (!(group == ItemGroups.INVENTORY || group == ItemGroups.SEARCH || group == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer)) {
+                Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(_stack.getItem(), itemGroup).collect(Collectors.toSet());
+                if (!groups.isEmpty()) { return groups.contains(group); }
+            }
+            return ((ItemGroupInterface)group).getCachedSearchTabStacks(features, hasPermissions).contains(_stack);
+        }
+        return false;
+    }
+
+
+    public static ItemStackSet sorting(ItemStackSet itemStackSet, ItemGroup group, ItemGroup itemGroup, FeatureSet enabledFeatures, boolean hasPermissions) {
+        var sortedStackSet = SortingRule.sortItemGroupEntries(itemStackSet);
+        return (sortedStackSet != null ? sortedStackSet : itemStackSet);
+    }
+
+    public static ItemStackSet exclude(ItemStackSet itemStackSet, ItemGroup group, ItemGroup itemGroup, FeatureSet enabledFeatures, boolean hasPermissions) {
+        // remove non-conditional transfer items
+        if (!(group == ItemGroups.INVENTORY || group == ItemGroups.SEARCH || group == ItemGroups.HOTBAR)) {
+            itemStackSet.stream().forEachOrdered((stack) -> {
+                if (!itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions)) { itemStackSet.remove(stack); }
+            });
+        }
+        return itemStackSet;
+    }
+
+
+    /*
+    Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
+
+        if (!groups.isEmpty()) {
+            cir.setReturnValue(groups.contains(group));
+            cir.cancel();
+        }
+     */
 
     @SuppressWarnings("unchecked")
     static <T> Stream<T> reverse(Stream<T> input) {
@@ -156,8 +164,8 @@ public interface ItemGroupInterface {
 
             //
             stream.forEachOrdered((stack) -> {
-                Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem()).collect(Collectors.toSet());
-                if ((!groups.isEmpty() ? groups.contains(group) : (group == itemGroup)) && itemStackInGroup(stack, group, enabledFeatures, hasPermissions)) { // now embeded
+                Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem(), itemGroup).collect(Collectors.toSet());
+                if ((!groups.isEmpty() ? groups.contains(group) : (group == itemGroup)) && itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions)) { // now embeded
                     if (!transferParentStacks.contains(stack)) {
                         transferParentStacks.add(stack);
                     }

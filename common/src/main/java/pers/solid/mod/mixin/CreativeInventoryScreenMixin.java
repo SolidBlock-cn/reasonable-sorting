@@ -50,7 +50,7 @@ public abstract class CreativeInventoryScreenMixin {
           method = "renderTooltip",
           at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;getDisplayName()Lnet/minecraft/text/Text;"))
   public Text renderTooltipMixin(ItemGroup instance) {
-    final Collection<ItemGroup> itemGroups = TransferRule.streamTransferredGroupOf(stack.getItem()).toList();
+    final Collection<ItemGroup> itemGroups = TransferRule.streamTransferredGroupOf(stack.getItem(), instance).toList();
     if (Configs.instance.enableGroupTransfer && !itemGroups.isEmpty()) {
       MutableText text = Text.literal("").styled(style -> style.withColor(0x88ccff));
       for (Iterator<ItemGroup> iterator = itemGroups.iterator(); iterator.hasNext(); ) {

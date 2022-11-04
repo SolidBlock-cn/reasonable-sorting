@@ -80,7 +80,7 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     // will no works anymore
     @Inject(method = "contains", at = @At("HEAD"), cancellable = true)
     public void isInMixin(FeatureSet enabledFeatures, ItemStack stack, boolean hasPermissions, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(ItemGroupInterface.itemStackInGroup(stack, (ItemGroup)(Object)this, enabledFeatures, hasPermissions));
+        cir.setReturnValue(ItemGroupInterface.itemStackInGroup(stack, (ItemGroup)(Object)this, null, enabledFeatures, hasPermissions));
         cir.cancel();
     }
 
@@ -143,8 +143,8 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
 
         //
         if (Configs.instance.enableSorting) {
-            entriesInterface.setParentTabStacks(ItemGroupInterface.sorting((ItemStackSet) entriesAccessor.getParentTabStacks().clone(), instance, featureSet, hasPermissions));
-            entriesInterface.setSearchTabStacks(ItemGroupInterface.sorting((ItemStackSet) entriesAccessor.getSearchTabStacks().clone(), instance, featureSet, hasPermissions));
+            entriesInterface.setParentTabStacks(ItemGroupInterface.sorting((ItemStackSet) entriesAccessor.getParentTabStacks().clone(), instance, null, featureSet, hasPermissions));
+            entriesInterface.setSearchTabStacks(ItemGroupInterface.sorting((ItemStackSet) entriesAccessor.getSearchTabStacks().clone(), instance, null, featureSet, hasPermissions));
         }
     }
 }
