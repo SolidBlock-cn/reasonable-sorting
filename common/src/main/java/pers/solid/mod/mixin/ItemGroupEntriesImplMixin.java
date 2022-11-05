@@ -26,7 +26,7 @@ public class ItemGroupEntriesImplMixin implements ItemGroupEntriesInterface {
     public ItemStackSet sorting(ItemStackSet itemStackSet, boolean hasPermission) {
         var group = ((ItemGroupEntriesImplAccessor)this).getGroup();
         var enabledFeatures = ((ItemGroupEntriesImplAccessor)this).getEnabledFeatures();
-        return ItemGroupInterface.sorting(itemStackSet, group, null, enabledFeatures, hasPermission);
+        return ItemGroupInterface.sorting(itemStackSet, enabledFeatures, hasPermission);
     }
 
     @Unique @Override

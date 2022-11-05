@@ -69,7 +69,7 @@ public interface ItemGroupInterface {
         return false;
     }
 
-    public static ItemStackSet sorting(ItemStackSet itemStackSet, ItemGroup group, ItemGroup itemGroup, FeatureSet enabledFeatures, boolean hasPermissions) {
+    public static ItemStackSet sorting(ItemStackSet itemStackSet, FeatureSet enabledFeatures, boolean hasPermissions) {
         return SortingRule.sortItemGroupEntries(itemStackSet);
     }
 
@@ -131,23 +131,41 @@ public interface ItemGroupInterface {
         groupList.remove(ItemGroups.HOTBAR);
         groupList.remove(ItemGroups.INVENTORY);
         groupList.remove(ItemGroups.SEARCH);
+        //putBefore(groupList, ItemGroups.BUILDING_BLOCKS, ItemGroups.REDSTONE);
+
+        // move and swap groups
+/* <= */putBefore(groupList, ItemGroups.FUNCTIONAL, ItemGroups.REDSTONE); /* <= */
+/* <= */putBefore(groupList, ItemGroups.TOOLS, ItemGroups.COMBAT); /* <= */
 
         // update cache if needed, for avoid stack overflow, and except main group
-        putBefore(groupList = new ArrayList(reverse(groupList.stream()).toList()), ItemGroups.BUILDING_BLOCKS, ItemGroups.FUNCTIONAL);
-        groupList.stream().filter((g)->{return group!=g;}).forEach((itemGroup) -> ((ItemGroupInterface) itemGroup).getCachedSearchTabStacks(enabledFeatures, hasPermissions, true));
-        groupList.stream().filter((g)->{return group!=g;}).forEach((itemGroup) -> ((ItemGroupInterface) itemGroup).getCachedParentTabStacks(enabledFeatures, hasPermissions, true));
+        List<ItemStack> enardParent = groupList.stream().map((itemGroup) -> ((ItemGroupInterface) itemGroup).getCachedParentTabStacks(enabledFeatures, hasPermissions, true)).distinct().flatMap(Collection::stream).distinct().toList();
+        List<ItemStack> enardSearch = groupList.stream().map((itemGroup) -> ((ItemGroupInterface) itemGroup).getCachedSearchTabStacks(enabledFeatures, hasPermissions, true)).distinct().flatMap(Collection::stream).distinct().toList();
+
+        // unify groups for correct sorting
+        var stParent = new ItemStackSet(); stParent.addAll(enardParent);
+        var stSearch = new ItemStackSet(); stSearch.addAll(enardSearch);
+
+        //
+        if (Configs.instance.enableSorting) {
+            ItemGroupInterface.sorting(stParent, enabledFeatures, hasPermissions);
+            ItemGroupInterface.sorting(stSearch, enabledFeatures, hasPermissions);
+        };
 
         // iterate groups
-        groupList.forEach((itemGroup) -> {
-            ((ItemGroupInterface) itemGroup).getCachedParentTabStacks(enabledFeatures, hasPermissions, false).stream().forEachOrdered((stack) -> {
-                Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem(), itemGroup).collect(Collectors.toSet());
-                if ((!groups.isEmpty() ? groups.contains(group) : (group == itemGroup)) && itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions, false)) { // now embeded
+        // TODO: optimize process
+        ArrayList<ItemGroup> finalGroupList = groupList;//(groupList = new ArrayList(List.of(ItemGroups.GROUPS)));
+        stParent.stream().forEachOrdered((stack) -> {
+            finalGroupList.forEach((itemGroup) -> {
+                Set<ItemGroup> groups = Configs.instance.enableGroupTransfer ? TransferRule.streamTransferredGroupOf(stack.getItem(), itemGroup).collect(Collectors.toSet()) : null;
+                if ((groups == null || (!groups.isEmpty() ? groups.contains(group) : (group == itemGroup))) && itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions, false)) { // now embeded
                     if (!transferParentStacks.contains(stack)) { transferParentStacks.add(stack); }
                 }
             });
-            ((ItemGroupInterface) itemGroup).getCachedSearchTabStacks(enabledFeatures, hasPermissions, false).stream().forEachOrdered((stack) -> {
-                Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem(), itemGroup).collect(Collectors.toSet());
-                if ((!groups.isEmpty() ? groups.contains(group) : (group == itemGroup)) && itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions, true)) { // now embeded
+        });
+        stSearch.stream().forEachOrdered((stack) -> {
+            finalGroupList.forEach((itemGroup) -> {
+                Set<ItemGroup> groups = Configs.instance.enableGroupTransfer ? TransferRule.streamTransferredGroupOf(stack.getItem(), itemGroup).collect(Collectors.toSet()) : null;
+                if ((groups == null || (!groups.isEmpty() ? groups.contains(group) : (group == itemGroup))) && itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions, true)) { // now embeded
                     if (!transferSearchStacks.contains(stack)) { transferSearchStacks.add(stack); }
                 }
             });
