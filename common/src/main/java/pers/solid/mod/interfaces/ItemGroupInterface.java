@@ -8,6 +8,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import pers.solid.mod.Configs;
 import pers.solid.mod.SortingRule;
+import pers.solid.mod.SortingRules;
 import pers.solid.mod.TransferRule;
 
 import java.util.*;
@@ -17,10 +18,10 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public interface ItemGroupInterface {
-    public default ItemStackSet getCachedSearchTabStacks(boolean hasPermissions) { return null; };
-    public default ItemStackSet getCachedParentTabStacks(boolean hasPermissions) { return null; };
-    public default ItemStackSet getCachedSearchTabStacks(FeatureSet featureSet, boolean hasPermissions) { return null; };
-    public default ItemStackSet getCachedParentTabStacks(FeatureSet featureSet, boolean hasPermissions) { return null; };
+    public default ItemStackSet getCachedSearchTabStacks(boolean hasPermissions, boolean needsUpdate) { return null; };
+    public default ItemStackSet getCachedParentTabStacks(boolean hasPermissions, boolean needsUpdate) { return null; };
+    public default ItemStackSet getCachedSearchTabStacks(FeatureSet featureSet, boolean hasPermissions, boolean needsUpdate) { return null; };
+    public default ItemStackSet getCachedParentTabStacks(FeatureSet featureSet, boolean hasPermissions, boolean needsUpdate) { return null; };
     public default ItemStackSet getDisplayStacks() {
         return null;
     }
@@ -33,15 +34,11 @@ public interface ItemGroupInterface {
     public default void setNeedsUpdate(boolean update) { };
 
 
-
-
-
-
     public static boolean itemInGroup(Item item, ItemGroup itemGroup, FeatureSet features, boolean hasPermissions) {
         AtomicBoolean found = new AtomicBoolean(false);
         if (itemGroup != null) {
             //((ItemGroupInterface) (Object) itemGroup).setIgnoreInjection(true);
-            ((ItemGroupInterface)itemGroup).getCachedSearchTabStacks(features, hasPermissions).forEach((stack) -> {
+            ((ItemGroupInterface)itemGroup).getCachedSearchTabStacks(features, hasPermissions, false).forEach((stack) -> {
                 if (stack != null && stack.getItem() == item) {
                     found.set(true);
                 }
@@ -60,15 +57,14 @@ public interface ItemGroupInterface {
         return itemInGroup(item, itemGroup, player != null ? player.hasPermissionLevel(1) : false);
     }
 
-
     public static boolean itemStackInGroup(ItemStack _stack, ItemGroup group, ItemGroup itemGroup, FeatureSet features, boolean hasPermissions, boolean search) {
         if (group != null && _stack != null) {
             if (!(group == ItemGroups.INVENTORY || group == ItemGroups.SEARCH || group == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer)) {
                 Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(_stack.getItem(), itemGroup).collect(Collectors.toSet());
                 if (!groups.isEmpty()) { return groups.contains(group); }
             }
-            if (search) { return ((ItemGroupInterface)group).getCachedSearchTabStacks(features, hasPermissions).contains(_stack); };
-            return ((ItemGroupInterface)group).getCachedParentTabStacks(features, hasPermissions).contains(_stack);
+            if (search) { return ((ItemGroupInterface)group).getCachedSearchTabStacks(features, hasPermissions, false).contains(_stack); };
+            return ((ItemGroupInterface)group).getCachedParentTabStacks(features, hasPermissions, false).contains(_stack);
         }
         return false;
     }
@@ -81,7 +77,7 @@ public interface ItemGroupInterface {
         // remove non-conditional transfer items
         if (!(group == ItemGroups.INVENTORY || group == ItemGroups.SEARCH || group == ItemGroups.HOTBAR)) {
             itemStackSet.stream().forEachOrdered((stack) -> {
-                if (!itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions, true)) { itemStackSet.remove(stack); }
+                if (!itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions, false)) { itemStackSet.remove(stack); }
             });
         }
         return itemStackSet;
@@ -126,55 +122,30 @@ public interface ItemGroupInterface {
     }
 
     public static void transfer(ItemStackSet transferParentStacks, ItemStackSet transferSearchStacks, ItemGroup group, FeatureSet enabledFeatures, ItemGroup.Entries entries, boolean hasPermissions) {
-        var cachedParent = (ItemStackSet)transferParentStacks.clone();
-        var cachedSearch = (ItemStackSet)transferSearchStacks.clone();
-
-        // add items from original groups as cache
-        ((ItemGroupEntriesInterface)entries).setParentTabStacks(cachedParent);
-        ((ItemGroupEntriesInterface)entries).setSearchTabStacks(cachedSearch);
-
-        // add to special cache
-        group.addItems(enabledFeatures, entries, hasPermissions);
-
         // back items
         ((ItemGroupEntriesInterface)entries).setParentTabStacks(transferParentStacks);
         ((ItemGroupEntriesInterface)entries).setSearchTabStacks(transferSearchStacks);
 
-        // add conditional transfer items
+        // add conditional transfer items and remove not needed
         ArrayList<ItemGroup> groupList = new ArrayList(List.of(ItemGroups.GROUPS));
-
-        // remove not needed
         groupList.remove(ItemGroups.HOTBAR);
         groupList.remove(ItemGroups.INVENTORY);
         groupList.remove(ItemGroups.SEARCH);
 
-        //
+        // update cache if needed, for avoid stack overflow, and except main group
         putBefore(groupList = new ArrayList(reverse(groupList.stream()).toList()), ItemGroups.BUILDING_BLOCKS, ItemGroups.FUNCTIONAL);
+        groupList.stream().filter((g)->{return group!=g;}).forEach((itemGroup) -> ((ItemGroupInterface) itemGroup).getCachedSearchTabStacks(enabledFeatures, hasPermissions, true));
+        groupList.stream().filter((g)->{return group!=g;}).forEach((itemGroup) -> ((ItemGroupInterface) itemGroup).getCachedParentTabStacks(enabledFeatures, hasPermissions, true));
 
         // iterate groups
         groupList.forEach((itemGroup) -> {
-            var cachedSearch_ = ((ItemGroupInterface) itemGroup).getCachedSearchTabStacks(enabledFeatures, hasPermissions).clone();
-            var cachedParent_ = ((ItemGroupInterface) itemGroup).getCachedParentTabStacks(enabledFeatures, hasPermissions).clone();
-
-            // sorting those items
-            //if (Configs.instance.enableSorting) {
-                //ItemGroupInterface.sorting((ItemStackSet)cachedParent_, itemGroup, null, enabledFeatures, hasPermissions);
-                //ItemGroupInterface.sorting((ItemStackSet)cachedSearch_, itemGroup, null, enabledFeatures, hasPermissions);
-            //}
-
-            //var stream = SortingRule.streamOfRegistry(Registry.ITEM_KEY, ((ItemGroupInterface)itemGroup).getCachedParentTabStacks(enabledFeatures))
-
-
-            //
-            (itemGroup == group ? cachedParent.stream() : cachedParent_.stream()).forEachOrdered((stack) -> {
+            ((ItemGroupInterface) itemGroup).getCachedParentTabStacks(enabledFeatures, hasPermissions, false).stream().forEachOrdered((stack) -> {
                 Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem(), itemGroup).collect(Collectors.toSet());
                 if ((!groups.isEmpty() ? groups.contains(group) : (group == itemGroup)) && itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions, false)) { // now embeded
                     if (!transferParentStacks.contains(stack)) { transferParentStacks.add(stack); }
                 }
             });
-
-            //
-            (itemGroup == group ? cachedSearch.stream() : cachedSearch_.stream()).forEachOrdered((stack) -> {
+            ((ItemGroupInterface) itemGroup).getCachedSearchTabStacks(enabledFeatures, hasPermissions, false).stream().forEachOrdered((stack) -> {
                 Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(stack.getItem(), itemGroup).collect(Collectors.toSet());
                 if ((!groups.isEmpty() ? groups.contains(group) : (group == itemGroup)) && itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions, true)) { // now embeded
                     if (!transferSearchStacks.contains(stack)) { transferSearchStacks.add(stack); }
@@ -183,6 +154,7 @@ public interface ItemGroupInterface {
         });
     }
 
+    //
     public static void updateGroups(FeatureSet featureSet, ItemGroup group, boolean hasPermissions) {
         var player = MinecraftClient.getInstance().player;
         var currentFeatureSet = featureSet != null ? featureSet : (player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());

@@ -117,7 +117,7 @@ public interface SortingRule<T> {
    * @return 对象的跟随者的流，可能是空的。
    */
   static <T> Stream<T> streamFollowersOf(Collection<SortingRule<T>> combinationRules, T object) {
-    return combinationRules.stream().map(function -> function.getFollowers(object)).filter(Objects::nonNull).flatMap(Streams::stream);
+    return combinationRules.stream().map(function -> { return function.getFollowers(object); }).filter(Objects::nonNull).flatMap(Streams::stream);
   }
 
   // ???
@@ -137,11 +137,7 @@ public interface SortingRule<T> {
         // 初次直接迭代内部元素。
         for (ItemStack value : rawIdToEntry) { if (value != null) {
           streamFollowersOf(Collections.singleton(rule), value.getItem()).forEachOrdered(follower -> {
-            var followed = rawIdToEntry.stream()
-                    .filter((itemStack) -> {
-                      return itemStack.getItem() == follower;
-                    });
-
+            var followed = rawIdToEntry.stream().filter((itemStack) -> { return itemStack.getItem() == follower; });
             followed.forEachOrdered((itemStack) -> {
               valueToFollowers.put(value, itemStack);
               combinationFollowers.add(itemStack);
@@ -184,7 +180,7 @@ public interface SortingRule<T> {
       RegistryKey<? extends Registry<T>> registryKey,
       List<RegistryEntry.Reference<T>> rawIdToEntry) {
     LinkedHashSet<T> iterated = new LinkedHashSet<>();
-    final Collection<SortingRule<T>> ruleSets = getSortingRules(registryKey);
+    Collection<SortingRule<T>> ruleSets = getSortingRules(registryKey);
 
     if (ruleSets.isEmpty()) {
       // 如果没有为此注册表设置规则，那么直接返回 null，在 mixin 中表示依然按照原版的迭代方式迭代。
@@ -196,14 +192,14 @@ public interface SortingRule<T> {
     // 被确认跟随在另一对象之后，不因直接在一级迭代产生，而应在一级迭代产生其他对象时产生的对象。
     // 一级迭代时，就应该忽略这些对象。
     // 本集合仅用于检测对象是否存在，故不考虑顺序。
-    final Set<T> combinationFollowers = new HashSet<>();
+    Set<T> combinationFollowers = new HashSet<>();
 
     // 本集合的键为被跟随的对象，值为跟随者它的对象。
-    final Multimap<T, T> valueToFollowers = LinkedListMultimap.create();
+    Multimap<T, T> valueToFollowers = LinkedListMultimap.create();
 
     // 初次直接迭代内部元素。
     for (RegistryEntry.Reference<T> entry : rawIdToEntry) {
-      final T value = entry.value();
+      T value = entry.value();
       streamFollowersOf(ruleSets, value).forEachOrdered(follower -> {
         valueToFollowers.put(value, follower);
         combinationFollowers.add(follower);
@@ -211,7 +207,7 @@ public interface SortingRule<T> {
     }
 
     // 结果流的第一部分。先将内容连同其跟随者都迭代一次，已经迭代过的不重复迭代。但是，这部分可能会丢下一些元素。
-    final Stream<T> firstStream = rawIdToEntry.stream()
+    Stream<T> firstStream = rawIdToEntry.stream()
         .map(RegistryEntry.Reference::value)
         .filter(o -> !combinationFollowers.contains(o))
         .flatMap(o -> oneAndItsFollowers(o, valueToFollowers))
@@ -219,7 +215,7 @@ public interface SortingRule<T> {
         .peek(iterated::add);
 
     // 第一次未迭代完成的，在第二次迭代。
-    final Stream<T> secondStream = rawIdToEntry.stream()
+    Stream<T> secondStream = rawIdToEntry.stream()
         .map(RegistryEntry.Reference::value)
         .filter((x -> !iterated.contains(x)))
         .peek(o -> LOGGER.info("Object {} not iterated in the first iteration. Iterated in the second iteration.", o));
@@ -233,7 +229,7 @@ public interface SortingRule<T> {
    * @return 对象自身及其跟随者组成的流。
    */
   static <T> Stream<T> oneAndItsFollowers(T o, Multimap<T, T> valueToFollowers) {
-    final Stream<T> followersStream = valueToFollowers.get(o).stream();
+    Stream<T> followersStream = valueToFollowers.get(o).stream();
     return Stream.concat(Stream.of(o), followersStream.flatMap(o1 -> oneAndItsFollowers(o1, valueToFollowers)));
   }
 

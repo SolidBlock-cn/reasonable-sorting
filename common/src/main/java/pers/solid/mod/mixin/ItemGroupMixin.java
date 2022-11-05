@@ -13,10 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import pers.solid.mod.Configs;
-import pers.solid.mod.SortingRule;
-import pers.solid.mod.TransferRule;
-import pers.solid.mod.TransferRules;
+import pers.solid.mod.*;
 import pers.solid.mod.interfaces.ItemGroupEntriesInterface;
 import pers.solid.mod.interfaces.ItemGroupInterface;
 
@@ -33,8 +30,8 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     @Unique boolean needsToUpdate = false;
 
     //
-    @Unique @Override public ItemStackSet getCachedSearchTabStacks(boolean hasPermissions) { return this.getCachedSearchTabStacks(null, hasPermissions); };
-    @Unique @Override public ItemStackSet getCachedParentTabStacks(boolean hasPermissions) { return this.getCachedParentTabStacks(null, hasPermissions); };
+    @Unique @Override public ItemStackSet getCachedSearchTabStacks(boolean hasPermissions, boolean needsToUpdate) { return this.getCachedSearchTabStacks(null, hasPermissions, needsToUpdate); };
+    @Unique @Override public ItemStackSet getCachedParentTabStacks(boolean hasPermissions, boolean needsToUpdate) { return this.getCachedParentTabStacks(null, hasPermissions, needsToUpdate); };
     @Unique @Override public void setNeedsUpdate(boolean update) {
         this.needsToUpdate = update;
     };
@@ -54,23 +51,27 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     }
 
     //
-    @Unique @Override public ItemStackSet getCachedSearchTabStacks(FeatureSet featureSet, boolean hasPermissions) {
+    @Unique @Override public ItemStackSet getCachedSearchTabStacks(FeatureSet featureSet, boolean hasPermissions, boolean needsUpdate) {
         if (this.cachedSearchTabStacks == null) {
-            var player = MinecraftClient.getInstance().player;
-            var currentFeatureSet = player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
-            ((ItemGroup)(Object)this).getSearchTabStacks(featureSet != null ? featureSet : currentFeatureSet, hasPermissions);
+            if (needsUpdate) {
+                var player = MinecraftClient.getInstance().player;
+                var currentFeatureSet = player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
+                ((ItemGroup) (Object) this).getSearchTabStacks(featureSet != null ? featureSet : currentFeatureSet, hasPermissions);
+            }
         }
-        return this.cachedSearchTabStacks; // avoid reference issues
+        return (ItemStackSet)this.cachedSearchTabStacks.clone(); // avoid reference issues
     }
 
     //
-    @Unique @Override public ItemStackSet getCachedParentTabStacks(FeatureSet featureSet, boolean hasPermissions) {
+    @Unique @Override public ItemStackSet getCachedParentTabStacks(FeatureSet featureSet, boolean hasPermissions, boolean needsUpdate) {
         if (this.cachedParentTabStacks == null) {
-            var player = MinecraftClient.getInstance().player;
-            var currentFeatureSet = player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
-            ((ItemGroup)(Object)this).getDisplayStacks(featureSet != null ? featureSet : currentFeatureSet, hasPermissions);
+            if (needsUpdate) {
+                var player = MinecraftClient.getInstance().player;
+                var currentFeatureSet = player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
+                ((ItemGroup) (Object) this).getDisplayStacks(featureSet != null ? featureSet : currentFeatureSet, hasPermissions);
+            }
         }
-        return this.cachedParentTabStacks; // avoid reference issues
+        return (ItemStackSet)this.cachedParentTabStacks.clone(); // avoid reference issues
     }
 
     /**
@@ -115,8 +116,6 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         // reference, from empty
         var originalParentStacksRef = (ItemStackSet)entriesAccessor.getParentTabStacks();
         var originalSearchStacksRef = (ItemStackSet)entriesAccessor.getSearchTabStacks();
-
-        //
         var transferParentStacks = (ItemStackSet)originalParentStacksRef.clone();
         var transferSearchStacks = (ItemStackSet)originalSearchStacksRef.clone();
 
@@ -134,16 +133,16 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         }
 
         //
-        if (instance == ItemGroups.INVENTORY || instance == ItemGroups.SEARCH || instance == ItemGroups.HOTBAR) return;
+        if (!(instance == ItemGroups.INVENTORY || instance == ItemGroups.SEARCH || instance == ItemGroups.HOTBAR)) {
+            // transfer and sorting
+            if (Configs.instance.enableGroupTransfer) {
+                ItemGroupInterface.transfer((ItemStackSet) transferParentStacks, (ItemStackSet) transferSearchStacks, instance, featureSet, entries, hasPermissions);
+            }
 
-        // transfer and sorting
-        if (Configs.instance.enableGroupTransfer) {
-            ItemGroupInterface.transfer(transferParentStacks, transferSearchStacks, instance, featureSet, entries, hasPermissions);
-        };
-
-        if (Configs.instance.enableSorting) {
-            ItemGroupInterface.sorting(transferParentStacks, instance, null, featureSet, hasPermissions);
-            ItemGroupInterface.sorting(transferSearchStacks, instance, null, featureSet, hasPermissions);
+            if (Configs.instance.enableSorting) {
+                ItemGroupInterface.sorting((ItemStackSet) transferParentStacks, instance, null, featureSet, hasPermissions);
+                ItemGroupInterface.sorting((ItemStackSet) transferSearchStacks, instance, null, featureSet, hasPermissions);
+            }
         };
     }
 }
