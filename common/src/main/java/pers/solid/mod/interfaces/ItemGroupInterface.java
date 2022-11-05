@@ -11,6 +11,7 @@ import pers.solid.mod.SortingRule;
 import pers.solid.mod.SortingRules;
 import pers.solid.mod.TransferRule;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -106,70 +107,109 @@ public interface ItemGroupInterface {
         if (i1 >= 0 && i2 >= 0) { Collections.swap(groups, i1, i2); };
     }
 
-    public static void putBefore_(List<?> collection, int indexToMoveFrom, int indexToMoveAt) {
-        if (indexToMoveAt >= indexToMoveFrom) {
-            Collections.rotate(collection.subList(indexToMoveFrom, indexToMoveAt + 1), -1);
-        } else {
-            Collections.rotate(collection.subList(indexToMoveAt, indexToMoveFrom + 1), 1);
-        }
+
+    public static <T> List<T> splice(List<T> list, int index, int deleteCount) {
+        return spliceImpl(list, index, deleteCount, false, null);
     }
 
-    public static ItemGroup putBefore(ArrayList<ItemGroup> groups, ItemGroup beforeOf, ItemGroup el) {
-        int i1 = groups.indexOf(beforeOf);
-        int i2 = groups.indexOf(el);
-        if (i1 >= 0 && i2 >= 0) { putBefore_(groups, i1, i2); };
+    /**
+     * Removes n elements found at the specified index. And then inserts the
+     * specified item at the index
+     *
+     * @param list elements
+     * @param index
+     *         index at which we are inserting/removing
+     * @param deleteCount
+     *         the number of elements we will remove starting at the index
+     * @param value
+     *         the item we want to add to the array at the index
+     * @return an array of elements that were removed
+     */
+    public static <T> List<T> splice(List<T> list, int index, int deleteCount, T value) {
+        return spliceImpl(list, index, deleteCount, true, value);
+    }
+
+    private static <T> List<T> spliceImpl(List<T> list, int index, int deleteCount, boolean hasValue, T value) {
+        List<T> removedArray = new ArrayList<>();
+        for (int i = deleteCount; i > 0; i--) {
+            T removedElem = list.remove(index);
+            removedArray.add(removedElem);
+        }
+
+        if (hasValue) {
+            list.add(index, value);
+        }
+
+        return removedArray;
+    }
+    public static ItemGroup putBefore(ArrayList<ItemGroup> arr, ItemGroup beforeOf, ItemGroup el) {
+        int new_index = arr.indexOf(beforeOf);
+        int old_index = arr.indexOf(el);
+        if (new_index >= 0 && old_index >= 0) {
+            var array = (List<ItemGroup>)arr.clone(); arr.removeAll(arr);
+            var spliced = splice((List<ItemGroup>)array, old_index, 1).get(0);
+            splice((List<ItemGroup>)array, new_index, 0, spliced); arr.addAll((List)array);
+            return spliced;
+        }
         return beforeOf;
     }
 
     public static void transfer(ItemStackSet transferParentStacks, ItemStackSet transferSearchStacks, ItemGroup group, FeatureSet enabledFeatures, ItemGroup.Entries entries, boolean hasPermissions) {
         // back items
-        ((ItemGroupEntriesInterface)entries).setParentTabStacks(transferParentStacks);
-        ((ItemGroupEntriesInterface)entries).setSearchTabStacks(transferSearchStacks);
+        if (Configs.instance.enableGroupTransfer || Configs.instance.enableSorting) {
+            ((ItemGroupEntriesInterface) entries).setParentTabStacks(transferParentStacks);
+            ((ItemGroupEntriesInterface) entries).setSearchTabStacks(transferSearchStacks);
 
-        // add conditional transfer items and remove not needed
-        ArrayList<ItemGroup> groupList = new ArrayList(List.of(ItemGroups.GROUPS));
-        groupList.remove(ItemGroups.HOTBAR);
-        groupList.remove(ItemGroups.INVENTORY);
-        groupList.remove(ItemGroups.SEARCH);
-        //putBefore(groupList, ItemGroups.BUILDING_BLOCKS, ItemGroups.REDSTONE);
+            // add conditional transfer items and remove not needed
+            ArrayList<ItemGroup> groupList = new ArrayList(List.of(ItemGroups.GROUPS));
+            groupList.remove(ItemGroups.HOTBAR);
+            groupList.remove(ItemGroups.INVENTORY);
+            groupList.remove(ItemGroups.SEARCH);
+            //putBefore(groupList, ItemGroups.BUILDING_BLOCKS, ItemGroups.REDSTONE);
 
-        // move and swap groups
-/* <= */putBefore(groupList, ItemGroups.FUNCTIONAL, ItemGroups.REDSTONE); /* <= */
-/* <= */putBefore(groupList, ItemGroups.TOOLS, ItemGroups.COMBAT); /* <= */
+            // move and swap groups
+    /* <= */putBefore(groupList, ItemGroups.FUNCTIONAL, ItemGroups.REDSTONE); /* <= */
+    /* <= */putBefore(groupList, ItemGroups.REDSTONE, ItemGroups.TOOLS); /* <= */
+    /* <= */putBefore(groupList, ItemGroups.TOOLS, ItemGroups.COMBAT); /* <= */
 
-        // update cache if needed, for avoid stack overflow, and except main group
-        List<ItemStack> enardParent = groupList.stream().map((itemGroup) -> ((ItemGroupInterface) itemGroup).getCachedParentTabStacks(enabledFeatures, hasPermissions, true)).distinct().flatMap(Collection::stream).distinct().toList();
-        List<ItemStack> enardSearch = groupList.stream().map((itemGroup) -> ((ItemGroupInterface) itemGroup).getCachedSearchTabStacks(enabledFeatures, hasPermissions, true)).distinct().flatMap(Collection::stream).distinct().toList();
+            // update cache if needed, for avoid stack overflow, and except main group
+            List<ItemStack> enardParent = groupList.stream().map((itemGroup) -> ((ItemGroupInterface) itemGroup).getCachedParentTabStacks(enabledFeatures, hasPermissions, true)).distinct().flatMap(Collection::stream).distinct().toList();
+            List<ItemStack> enardSearch = groupList.stream().map((itemGroup) -> ((ItemGroupInterface) itemGroup).getCachedSearchTabStacks(enabledFeatures, hasPermissions, true)).distinct().flatMap(Collection::stream).distinct().toList();
 
-        // unify groups for correct sorting
-        var stParent = new ItemStackSet(); stParent.addAll(enardParent);
-        var stSearch = new ItemStackSet(); stSearch.addAll(enardSearch);
+            // unify groups for correct sorting
+            var stParent = new ItemStackSet(); stParent.addAll(enardParent);
+            var stSearch = new ItemStackSet(); stSearch.addAll(enardSearch);
 
-        //
-        if (Configs.instance.enableSorting) {
-            ItemGroupInterface.sorting(stParent, enabledFeatures, hasPermissions);
-            ItemGroupInterface.sorting(stSearch, enabledFeatures, hasPermissions);
-        };
+            //
+            if (Configs.instance.enableSorting) {
+                ItemGroupInterface.sorting(stParent, enabledFeatures, hasPermissions);
+                ItemGroupInterface.sorting(stSearch, enabledFeatures, hasPermissions);
+            };
 
-        // iterate groups
-        // TODO: optimize process
-        ArrayList<ItemGroup> finalGroupList = groupList;//(groupList = new ArrayList(List.of(ItemGroups.GROUPS)));
-        stParent.stream().forEachOrdered((stack) -> {
-            finalGroupList.forEach((itemGroup) -> {
-                Set<ItemGroup> groups = Configs.instance.enableGroupTransfer ? TransferRule.streamTransferredGroupOf(stack.getItem(), itemGroup).collect(Collectors.toSet()) : null;
-                if ((groups == null || (!groups.isEmpty() ? groups.contains(group) : (group == itemGroup))) && itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions, false)) { // now embeded
-                    if (!transferParentStacks.contains(stack)) { transferParentStacks.add(stack); }
-                }
+            // iterate groups
+            // TODO: optimize process
+            ArrayList<ItemGroup> finalGroupList = groupList;//(groupList = new ArrayList(List.of(ItemGroups.GROUPS)));
+            stParent.stream().forEachOrdered((stack) -> {
+                finalGroupList.forEach((itemGroup) -> {
+                    Set<ItemGroup> groups = Configs.instance.enableGroupTransfer ? TransferRule.streamTransferredGroupOf(stack.getItem(), itemGroup).collect(Collectors.toSet()) : null;
+                    if ((groups == null || (!groups.isEmpty() ? groups.contains(group) : (group == itemGroup))) && itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions, false)) { // now embeded
+                        if (!transferParentStacks.contains(stack)) {
+                            transferParentStacks.add(stack);
+                        }
+                    }
+                });
             });
-        });
-        stSearch.stream().forEachOrdered((stack) -> {
-            finalGroupList.forEach((itemGroup) -> {
-                Set<ItemGroup> groups = Configs.instance.enableGroupTransfer ? TransferRule.streamTransferredGroupOf(stack.getItem(), itemGroup).collect(Collectors.toSet()) : null;
-                if ((groups == null || (!groups.isEmpty() ? groups.contains(group) : (group == itemGroup))) && itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions, true)) { // now embeded
-                    if (!transferSearchStacks.contains(stack)) { transferSearchStacks.add(stack); }
-                }
+            stSearch.stream().forEachOrdered((stack) -> {
+                finalGroupList.forEach((itemGroup) -> {
+                    Set<ItemGroup> groups = Configs.instance.enableGroupTransfer ? TransferRule.streamTransferredGroupOf(stack.getItem(), itemGroup).collect(Collectors.toSet()) : null;
+                    if ((groups == null || (!groups.isEmpty() ? groups.contains(group) : (group == itemGroup))) && itemStackInGroup(stack, group, itemGroup, enabledFeatures, hasPermissions, true)) { // now embeded
+                        if (!transferSearchStacks.contains(stack)) {
+                            transferSearchStacks.add(stack);
+                        }
+                    }
+                });
             });
-        });
+        }
     }
 
     //
