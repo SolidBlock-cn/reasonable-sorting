@@ -28,6 +28,7 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     @Unique ItemStackSet cachedSearchTabStacks = null;
     @Unique ItemStackSet cachedParentTabStacks = null;
     @Unique boolean needsToUpdate = false;
+    @Unique boolean avoidMixin = false;
 
     //
     @Unique @Override public ItemStackSet getCachedSearchTabStacks(boolean hasPermissions, boolean needsToUpdate) { return this.getCachedSearchTabStacks(null, hasPermissions, needsToUpdate); };
@@ -35,20 +36,6 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     @Unique @Override public void setNeedsUpdate(boolean update) {
         this.needsToUpdate = update;
     };
-
-    @Override
-    public ItemStackSet getDisplayStacks(FeatureSet enabledFeatures, boolean hasPermissions) {
-        var player = MinecraftClient.getInstance().player;
-        var currentFeatureSet = player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
-        return ((ItemGroup)(Object)this).getDisplayStacks(enabledFeatures != null ? enabledFeatures : currentFeatureSet, hasPermissions);
-    }
-
-    @Override
-    public ItemStackSet getSearchTabStacks(FeatureSet enabledFeatures, boolean hasPermissions) {
-        var player = MinecraftClient.getInstance().player;
-        var currentFeatureSet = player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet();
-        return ((ItemGroup)(Object)this).getSearchTabStacks(enabledFeatures != null ? enabledFeatures : currentFeatureSet, hasPermissions);
-    }
 
     //
     @Unique @Override public ItemStackSet getCachedSearchTabStacks(FeatureSet featureSet, boolean hasPermissions, boolean needsUpdate) {
@@ -106,6 +93,11 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         this.needsToUpdate = false;
     }
 
+    @Inject(method = "getStacks", at = @At("HEAD"))
+    public void cancelMixin(FeatureSet enabledFeatures, boolean search, boolean hasPermissions, CallbackInfoReturnable<ItemStackSet> cir) {
+
+    }
+
     //
     @Redirect(method = "getStacks", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;addItems(Lnet/minecraft/resource/featuretoggle/FeatureSet;Lnet/minecraft/item/ItemGroup$Entries;Z)V"))
     public void onItemAdd(ItemGroup instance, FeatureSet featureSet, ItemGroup.Entries entries, boolean hasPermissions) {
@@ -113,29 +105,29 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         var entriesInterface = ((ItemGroupEntriesInterface) entries);
         var entriesAccessor = (ItemGroupEntriesImplAccessor) entries;
 
-        // reference, from empty
+        //
+        ((ItemGroup)(Object)this).addItems(featureSet, entries, hasPermissions);
+
+        //
         var originalParentStacksRef = (ItemStackSet)entriesAccessor.getParentTabStacks();
         var originalSearchStacksRef = (ItemStackSet)entriesAccessor.getSearchTabStacks();
-        var transferParentStacks = (ItemStackSet)originalParentStacksRef.clone();
-        var transferSearchStacks = (ItemStackSet)originalSearchStacksRef.clone();
 
-        // system function, add to original...Ref
-        instance.addItems(featureSet, entries, hasPermissions);
+        // reference, from empty
+        var emptyParentStacksRef = (this.cachedParentTabStacks != null ? this.cachedParentTabStacks : (this.cachedParentTabStacks = (ItemStackSet)(!avoidMixin ? (ItemStackSet)entriesAccessor.getParentTabStacks() : null).clone()).clone());
+        var emptySearchStacksRef = (this.cachedSearchTabStacks != null ? this.cachedSearchTabStacks : (this.cachedSearchTabStacks = (ItemStackSet)(!avoidMixin ? (ItemStackSet)entriesAccessor.getSearchTabStacks() : null).clone()).clone());
 
-        // only after added items
-        if (this.cachedParentTabStacks == null) {
-            this.cachedParentTabStacks = (ItemStackSet)originalParentStacksRef.clone();
-        }
-
-        // only after added items
-        if (this.cachedSearchTabStacks == null) {
-            this.cachedSearchTabStacks = (ItemStackSet)originalSearchStacksRef.clone();
-        }
+        //
+        emptyParentStacksRef.clear();
+        emptySearchStacksRef.clear();
 
         //
         if (!(instance == ItemGroups.INVENTORY || instance == ItemGroups.SEARCH || instance == ItemGroups.HOTBAR)) {
             // transfer and sorting
-            ItemGroupInterface.transfer((ItemStackSet) transferParentStacks, (ItemStackSet) transferSearchStacks, instance, featureSet, entries, hasPermissions);
-        };
+            ItemGroupInterface.transfer((ItemStackSet) emptyParentStacksRef, (ItemStackSet) emptySearchStacksRef, instance, featureSet, entries, hasPermissions);
+
+            //
+            entriesAccessor.setParentTabStacks((ItemStackSet) emptyParentStacksRef);
+            entriesAccessor.setSearchTabStacks((ItemStackSet) emptySearchStacksRef);
+        }
     }
 }
