@@ -28,10 +28,10 @@ public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> {
 
   @Inject(method = "iterator", at = @At("HEAD"), cancellable = true)
   private void reasonableSortedIterator(CallbackInfoReturnable<Iterator<T>> cir) {
-    final Stream<T> stream = SortingRule.streamOfRegistry(getKey(), rawIdToEntry);
-    if (stream != null) {
-      cir.setReturnValue(stream.iterator());
-      cir.cancel();
-    }
+    //final Stream<T> stream = SortingRule.streamOfRegistry(getKey(), rawIdToEntry);
+    //if (stream != null) {
+      //cir.setReturnValue(stream.iterator());
+      //cir.cancel();
+    //}
   }
 }

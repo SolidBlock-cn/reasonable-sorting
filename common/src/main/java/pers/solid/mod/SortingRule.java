@@ -7,8 +7,10 @@ import com.google.common.collect.Streams;
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemStackSet;
+import net.minecraft.util.Pair;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.util.registry.RegistryKey;
@@ -61,12 +63,10 @@ public interface SortingRule<T> {
   };
 
   // TODO! Needs correct sorting
-  public static ItemStackSet sortItemGroupEntries(ItemStackSet stack) {
-    var stackSet = new ItemStackSet();
-    stackSet.addAll(SortingRule.streamOfRegistry(Registry.ITEM_KEY, stack).toList());
-    stack.removeAll(stack);
-    stack.addAll(stackSet);
-    return stack;
+  public static List<Pair<ItemGroup, ItemStack>> sortItemGroupEntries(List<Pair<ItemGroup, ItemStack>> stack) {
+    var stackSet = new ArrayList();
+    if (stack != null) { stackSet.addAll(SortingRule.streamOfRegistry(Registry.ITEM_KEY, stack).toList()); };
+    stack.clear(); stack.addAll(stackSet); return stack;
   }
 
   @ApiStatus.Internal
@@ -121,23 +121,23 @@ public interface SortingRule<T> {
   }
 
   // ???
-  static Stream<ItemStack> streamOfRegistry(RegistryKey<? extends Registry<Item>> registryKey, ObjectLinkedOpenCustomHashSet<ItemStack> rawIdToEntry) {
+  static Stream<Pair<ItemGroup, ItemStack>> streamOfRegistry(RegistryKey<? extends Registry<Item>> registryKey, List<Pair<ItemGroup, ItemStack>> rawIdToEntry) {
     final Collection<SortingRule<Item>> ruleSets = getSortingRules(registryKey);
     if (!ruleSets.isEmpty()) {
       ruleSets.stream().forEachOrdered((rule) -> {
-        LinkedHashSet<ItemStack> iterated = new LinkedHashSet<>();
+        LinkedHashSet<Pair<ItemGroup, ItemStack>> iterated = new LinkedHashSet<>();
         // 被确认跟随在另一对象之后，不因直接在一级迭代产生，而应在一级迭代产生其他对象时产生的对象。
         // 一级迭代时，就应该忽略这些对象。
         // 本集合仅用于检测对象是否存在，故不考虑顺序。
-        final Set<ItemStack> combinationFollowers = new HashSet<>();
+        final Set<Pair<ItemGroup, ItemStack>> combinationFollowers = new HashSet<>();
 
         // 本集合的键为被跟随的对象，值为跟随者它的对象。
-        final Multimap<ItemStack, ItemStack> valueToFollowers = LinkedListMultimap.create();
+        final Multimap<Pair<ItemGroup, ItemStack>, Pair<ItemGroup, ItemStack>> valueToFollowers = LinkedListMultimap.create();
 
         // 初次直接迭代内部元素。
-        for (ItemStack value : rawIdToEntry) { if (value != null) {
-          streamFollowersOf(Collections.singleton(rule), value.getItem()).forEachOrdered(follower -> {
-            var followed = rawIdToEntry.stream().filter((itemStack) -> { return itemStack.getItem() == follower; });
+        for (Pair<ItemGroup, ItemStack> value : rawIdToEntry) { if (value != null) {
+          streamFollowersOf(Collections.singleton(rule), value.getRight().getItem()).forEachOrdered(follower -> {
+            var followed = rawIdToEntry.stream().filter((itemStack) -> { return itemStack.getRight().getItem() == follower; });
             followed.forEachOrdered((itemStack) -> {
               valueToFollowers.put(value, itemStack);
               combinationFollowers.add(itemStack);
@@ -146,14 +146,14 @@ public interface SortingRule<T> {
         }}
 
         // 结果流的第一部分。先将内容连同其跟随者都迭代一次，已经迭代过的不重复迭代。但是，这部分可能会丢下一些元素。
-        final Stream<ItemStack> firstStream = rawIdToEntry.stream()
+        final Stream<Pair<ItemGroup, ItemStack>> firstStream = rawIdToEntry.stream()
                 .filter(o -> !combinationFollowers.contains(o))
                 .flatMap(o -> oneAndItsFollowers(o, valueToFollowers))
                 .filter(o -> !iterated.contains(o))
                 .peek(iterated::add);
 
         // 第一次未迭代完成的，在第二次迭代。
-        final Stream<ItemStack> secondStream = rawIdToEntry.stream()
+        final Stream<Pair<ItemGroup, ItemStack>> secondStream = rawIdToEntry.stream()
                 .filter((x -> !iterated.contains(x)))
                 .peek(o -> LOGGER.info("Object {} not iterated in the first iteration. Iterated in the second iteration.", o));
 
@@ -161,7 +161,7 @@ public interface SortingRule<T> {
         var stream = new ArrayList(Stream.concat(firstStream, secondStream).toList());
 
         //
-        rawIdToEntry.removeAll(rawIdToEntry);
+        rawIdToEntry.clear();
         rawIdToEntry.addAll(stream);
       });
     }
@@ -176,6 +176,7 @@ public interface SortingRule<T> {
    * @see SimpleRegistry#stream()
    * @see pers.solid.mod.mixin.SimpleRegistryMixin
    */
+  /*
   static <T> Stream<T> streamOfRegistry(
       RegistryKey<? extends Registry<T>> registryKey,
       List<RegistryEntry.Reference<T>> rawIdToEntry) {
@@ -221,7 +222,7 @@ public interface SortingRule<T> {
         .peek(o -> LOGGER.info("Object {} not iterated in the first iteration. Iterated in the second iteration.", o));
 
     return Stream.concat(firstStream, secondStream);
-  }
+  }*/
 
   /**
    * 根据一个对象，创建一个它自己及其跟随者的流。跟随者的跟随者也会包含在这里面。

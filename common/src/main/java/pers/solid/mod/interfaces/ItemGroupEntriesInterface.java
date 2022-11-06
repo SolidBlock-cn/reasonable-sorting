@@ -1,10 +1,14 @@
 package pers.solid.mod.interfaces;
 
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemStackSet;
 import net.minecraft.resource.featuretoggle.FeatureSet;
+import net.minecraft.util.Pair;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.gen.Accessor;
+
+import java.util.List;
 
 public interface ItemGroupEntriesInterface {
     public default ItemStackSet getParentTabStacks() { return null; };
@@ -16,7 +20,6 @@ public interface ItemGroupEntriesInterface {
     public default void setSearchTabStacks(ItemStackSet set) {};
 
     //
-    public default ItemStackSet exclude(ItemStackSet itemStackSet, boolean hasPermission) { return (ItemStackSet)itemStackSet.clone(); };
-    public default ItemStackSet transfer(ItemStackSet itemStackSet, boolean hasPermission) { return (ItemStackSet)itemStackSet.clone(); };
-    public default ItemStackSet sorting(ItemStackSet itemStackSet, boolean hasPermission) { return (ItemStackSet)itemStackSet.clone(); };
+    public default List<Pair<ItemGroup, ItemStack>>  transfer(List<Pair<ItemGroup, ItemStack>> itemStackSet, boolean hasPermission) { return itemStackSet; };
+    public default List<Pair<ItemGroup, ItemStack>>  sorting(List<Pair<ItemGroup, ItemStack>>  itemStackSet, boolean hasPermission) { return itemStackSet; };
 };
