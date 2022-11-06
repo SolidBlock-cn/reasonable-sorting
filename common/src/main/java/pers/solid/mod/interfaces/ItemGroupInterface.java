@@ -61,16 +61,14 @@ public interface ItemGroupInterface {
 
     public static boolean itemStackInGroup(ItemStack _stack, ItemGroup group, ItemGroup itemGroup, FeatureSet features, boolean hasPermissions, boolean search) {
         if (group != null && _stack != null) {
-            var inStackSet = (search ?
-                    ((ItemGroupInterface)group).getCachedSearchTabStacks(features, hasPermissions, false) :
-                    ((ItemGroupInterface)group).getCachedParentTabStacks(features, hasPermissions, false)).contains(_stack);
-
             if (!(group == ItemGroups.INVENTORY || group == ItemGroups.SEARCH || group == ItemGroups.HOTBAR || !Configs.instance.enableGroupTransfer)) {
                 Set<ItemGroup> groups = TransferRule.streamTransferredGroupOf(_stack.getItem(), itemGroup).collect(Collectors.toSet());
                 if (!groups.isEmpty()) { return groups.contains(group); };
             }
 
-            return inStackSet && (itemGroup != null ? (itemGroup == group) : true);
+            return (itemGroup != null ? (itemGroup == group) : (search ?
+                    ((ItemGroupInterface)group).getCachedSearchTabStacks(features, hasPermissions, false) :
+                    ((ItemGroupInterface)group).getCachedParentTabStacks(features, hasPermissions, false)).contains(_stack));
         }
         return false;
     }
