@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
  */
 public final class TransferRules {
   // I don't know chinese :(
-  public static final TransferRule SYSTEM_DEDICATED = (item, group) -> { return Configs.SYSTEM_ITEMS_LIST.contains(item) && Configs.instance.transferSystemItems ? Collections.singleton(Configs.instance.SYSTEM_ITEMS) : null; };
+  public static final TransferRule SYSTEM_DEDICATED = (item, group) -> { return null; };
   /**
    * 将原本位于“红石”中的按钮转移至“装饰性方块”。
    */

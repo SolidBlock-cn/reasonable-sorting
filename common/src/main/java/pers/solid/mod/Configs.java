@@ -76,16 +76,10 @@ public class Configs implements ConfigData {
    */
   public static final ArrayList<BlockFamily.Variant> VARIANTS_FOLLOWING_BASE_BLOCKS = Lists.newArrayList(BlockFamily.Variant.STAIRS, BlockFamily.Variant.SLAB);
   public static final ConfigHolder<Configs> CONFIG_HOLDER = AutoConfig.register(Configs.class, GsonConfigSerializer::new);
-  public static ArrayList<Item> SYSTEM_ITEMS_LIST = null;
 
   /*
-
   ===== SORTING PART =====
-
-   */
-
-  //
-  public ItemGroup SYSTEM_ITEMS = null;
+  */
 
   //
   public boolean transferSystemItems = false;
@@ -209,40 +203,6 @@ public class Configs implements ConfigData {
   public static void loadAndUpdate() {
     // 初始化时先手动设置，之后在每次更新和保存时，都会在 listener 中自动更新这个字段的值。
     Configs.instance = CONFIG_HOLDER.getConfig();
-
-    //
-    var list = (Configs.instance.SYSTEM_ITEMS_LIST = new ArrayList<>());
-    {
-      list.add(Items.COMMAND_BLOCK);
-      list.add(Items.CHAIN_COMMAND_BLOCK);
-      list.add(Items.REPEATING_COMMAND_BLOCK);
-      list.add(Items.COMMAND_BLOCK_MINECART);
-      list.add(Items.LIGHT);
-      list.add(Items.STRUCTURE_BLOCK);
-      list.add(Items.STRUCTURE_VOID);
-      list.add(Items.JIGSAW);
-      list.add(Items.DEBUG_STICK);
-      list.add(Items.BARRIER);
-      list.add(Items.SPAWNER);
-      list.add(Items.DRAGON_EGG);
-    }
-
-    // I don't prefer put into exist tabs
-    /*
-    Configs.instance.SYSTEM_ITEMS = new FabricItemGroup(new Identifier("dawn_api", "system")) {
-      @Override
-      public ItemStack createIcon() {
-        return new ItemStack(Items.COMMAND_BLOCK);
-      }
-
-      @Override
-      public void addItems(FeatureSet enabledFeatures, ItemGroup.Entries list, boolean hasPermission) {
-        if (Configs.instance != null && hasPermission && Configs.instance.transferSystemItems) {
-          Configs.instance.SYSTEM_ITEMS_LIST.forEach((I)->list.add((Item)I));
-        }
-      }
-    };*/
-
     final ConfigSerializeEvent.Load<Configs> update = (configHolder, configs) -> {
       ConfigsHelper.updateCustomSortingRules(configs.customSortingRules, Configs.CUSTOM_ITEM_SORTING_RULES);
       ConfigsHelper.updateCustomTransferRule(configs.transferRules, Configs.CUSTOM_TRANSFER_RULE);
