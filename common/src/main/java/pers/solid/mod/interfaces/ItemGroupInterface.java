@@ -35,7 +35,7 @@ public interface ItemGroupInterface {
     public default void setSearchTabStacks(ItemStackSet set){  };
     public default void setNeedsUpdate(boolean update) { };
 
-
+    //
     public static boolean itemInGroup(Item item, ItemGroup itemGroup, FeatureSet features, boolean hasPermissions) {
         AtomicBoolean found = new AtomicBoolean(false);
         if (itemGroup != null) {
@@ -148,6 +148,8 @@ public interface ItemGroupInterface {
             groupList.remove(ItemGroups.HOTBAR);
             groupList.remove(ItemGroups.INVENTORY);
             groupList.remove(ItemGroups.SEARCH);
+            groupList.add(Configs.instance.SYSTEM_ITEMS);
+            groupList = new ArrayList(groupList.stream().distinct().toList());
             //putBefore(groupList, ItemGroups.BUILDING_BLOCKS, ItemGroups.REDSTONE);
 
             // move and swap groups
@@ -198,14 +200,24 @@ public interface ItemGroupInterface {
         var player = MinecraftClient.getInstance().player;
         var currentFeatureSet = featureSet != null ? featureSet : (player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
         if (player != null) {
-            Arrays.stream(ItemGroups.GROUPS).forEachOrdered((g) -> {
-                if ((group == null || group != g) && !(g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR)) {
+            ArrayList<ItemGroup> groupList = new ArrayList(List.of(ItemGroups.GROUPS));
+            groupList.remove(ItemGroups.HOTBAR);
+            groupList.remove(ItemGroups.INVENTORY);
+            groupList.remove(ItemGroups.SEARCH);
+            groupList.add(Configs.instance.SYSTEM_ITEMS);
+            groupList = new ArrayList(groupList.stream().distinct().toList());
+
+            //
+            groupList.stream().forEachOrdered((g) -> {
+                if (group == null || group != g) {
                     ((ItemGroupInterface) g).setDisplayStacks(null);
                     ((ItemGroupInterface) g).setSearchTabStacks(null);
                 }
             });
-            Arrays.stream(ItemGroups.GROUPS).forEachOrdered((g) -> {
-                if ((group == null || group != g) && !(g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR)) {
+
+            //
+            groupList.stream().forEachOrdered((g) -> {
+                if (group == null || group != g) {
                     ((ItemGroupInterface) g).getSearchTabStacks(currentFeatureSet, hasPermissions);
                     ((ItemGroupInterface) g).getDisplayStacks(currentFeatureSet, hasPermissions);
                 }

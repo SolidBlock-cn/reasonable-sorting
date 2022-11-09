@@ -21,12 +21,8 @@ import java.util.regex.Pattern;
  * 本模组内置的一些物品组转移规则。
  */
 public final class TransferRules {
-
   // I don't know chinese :(
-
-
-
-
+  public static final TransferRule SYSTEM_DEDICATED = (item, group) -> { return Configs.SYSTEM_ITEMS_LIST.contains(item) && Configs.instance.transferSystemItems ? Collections.singleton(Configs.instance.SYSTEM_ITEMS) : null; };
   /**
    * 将原本位于“红石”中的按钮转移至“装饰性方块”。
    */
@@ -77,6 +73,7 @@ public final class TransferRules {
   }
 
   public static void initialize() {
+    TransferRule.addConditionalTransferRule(() -> Configs.instance.transferSystemItems, SYSTEM_DEDICATED);
     TransferRule.addConditionalTransferRule(() -> Configs.instance.buttonsInDecorations, BUTTON_IN_DECORATIONS);
     TransferRule.addConditionalTransferRule(() -> Configs.instance.fenceGatesInDecorations, FENCE_GATE_IN_DECORATIONS);
     TransferRule.addConditionalTransferRule(() -> Configs.instance.doorsInDecorations, DOORS_IN_DECORATIONS);

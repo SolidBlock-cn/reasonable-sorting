@@ -106,7 +106,7 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         var entriesAccessor = (ItemGroupEntriesImplAccessor) entries;
 
         //
-        ((ItemGroup)(Object)this).addItems(featureSet, entries, hasPermissions);
+        ((ItemGroup)(Object)this).addItems(featureSet, entries, hasPermissions && !Configs.instance.transferSystemItems);
 
         //
         var originalParentStacksRef = (ItemStackSet)entriesAccessor.getParentTabStacks();

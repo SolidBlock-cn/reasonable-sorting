@@ -254,6 +254,19 @@ public class ConfigScreen {
                 ConfigScreen.resetGroups();
             })
             .build());
+
+      categoryTransfer.addEntry(
+          entryBuilder
+              .startBooleanToggle(
+                      Text.translatable("option.reasonable-sorting.system_dedicated"),
+                      config.transferSystemItems)
+              .setDefaultValue(true)
+              .setSaveConsumer(b -> {
+                  config.transferSystemItems = b;
+                  ConfigScreen.resetGroups();
+              })
+              .build());
+
     categoryTransfer.addEntry(
         entryBuilder
             .startBooleanToggle(
