@@ -255,17 +255,18 @@ public class ConfigScreen {
             })
             .build());
 
+    /*
       categoryTransfer.addEntry(
           entryBuilder
               .startBooleanToggle(
                       Text.translatable("option.reasonable-sorting.system_dedicated"),
                       config.transferSystemItems)
-              .setDefaultValue(true)
+              .setDefaultValue(false)
               .setSaveConsumer(b -> {
                   config.transferSystemItems = b;
                   ConfigScreen.resetGroups();
               })
-              .build());
+              .build());*/
 
     categoryTransfer.addEntry(
         entryBuilder

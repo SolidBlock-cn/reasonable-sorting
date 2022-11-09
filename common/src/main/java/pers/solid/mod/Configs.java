@@ -76,7 +76,7 @@ public class Configs implements ConfigData {
    */
   public static final ArrayList<BlockFamily.Variant> VARIANTS_FOLLOWING_BASE_BLOCKS = Lists.newArrayList(BlockFamily.Variant.STAIRS, BlockFamily.Variant.SLAB);
   public static final ConfigHolder<Configs> CONFIG_HOLDER = AutoConfig.register(Configs.class, GsonConfigSerializer::new);
-  public static ArrayList<Object> SYSTEM_ITEMS_LIST = null;
+  public static ArrayList<Item> SYSTEM_ITEMS_LIST = null;
 
   /*
 
@@ -88,7 +88,7 @@ public class Configs implements ConfigData {
   public ItemGroup SYSTEM_ITEMS = null;
 
   //
-  public boolean transferSystemItems = true;
+  public boolean transferSystemItems = false;
 
   /**
    * <h2>排序部分</h2>
@@ -227,8 +227,8 @@ public class Configs implements ConfigData {
       list.add(Items.DRAGON_EGG);
     }
 
-    // create special group for Universal Ores
     // I don't prefer put into exist tabs
+    /*
     Configs.instance.SYSTEM_ITEMS = new FabricItemGroup(new Identifier("dawn_api", "system")) {
       @Override
       public ItemStack createIcon() {
@@ -241,7 +241,7 @@ public class Configs implements ConfigData {
           Configs.instance.SYSTEM_ITEMS_LIST.forEach((I)->list.add((Item)I));
         }
       }
-    };
+    };*/
 
     final ConfigSerializeEvent.Load<Configs> update = (configHolder, configs) -> {
       ConfigsHelper.updateCustomSortingRules(configs.customSortingRules, Configs.CUSTOM_ITEM_SORTING_RULES);

@@ -148,8 +148,8 @@ public interface ItemGroupInterface {
             groupList.remove(ItemGroups.HOTBAR);
             groupList.remove(ItemGroups.INVENTORY);
             groupList.remove(ItemGroups.SEARCH);
-            groupList.add(Configs.instance.SYSTEM_ITEMS);
-            groupList = new ArrayList(groupList.stream().distinct().toList());
+            //groupList.add(Configs.instance.SYSTEM_ITEMS);
+            //groupList = new ArrayList(groupList.stream().distinct().toList());
             //putBefore(groupList, ItemGroups.BUILDING_BLOCKS, ItemGroups.REDSTONE);
 
             // move and swap groups
@@ -204,8 +204,8 @@ public interface ItemGroupInterface {
             groupList.remove(ItemGroups.HOTBAR);
             groupList.remove(ItemGroups.INVENTORY);
             groupList.remove(ItemGroups.SEARCH);
-            groupList.add(Configs.instance.SYSTEM_ITEMS);
-            groupList = new ArrayList(groupList.stream().distinct().toList());
+            //groupList.add(Configs.instance.SYSTEM_ITEMS);
+            //groupList = new ArrayList(groupList.stream().distinct().toList());
 
             //
             groupList.stream().forEachOrdered((g) -> {
