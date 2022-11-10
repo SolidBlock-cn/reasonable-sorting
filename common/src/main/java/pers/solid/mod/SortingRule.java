@@ -11,10 +11,7 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemStackSet;
 import net.minecraft.util.Pair;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryEntry;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.util.registry.SimpleRegistry;
+import net.minecraft.util.registry.*;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -65,7 +62,7 @@ public interface SortingRule<T> {
   // TODO! Needs correct sorting
   public static List<Pair<ItemGroup, ItemStack>> sortItemGroupEntries(List<Pair<ItemGroup, ItemStack>> stack) {
     var stackSet = new ArrayList();
-    if (stack != null) { stackSet.addAll(SortingRule.streamOfRegistry(Registry.ITEM_KEY, stack).toList()); };
+    if (stack != null) { stackSet.addAll(SortingRule.streamOfRegistry(Registries.ITEM.getKey(), stack).toList()); };
     stack.clear(); stack.addAll(stackSet); return stack;
   }
 

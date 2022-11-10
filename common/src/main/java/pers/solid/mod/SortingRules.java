@@ -10,6 +10,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStackSet;
 import net.minecraft.item.Items;
+import net.minecraft.util.registry.Registries;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Unmodifiable;
 import pers.solid.mod.interfaces.ItemGroupEntriesInterface;
@@ -85,13 +86,13 @@ public final class SortingRules {
   }
 
   public static void initialize() {
-    SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> Configs.instance.enableDefaultItemSortingRules && !Configs.instance.blockItemsOnly, DEFAULT_BLOCK_SORTING_RULE::get);
-    SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> Configs.instance.enableDefaultItemSortingRules, DEFAULT_ITEM_SORTING_RULE::get);
-    SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> Configs.instance.fenceGateFollowsFence && !Configs.instance.blockItemsOnly, FENCE_GATE_FOLLOWS_FENCE);
-    SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> Configs.instance.fenceGateFollowsFence, FENCE_GATE_FOLLOWS_FENCE_ITEM);
-    SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> !Configs.VARIANTS_FOLLOWING_BASE_BLOCKS.isEmpty() && !Configs.instance.blockItemsOnly, VARIANT_FOLLOWS_BASE);
-    SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> !Configs.VARIANTS_FOLLOWING_BASE_BLOCKS.isEmpty(), VARIANT_FOLLOWS_BASE_ITEM);
-    SortingRule.addSortingRule(Registry.BLOCK_KEY, Configs.CUSTOM_BLOCK_SORTING_RULES::get);
-    SortingRule.addSortingRule(Registry.ITEM_KEY, Configs.CUSTOM_ITEM_SORTING_RULES::get);
+    SortingRule.addConditionalSortingRule(Registries.BLOCK.getKey(), () -> Configs.instance.enableDefaultItemSortingRules && !Configs.instance.blockItemsOnly, DEFAULT_BLOCK_SORTING_RULE::get);
+    SortingRule.addConditionalSortingRule(Registries.ITEM.getKey(), () -> Configs.instance.enableDefaultItemSortingRules, DEFAULT_ITEM_SORTING_RULE::get);
+    SortingRule.addConditionalSortingRule(Registries.BLOCK.getKey(), () -> Configs.instance.fenceGateFollowsFence && !Configs.instance.blockItemsOnly, FENCE_GATE_FOLLOWS_FENCE);
+    SortingRule.addConditionalSortingRule(Registries.ITEM.getKey(), () -> Configs.instance.fenceGateFollowsFence, FENCE_GATE_FOLLOWS_FENCE_ITEM);
+    SortingRule.addConditionalSortingRule(Registries.BLOCK.getKey(), () -> !Configs.VARIANTS_FOLLOWING_BASE_BLOCKS.isEmpty() && !Configs.instance.blockItemsOnly, VARIANT_FOLLOWS_BASE);
+    SortingRule.addConditionalSortingRule(Registries.ITEM.getKey(), () -> !Configs.VARIANTS_FOLLOWING_BASE_BLOCKS.isEmpty(), VARIANT_FOLLOWS_BASE_ITEM);
+    SortingRule.addSortingRule(Registries.BLOCK.getKey(), Configs.CUSTOM_BLOCK_SORTING_RULES::get);
+    SortingRule.addSortingRule(Registries.ITEM.getKey(), Configs.CUSTOM_ITEM_SORTING_RULES::get);
   }
 }

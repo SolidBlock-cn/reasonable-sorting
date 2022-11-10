@@ -38,7 +38,7 @@ public class ConfigScreen {
       var player = MinecraftClient.getInstance().player;
       var currentFeatureSet = (player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
       if (player != null) {
-          Arrays.stream(ItemGroups.GROUPS).forEachOrdered((g) -> {
+          ItemGroups.getGroups().stream().forEachOrdered((g) -> {
               if (!(g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR)) {
                   ((ItemGroupInterface) g).setNeedsUpdate(true);
               }
@@ -309,7 +309,7 @@ public class ConfigScreen {
                 Text.translatable(
                     "option.reasonable-sorting.describe_item_groups",
                     //Text.literal(Arrays.stream(ItemGroups.GROUPS).map(ItemGroup::getName).collect(Collectors.joining(" ")))
-                        Text.literal(Arrays.stream(ItemGroups.GROUPS).map((itemGroup)->{ return itemGroup.getDisplayName().getString().replaceAll(" ", "_").toLowerCase(); }).collect(Collectors.joining(" ")))
+                        Text.literal(ItemGroups.getGroups().stream().map((itemGroup)->{ return itemGroup.getDisplayName().getString().replaceAll(" ", "_").toLowerCase(); }).collect(Collectors.joining(" ")))
                         .formatted(Formatting.YELLOW)))
             .build());
 

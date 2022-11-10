@@ -34,7 +34,7 @@ public final class ConfigsHelper {
   @Contract(value = "!null -> _; null -> null", pure = true)
   static @Nullable ItemGroup getGroupFromId(String id) {
     if (id == null) return null;
-    for (ItemGroup group : ItemGroups.GROUPS) {
+    for (ItemGroup group : ItemGroups.getGroups()) {
       if (id.equals(group.getDisplayName().toString().replaceAll(" ", "_").toLowerCase())) {
         return group;
       }
