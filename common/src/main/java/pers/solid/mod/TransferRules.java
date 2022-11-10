@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
  */
 public final class TransferRules {
   // I don't know chinese :(
-  public static final TransferRule SYSTEM_DEDICATED = (item, group) -> { return null; };
   /**
    * 将原本位于“红石”中的按钮转移至“装饰性方块”。
    */
@@ -73,7 +72,6 @@ public final class TransferRules {
   }
 
   public static void initialize() {
-    TransferRule.addConditionalTransferRule(() -> Configs.instance.transferSystemItems, SYSTEM_DEDICATED);
     TransferRule.addConditionalTransferRule(() -> Configs.instance.buttonsInDecorations, BUTTON_IN_DECORATIONS);
     TransferRule.addConditionalTransferRule(() -> Configs.instance.fenceGatesInDecorations, FENCE_GATE_IN_DECORATIONS);
     TransferRule.addConditionalTransferRule(() -> Configs.instance.doorsInDecorations, DOORS_IN_DECORATIONS);

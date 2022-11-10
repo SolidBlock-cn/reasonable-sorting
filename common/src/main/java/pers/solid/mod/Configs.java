@@ -81,9 +81,6 @@ public class Configs implements ConfigData {
   ===== SORTING PART =====
   */
 
-  //
-  public boolean transferSystemItems = false;
-
   /**
    * <h2>排序部分</h2>
    * <p>
