@@ -12,10 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import pers.solid.mod.*;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Mixin(SimpleRegistry.class)
@@ -34,6 +31,12 @@ public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> implemen
   @Shadow
   public abstract Optional<RegistryEntry<T>> getEntry(int rawId);
 
+  @Shadow
+  public abstract RegistryEntry<T> replace(OptionalInt rawId, RegistryKey<T> key, T newEntry, Lifecycle lifecycle);
+
+  @Shadow
+  public abstract Optional<RegistryKey<T>> getKey(T entry);
+
   public SimpleRegistryMixin(RegistryKey<? extends Registry<T>> registryKey, Lifecycle lifecycle) {
     super(registryKey, lifecycle);
   }
@@ -44,14 +47,15 @@ public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> implemen
       return;
     }
     if (Configs.instance.sortingCalculationType == SortingCalculationType.REAL_TIME || Configs.instance.sortingCalculationType == SortingCalculationType.SEMI_REAL_TIME) {
-      final Stream<T> stream = SortingRule.streamOfRegistry(getKey(), Collections2.transform(getEntries(), RegistryEntry.Reference::value));
-      if (stream != null) {
-        if (Configs.instance.debugMode) {
-          SortingRule.LOGGER.info("The iteration of registry {} is affected by Reasonable Sorting Mode, as the sorting calculation type is set to 'real-time' or 'semi-real-time'.", getKey().getValue());
-        }
-        cir.setReturnValue(stream.iterator());
-        cir.cancel();
+      final Collection<SortingRule<T>> sortingRules = SortingRule.getSortingRules(getKey());
+      if (sortingRules.isEmpty()) return;
+
+      final Stream<T> stream = SortingRule.streamOfRegistry(getKey(), Collections2.transform(getEntries(), RegistryEntry.Reference::value), sortingRules);
+      if (Configs.instance.debugMode) {
+        SortingRule.LOGGER.info("The iteration of registry {} is affected by Reasonable Sorting Mode, as the sorting calculation type is set to 'real-time' or 'semi-real-time'.", getKey().getValue());
       }
+      cir.setReturnValue(stream.iterator());
+      cir.cancel();
     }
   }
 
@@ -62,13 +66,14 @@ public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> implemen
     }
     // 此处只会在 cachedEntries 不为 null 时执行。
     if (Configs.instance.sortingCalculationType == SortingCalculationType.STANDARD) {
-      final Stream<T> stream = SortingRule.streamOfRegistry(getKey(), Collections2.transform(getEntries(), RegistryEntry.Reference::value));
-      if (stream != null) {
-        if (Configs.instance.debugMode) {
-          SortingRule.LOGGER.info("Calculated cachedEntries for registry {}. You will not see this info for this registry again until you modify config.", getKey().getValue());
-        }
-        cachedEntries = stream.map(value -> this.valueToEntry.get(value)).toList();
+
+      final Collection<SortingRule<T>> sortingRules = SortingRule.getSortingRules(getKey());
+      if (sortingRules.isEmpty()) return;
+      final Stream<T> stream = SortingRule.streamOfRegistry(getKey(), Collections2.transform(getEntries(), RegistryEntry.Reference::value), sortingRules);
+      if (Configs.instance.debugMode) {
+        SortingRule.LOGGER.info("Calculated cachedEntries for registry {}. You will not see this info for this registry again until you modify config.", getKey().getValue());
       }
+      cachedEntries = stream.map(value -> this.valueToEntry.get(value)).toList();
     }
   }
 
