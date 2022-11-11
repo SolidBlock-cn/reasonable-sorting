@@ -31,7 +31,6 @@ public abstract class ItemGroupsMixin {
 
         // make a cache
         getGroups().stream().forEach((instance) -> {
-            //
             var originalParentStacksRef = (ItemStackSet)((ItemGroupInterface) instance).getCachedParentTabStacks(false, operatorEnabled);
             var originalSearchStacksRef = (ItemStackSet)((ItemGroupInterface) instance).getCachedSearchTabStacks(false, operatorEnabled);
 
@@ -42,7 +41,6 @@ public abstract class ItemGroupsMixin {
 
         // sorting and transfer by ready data
         getGroups().stream().forEach((instance) -> {
-            //
             var originalParentStacksRef = (ItemStackSet)((ItemGroupInterface) instance).getCachedParentTabStacks(false, operatorEnabled);
             var originalSearchStacksRef = (ItemStackSet)((ItemGroupInterface) instance).getCachedSearchTabStacks(false, operatorEnabled);
 

@@ -53,9 +53,12 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
 
     //
     @Redirect(method = "updateEntries", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup$EntryCollector;accept(Lnet/minecraft/resource/featuretoggle/FeatureSet;Lnet/minecraft/item/ItemGroup$Entries;Z)V"))
-    public void onItemAdd(ItemGroup.EntryCollector instance, FeatureSet featureSet, ItemGroup.Entries entries, boolean b) {
-        this.forceUpdate();
+    public void onUpdateEntries(ItemGroup.EntryCollector instance, FeatureSet featureSet, ItemGroup.Entries entries, boolean b) {
         instance.accept(featureSet, entries, b);
+
+        // too late
+        //if (this.getCachedParentTabStacks(false, b) == null) this.setCachedParentTabStacks((ItemStackSet) this.getDisplayStacks().clone());
+        //if (this.getCachedSearchTabStacks(false, b) == null) this.setCachedSearchTabStacks((ItemStackSet) this.getSearchTabStacks().clone());
     }
 
     //

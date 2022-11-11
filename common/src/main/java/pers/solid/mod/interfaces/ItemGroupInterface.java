@@ -110,14 +110,16 @@ public interface ItemGroupInterface {
     }
 
     //
-    public default void forceUpdate() {
-        if (this.getNeedsUpdate()) {
-            this.setCachedParentTabStacks(null);
-            this.setCachedParentTabStacks(null);
-            //this.setDisplayStacks(null);
-            //this.setSearchTabStacks(null);
-            this.setNeedsUpdate(false);
-        }
+    public default void resetEntries() {
+        this.setSearchTabStacks(null);
+        this.setDisplayStacks(null);
+        this.setCachedParentTabStacks(null);
+        this.setCachedParentTabStacks(null);
+    }
+
+    //
+    public default void updateEntries(FeatureSet currentFeatureSet, boolean permission) {
+        ((ItemGroup) this).updateEntries(currentFeatureSet, permission);
     }
 
     public static ItemGroup putBefore(ArrayList<ItemGroup> arr, ItemGroup beforeOf, ItemGroup el) {
@@ -188,49 +190,20 @@ public interface ItemGroupInterface {
     }
 
     //
-    public static void updateGroups(FeatureSet featureSet, ItemGroup group, boolean hasPermissions) {
-        var player = MinecraftClient.getInstance().player;
-        var currentFeatureSet = featureSet != null ? featureSet : (player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
-        if (player != null) {
-            ArrayList<ItemGroup> groupList = (ArrayList)(new ArrayList(ItemGroups.getGroups()).clone());
-            groupList.remove(ItemGroups.HOTBAR);
-            groupList.remove(ItemGroups.INVENTORY);
-            groupList.remove(ItemGroups.SEARCH);
-            //groupList.add(Configs.instance.SYSTEM_ITEMS);
-            //groupList = new ArrayList(groupList.stream().distinct().toList());
-
-            //
-            groupList.stream().forEachOrdered((g) -> {
-                if (group == null || group != g) {
-                    ((ItemGroupInterface) g).setDisplayStacks(null);
-                    ((ItemGroupInterface) g).setSearchTabStacks(null);
-                }
-            });
-
-            //
-            groupList.stream().forEachOrdered((g) -> {
-                if (group == null || group != g) {
-                    ((ItemGroupInterface) g).getSearchTabStacks();
-                    ((ItemGroupInterface) g).getDisplayStacks();
-                }
-            });
-        }
-    }
-
-    //
     public static void forceUpdateAll() {
-        var player = MinecraftClient.getInstance().player;
-        var currentFeatureSet = (player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
-        var permission = player.hasPermissionLevel(1);
-
         // re-make a cache and entries
         ItemGroups.getGroups().stream().forEach((instance) -> {
-            ((ItemGroupInterface)instance).setNeedsUpdate(true);
-            ((ItemGroupInterface)instance).forceUpdate();
+            ((ItemGroupInterface)instance).resetEntries();
         });
 
         //
-        ItemGroups.updateEntries(currentFeatureSet, permission);
+        var player = MinecraftClient.getInstance().player;
+        if (player != null) {
+            ItemGroups.updateEntries(
+                player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet(),
+                player.hasPermissionLevel(1)
+            );
+        }
     }
 
     public default ItemStackSet getDisplayStacks() {
