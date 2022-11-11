@@ -1,6 +1,10 @@
+import com.modrinth.minotaur.dependencies.ModDependency
+
 plugins {
     id "architectury-plugin" version "3.4-SNAPSHOT"
     id "dev.architectury.loom" version "0.12.0-SNAPSHOT" apply false
+    id "com.modrinth.minotaur" version "2.+" apply false
+//    id 'io.github.CDAGaming.cursegradle' version '1.6.0'
 }
 
 architectury {
@@ -9,6 +13,22 @@ architectury {
 
 subprojects {
     apply plugin: "dev.architectury.loom"
+    if (it.path != ':common') {
+        apply plugin: "com.modrinth.minotaur"
+        String platform = it.properties.getOrDefault("loom.platform", "fabric")
+
+        modrinth {
+            projectId = 'ghf7OqIS'
+            versionNumber = "${rootProject.mod_version}-${platform}-${rootProject.minecraft_version}"
+            uploadFile = remapJar
+            gameVersions = (project.supported_minecraft_versions as String).split(',') as List<String>
+            loaders = [platform]
+            var list = [new ModDependency('9s6osm5g', 'required')]
+            if (platform == 'fabric') list.add new ModDependency('P7dR8mSH', 'required')
+            if (platform == 'quilt') list.add new ModDependency('qvIfYCYJ', 'required')
+            dependencies = list
+        }
+    }
 
     dependencies {
         minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
@@ -30,9 +50,6 @@ allprojects {
         maven {
             url 'https://maven.aliyun.com/nexus/content/groups/public'
         }
-//        maven {
-//            url 'https://repository.hanbings.io/proxy'
-//        }
         maven { url "https://maven.quiltmc.org/repository/release/" }
     }
 
@@ -45,3 +62,47 @@ allprojects {
         withSourcesJar()
     }
 }
+/*
+The CurseGradle plugin does not works well. Therefore, it has been ignored.
+curseforge {
+    apiKey = '7218fa74-4a01-4ed1-a8d1-19b6d1e979ee'
+    project {
+        id = '520169'
+        releaseType = 'release'
+        (project.supported_minecraft_versions as String).split(',').each {
+            addGameVersion it
+        }
+        addGameVersion 'fabric'
+
+        mainArtifact(project(':fabric').remapJar) {
+            it.displayName = "$project.version-fabric"
+            relations {
+//                requiredDependency 'cloth-config'
+//                optionalDependency 'modmenu'
+            }
+        }
+    }
+}*/
+/*
+The following section is just intended for debugging.
+task mytest {
+    doLast {
+        def apiKey = '7218fa74-4a01-4ed1-a8d1-19b6d1e979ee'
+
+        def url = 'https://minecraft.curseforge.com/api/game/version-types'
+//        println com.matthewprenger.cursegradle.Util.httpGet(apiKey, url)
+
+        HttpClient client = HttpClientBuilder.create()
+//                .setDefaultRequestConfig(RequestConfig.custom()
+////                        .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
+//                        .build())
+                .build()
+
+        HttpGet get = new HttpGet(new URI(url))
+        get.setHeader('X-Api-Token', apiKey)
+
+        def response = client.execute(get)
+        println response
+    }
+}
+*/

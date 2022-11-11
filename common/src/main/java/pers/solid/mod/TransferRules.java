@@ -82,15 +82,17 @@ public final class TransferRules {
   }
 
   public static void initialize() {
-    TransferRule.addConditionalTransferRule(() -> Configs.instance.buttonsInDecorations, BUTTON_IN_DECORATIONS);
-    TransferRule.addConditionalTransferRule(() -> Configs.instance.fenceGatesInDecorations, FENCE_GATE_IN_DECORATIONS);
-    TransferRule.addConditionalTransferRule(() -> Configs.instance.doorsInDecorations, DOORS_IN_DECORATIONS);
-    TransferRule.addConditionalTransferRule(() -> Configs.instance.swordsInTools, SWORDS_IN_TOOLS);
-    TransferRule.addTransferRule(Configs.CUSTOM_TRANSFER_RULE::get);
-    TransferRule.addConditionalTransferRule(() -> !Configs.CUSTOM_VARIANT_TRANSFER_RULE.isEmpty(), CUSTOM_VARIANT_TRANSFER_RULE);
-    TransferRule.addConditionalTransferRule(() -> !Configs.CUSTOM_REGEX_TRANSFER_RULE.isEmpty(), CUSTOM_REGEX_TRANSFER_RULE);
-    TransferRule.addConditionalTransferRule(() -> !Configs.CUSTOM_TAG_TRANSFER_RULE.isEmpty(), CUSTOM_TAG_TRANSFER_RULE);
+    TransferRule.addConditionalTransferRule(() -> Configs.instance.buttonsInDecorations, BUTTON_IN_DECORATIONS, "buttons in decorations");
+    TransferRule.addConditionalTransferRule(() -> Configs.instance.fenceGatesInDecorations, FENCE_GATE_IN_DECORATIONS, "fence gate in decorations");
+    TransferRule.addConditionalTransferRule(() -> Configs.instance.doorsInDecorations, DOORS_IN_DECORATIONS, "doors in decorations");
+    TransferRule.addConditionalTransferRule(() -> Configs.instance.swordsInTools, SWORDS_IN_TOOLS, "swords in tools");
+    TransferRule.addTransferRule(Configs.CUSTOM_TRANSFER_RULE::get, "custom transfer rule");
+    TransferRule.addConditionalTransferRule(() -> !Configs.CUSTOM_VARIANT_TRANSFER_RULE.isEmpty(), CUSTOM_VARIANT_TRANSFER_RULE, "custom variant transfer rule");
+    TransferRule.addConditionalTransferRule(() -> !Configs.CUSTOM_REGEX_TRANSFER_RULE.isEmpty(), CUSTOM_REGEX_TRANSFER_RULE, "custom regex transfer rule");
+    TransferRule.addConditionalTransferRule(() -> !Configs.CUSTOM_TAG_TRANSFER_RULE.isEmpty(), CUSTOM_TAG_TRANSFER_RULE, "custom tag transfer rule");
 
-    TransferRule.LOGGER.info("Initializing Transfer Rules. It may happen before or after the registration of mod items, but should take place before loading Reasonable Sorting Configs.");
+    if (Configs.instance.debugMode) {
+      TransferRule.LOGGER.info("Initializing Transfer Rules. It may happen before or after the registration of mod items, but should take place before loading Reasonable Sorting Configs.");
+    }
   }
 }

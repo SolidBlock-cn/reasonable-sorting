@@ -12,7 +12,7 @@ The Fabric version of this mod depends on Fabric API. The Quilt version of this 
 
 Since version 2.0.0, this mod does not work with Extended Block Shapes mod of version 1.5.2 or lower (yet still no conflict). Please wait for newer versions of Extended Block Shapes mod.
 
-The Forge and Quilt version of this mod is under construction.
+The Quilt version of this mod is under construction.
 
 ## Configuration
 
@@ -67,9 +67,9 @@ ON by default. Makes all fence gate blocks follow their corresponding fence bloc
 
 Sort colored blocks and items (such as wool, glazed terracotta, bed, banner) in a gradient order, like what is looks in Minecraft 1.19.3.
 
-**Block items only**
+**Avoid affecting block registries**
 
-OFF by default. When OFF, both blocks and blocks in item forms (aka block items, which are in essence items) are influenced by the sorting rules of this mod. When ON, only block items are affected, while block are not. In other words, when ON, the Creative Inventory is affected by mod, but blocks in Debug Mode are sorted as vanilla behaviour.
+OFF by default. When ON, only the item registry, including block items (such as blocks in the Creative inventory) are affected by options above, and block registries (such as blocks in the Debug Mode) are not affected. This can to some extent avoid block mismatch if you are joining a server. This option has no effect if you set 'Sorting Influence Range' to 'Inventory only'.
 
 Note: If "sorting influence range" is set to "inventory only", this config will take no effect.
 
