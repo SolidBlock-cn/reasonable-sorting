@@ -6,6 +6,8 @@ import net.minecraft.item.ItemGroup;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -29,7 +31,7 @@ public interface TransferRule {
    * @return 返回物品转移后的物品组产生的流，可能为空，也有可能产生重复元素。
    */
   static Stream<ItemGroup> streamTransferredGroupOf(Item item) {
-    return Internal.RULES.stream()
+    return Internal.RULES.stream().map(TransferRuleContainer::transferRule)
         .map(transferRule -> transferRule.getTransferredGroups(item))
         .filter(Objects::nonNull)
         .flatMap(Streams::stream);
@@ -41,7 +43,17 @@ public interface TransferRule {
    * @param rule 一个物品组转移规则。
    */
   static void addTransferRule(TransferRule rule) {
-    Internal.RULES.add(rule);
+    addTransferRule(rule, null);
+  }
+
+  /**
+   * 添加一条转移规则。
+   *
+   * @param rule 一个物品组转移规则。
+   * @param name 需要添加的规则的名称，主要用于在调试中显示。
+   */
+  static void addTransferRule(@NotNull TransferRule rule, @Nullable String name) {
+    Internal.RULES.add(new TransferRuleContainer(rule, name));
   }
 
   /**
@@ -50,8 +62,19 @@ public interface TransferRule {
    * @param condition 一个条件。注意只有在转移物品组时，这个条件才会被评估，注册规则时并不会评估条件。
    * @param rule      一个物品组转移规则。
    */
-  static void addConditionalTransferRule(BooleanSupplier condition, TransferRule rule) {
-    Internal.RULES.add(item -> condition.getAsBoolean() ? rule.getTransferredGroups(item) : null);
+  static void addConditionalTransferRule(@NotNull BooleanSupplier condition, @NotNull TransferRule rule) {
+    addConditionalTransferRule(condition, rule, null);
+  }
+
+  /**
+   * 添加一个有条件的转移规则，只有在满足条件时，这个规则才会被应用。
+   *
+   * @param condition 一个条件。注意只有在转移物品组时，这个条件才会被评估，注册规则时并不会评估条件。
+   * @param rule      一个物品组转移规则。
+   * @param name      需要添加的规则的名称，主要用于在调试中显示。
+   */
+  static void addConditionalTransferRule(@NotNull BooleanSupplier condition, @NotNull TransferRule rule, @Nullable String name) {
+    addTransferRule(new ConditionalTransferRule(condition, rule), name);
   }
 
   /**
@@ -66,6 +89,19 @@ public interface TransferRule {
   class Internal {
     @ApiStatus.Internal
     private static final
-    List<TransferRule> RULES = new ArrayList<>();
+    List<TransferRuleContainer> RULES = new ArrayList<>();
+  }
+
+  /**
+   * 用于存储在 {@link Internal#RULES} 中的对象，主要用于与名称一起保存。
+   *
+   * @param transferRule 转移规则。
+   * @param name         名称。
+   */
+  record TransferRuleContainer(@NotNull TransferRule transferRule, @Nullable @NonNls String name) {
+    @Override
+    public String toString() {
+      return "TransferRuleContainer[" + (name == null ? transferRule.toString() : name) + "]";
+    }
   }
 }

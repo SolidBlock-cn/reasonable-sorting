@@ -1,8 +1,8 @@
 package pers.solid.mod;
 
 import com.google.common.base.Functions;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import me.shedaniel.autoconfig.AutoConfig;
@@ -40,33 +40,33 @@ public class Configs implements ConfigData {
    * 自定义的方块排序规则，目前暂未使用。<p>
    * 注意这个字段是静态的，当保存配置时，直接修改这个 Multimap 的内容。
    */
-  public static final Multimap<Block, Block> CUSTOM_BLOCK_SORTING_RULES = LinkedListMultimap.create();
+  public static final Multimap<Block, Block> CUSTOM_BLOCK_SORTING_RULES = ArrayListMultimap.create();
   /**
    * 自定义的物品排序规则。这个字段是静态的，当保存配置时，会根据保存的对应配置项（一般是字符串列表）更新这个 Multimap 的内容。
    *
    * @see #customSortingRules
    */
-  public static final Multimap<Item, Item> CUSTOM_ITEM_SORTING_RULES = LinkedListMultimap.create();
+  public static final Multimap<Item, Item> CUSTOM_ITEM_SORTING_RULES = ArrayListMultimap.create();
   /**
    * 自定义的物品组转移规则。这个字段是静态的，当保存配置时，会根据保存的对应配置项（一般是字符串列表）更新这个 Multimap 的内容。
    *
    * @see #transferRules
    */
-  public static final Multimap<Item, ItemGroup> CUSTOM_TRANSFER_RULE = LinkedListMultimap.create();
+  public static final Multimap<Item, ItemGroup> CUSTOM_TRANSFER_RULE = ArrayListMultimap.create();
   /**
    * 自定义的方块变种的物品组转移规则，只影响方块物品。这个字段是静态的，当保存配置时，会根据保存的对应配置项（一般是字符串列表）更新这个 Multimap 的内容。
    *
    * @see #variantTransferRules
    */
-  public static final Multimap<BlockFamily.Variant, ItemGroup> CUSTOM_VARIANT_TRANSFER_RULE = LinkedListMultimap.create();
+  public static final Multimap<BlockFamily.Variant, ItemGroup> CUSTOM_VARIANT_TRANSFER_RULE = ArrayListMultimap.create();
   /**
    * 自定义正则表达式的物品组转移规则。这个字段是静态的，当保存配置时，会根据保存的对应配置项（一般是字符串列表）更新这个 Multimap 的内容。
    *
    * @see #regexTransferRules
    */
-  public static final Multimap<Pattern, ItemGroup> CUSTOM_REGEX_TRANSFER_RULE = LinkedListMultimap.create();
+  public static final Multimap<Pattern, ItemGroup> CUSTOM_REGEX_TRANSFER_RULE = ArrayListMultimap.create();
   @ApiStatus.AvailableSince("2.0.1")
-  public static final Multimap<Tag<Item>, ItemGroup> CUSTOM_TAG_TRANSFER_RULE = LinkedListMultimap.create();
+  public static final Multimap<Tag<Item>, ItemGroup> CUSTOM_TAG_TRANSFER_RULE = ArrayListMultimap.create();
   /**
    * 对该数组内的变种应用排序，其他变种不受影响。这个字段是静态的，当保存配置时，会根据保存的对应配置项（一般是字符串列表）更新这个 Multimap 的内容。<p>
    * 本字段应当与 {@link Configs#variantsFollowingBaseBlocks} 定义的默认值一致。
