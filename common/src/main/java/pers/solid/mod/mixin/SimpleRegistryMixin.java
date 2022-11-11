@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import pers.solid.mod.*;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -40,24 +41,21 @@ public abstract class SimpleRegistryMixin<T> extends MutableRegistry<T> implemen
       return;
     }
     if (Configs.instance.sortingCalculationType != SortingCalculationType.STANDARD || cachedEntries == null) {
-      final Stream<T> stream = SortingRule.streamOfRegistry(getKey(), rawIdToEntry);
+      final Collection<SortingRule<T>> sortingRules = SortingRule.getSortingRules(getKey());
+      if (sortingRules.isEmpty()) return;
+
+      final Stream<T> stream = SortingRule.streamOfRegistry(getKey(), rawIdToEntry, sortingRules);
       if (Configs.instance.sortingCalculationType == SortingCalculationType.STANDARD) {
-        if (stream != null) {
-          if (Configs.instance.debugMode) {
-            SortingRule.LOGGER.info("Calculated cachedEntries for registry {}. You will not see this info for this registry again until you modify config.", getKey().getValue());
-          }
+        if (Configs.instance.debugMode) {
+          SortingRule.LOGGER.info("Calculated cachedEntries for registry {}. You will not see this info for this registry again until you modify config.", getKey().getValue());
+        }
           cachedEntries = stream.filter(Objects::nonNull).collect(Collectors.toList());
-          cir.setReturnValue(cachedEntries.iterator());
-        } else {
-          cachedEntries = rawIdToEntry;
-        }
+        cir.setReturnValue(cachedEntries.iterator());
       } else {
-        if (stream != null) {
-          if (Configs.instance.debugMode) {
-            SortingRule.LOGGER.info("The iteration of registry {} is affected by Reasonable Sorting Mode, as the sorting calculation type is set to 'real-time' or 'semi-real-time'.", getKey().getValue());
-          }
-          cir.setReturnValue(stream.filter(Objects::nonNull).iterator());
+        if (Configs.instance.debugMode) {
+          SortingRule.LOGGER.info("The iteration of registry {} is affected by Reasonable Sorting Mode, as the sorting calculation type is set to 'real-time' or 'semi-real-time'.", getKey().getValue());
         }
+        cir.setReturnValue(stream.filter(Objects::nonNull).iterator());
       }
     } else {
       cir.setReturnValue(Iterators.filter(cachedEntries.iterator(), Objects::nonNull));

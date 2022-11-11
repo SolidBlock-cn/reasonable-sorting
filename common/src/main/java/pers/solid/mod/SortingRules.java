@@ -3,6 +3,7 @@ package pers.solid.mod;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Maps;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FenceBlock;
@@ -13,6 +14,7 @@ import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * 本模组自带的一些排序规则。
@@ -23,7 +25,8 @@ public final class SortingRules {
    */
   public static final @Unmodifiable ImmutableMultimap<Block, Block> DEFAULT_BLOCK_SORTING_RULE = new ImmutableMultimap.Builder<Block, Block>()
       .put(Blocks.COBBLESTONE, Blocks.MOSSY_COBBLESTONE)
-      .putAll(Blocks.SANDSTONE, Blocks.CHISELED_SANDSTONE, Blocks.CUT_SANDSTONE, Blocks.SMOOTH_SANDSTONE, Blocks.RED_SANDSTONE, Blocks.CHISELED_RED_SANDSTONE, Blocks.CUT_RED_SANDSTONE, Blocks.SMOOTH_RED_SANDSTONE)
+      .putAll(Blocks.SAND, Blocks.SANDSTONE, Blocks.CHISELED_SANDSTONE, Blocks.CUT_SANDSTONE, Blocks.SMOOTH_SANDSTONE, Blocks.RED_SAND)
+      .putAll(Blocks.RED_SAND, Blocks.RED_SANDSTONE, Blocks.CHISELED_RED_SANDSTONE, Blocks.CUT_RED_SANDSTONE, Blocks.SMOOTH_RED_SANDSTONE)
       .putAll(Blocks.ICE, Blocks.PACKED_ICE, Blocks.BLUE_ICE)
       .putAll(Blocks.NETHER_BRICKS, Blocks.CRACKED_NETHER_BRICKS, Blocks.RED_NETHER_BRICKS)
       .putAll(Blocks.QUARTZ_BLOCK, Blocks.SMOOTH_QUARTZ, Blocks.CHISELED_QUARTZ_BLOCK, Blocks.QUARTZ_BRICKS, Blocks.QUARTZ_PILLAR)
@@ -35,13 +38,11 @@ public final class SortingRules {
    */
   public static final @Unmodifiable ImmutableMultimap<Item, Item> DEFAULT_ITEM_SORTING_RULE
       = new ImmutableMultimap.Builder<Item, Item>()
-      .put(Items.COBBLESTONE, Items.MOSSY_COBBLESTONE)
-      .putAll(Items.SANDSTONE, Items.CHISELED_SANDSTONE, Items.CUT_SANDSTONE, Items.SMOOTH_SANDSTONE, Items.RED_SANDSTONE, Items.CHISELED_RED_SANDSTONE, Items.CUT_RED_SANDSTONE, Items.SMOOTH_RED_SANDSTONE)
-      .putAll(Items.ICE, Items.PACKED_ICE, Items.BLUE_ICE)
-      .putAll(Items.NETHER_BRICKS, Items.CRACKED_NETHER_BRICKS, Items.RED_NETHER_BRICKS)
-      .putAll(Items.QUARTZ_BLOCK, Items.SMOOTH_QUARTZ, Items.CHISELED_QUARTZ_BLOCK, Items.QUARTZ_BRICKS, Items.QUARTZ_PILLAR)
-      .put(Items.OAK_SLAB, Items.PETRIFIED_OAK_SLAB)
-      .put(Items.SMOOTH_STONE, Items.SMOOTH_STONE_SLAB)
+      .putAll((Iterable<Map.Entry<Item, Item>>) DEFAULT_BLOCK_SORTING_RULE.entries().stream()
+          .map(entry -> Maps.immutableEntry(entry.getKey().asItem(), entry.getValue().asItem()))
+          .filter(entry -> entry.getKey() != Items.AIR && entry.getValue() != Items.AIR)
+          ::iterator)
+      .put(Items.TORCH, Items.SOUL_TORCH)
       .put(Items.BOOK, Items.WRITABLE_BOOK)
       .put(Items.PAPER, Items.MAP)
       .put(Items.GOLD_NUGGET, Items.IRON_NUGGET)
@@ -92,17 +93,19 @@ public final class SortingRules {
   }
 
   public static void initialize() {
-    SortingRule.addSortingRule(Registry.BLOCK_KEY, Configs.CUSTOM_BLOCK_SORTING_RULES::get);
-    SortingRule.addSortingRule(Registry.ITEM_KEY, Configs.CUSTOM_ITEM_SORTING_RULES::get);
-    SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> Configs.instance.enableDefaultItemSortingRules && !Configs.instance.blockItemsOnly, DEFAULT_BLOCK_SORTING_RULE::get);
-    SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> Configs.instance.enableDefaultItemSortingRules, DEFAULT_ITEM_SORTING_RULE::get);
-    SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> Configs.instance.fenceGateFollowsFence && !Configs.instance.blockItemsOnly, FENCE_GATE_FOLLOWS_FENCE);
-    SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> Configs.instance.fenceGateFollowsFence, FENCE_GATE_FOLLOWS_FENCE_ITEM);
-    SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> Configs.instance.fancyColorsSorting && !Configs.instance.blockItemsOnly, COLOR_SORTING_RULE);
-    SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> Configs.instance.fancyColorsSorting, COLOR_SORTING_RULE_ITEM);
-    SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> !Configs.VARIANTS_FOLLOWING_BASE_BLOCKS.isEmpty() && !Configs.instance.blockItemsOnly, VARIANT_FOLLOWS_BASE);
-    SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> !Configs.VARIANTS_FOLLOWING_BASE_BLOCKS.isEmpty(), VARIANT_FOLLOWS_BASE_ITEM);
+    SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> !Configs.VARIANTS_FOLLOWING_BASE_BLOCKS.isEmpty() && !Configs.instance.blockItemsOnly, VARIANT_FOLLOWS_BASE, 8, "variant follows base");
+    SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> !Configs.VARIANTS_FOLLOWING_BASE_BLOCKS.isEmpty(), VARIANT_FOLLOWS_BASE_ITEM, 8, "variant follows base");
+    SortingRule.addSortingRule(Registry.BLOCK_KEY, new MultimapSortingRule<>(Configs.CUSTOM_BLOCK_SORTING_RULES), "custom block sorting rules");
+    SortingRule.addSortingRule(Registry.ITEM_KEY, new MultimapSortingRule<>(Configs.CUSTOM_ITEM_SORTING_RULES), "custom item sorting rules");
+    SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> Configs.instance.enableDefaultItemSortingRules && !Configs.instance.blockItemsOnly, new MultimapSortingRule<>(DEFAULT_BLOCK_SORTING_RULE), "default block sorting rule");
+    SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> Configs.instance.enableDefaultItemSortingRules, new MultimapSortingRule<>(DEFAULT_ITEM_SORTING_RULE), "default item sorting rule");
+    SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> Configs.instance.fenceGateFollowsFence && !Configs.instance.blockItemsOnly, FENCE_GATE_FOLLOWS_FENCE, 1, "fence gate follows fence");
+    SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> Configs.instance.fenceGateFollowsFence, FENCE_GATE_FOLLOWS_FENCE_ITEM, 1, "fence gate follows fence");
+    SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> Configs.instance.fancyColorsSorting && !Configs.instance.blockItemsOnly, COLOR_SORTING_RULE, -1, "fancy colors");
+    SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> Configs.instance.fancyColorsSorting, COLOR_SORTING_RULE_ITEM, -1, "fancy colors");
 
-    SortingRule.LOGGER.info("Initializing Sorting Rules. It may happen before or after the registration of mod items, but should take place before loading Reasonable Sorting Configs.");
+    if (Configs.instance.debugMode) {
+      SortingRule.LOGGER.info("Initializing Sorting Rules. It may happen before or after the registration of mod items, but should take place before loading Reasonable Sorting Configs.");
+    }
   }
 }

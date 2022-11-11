@@ -2,10 +2,9 @@
   "required": true,
   "minVersion": "0.8",
   "package": "pers.solid.mod.forge.mixin",
-  "compatibilityLevel": "JAVA_17",
-  "mixins": [
-    "ForgeRegistryMixin"
-  ],
+  "compatibilityLevel": "JAVA_8",
+  "mixins": ["ForgeRegistryMixin"],
+  "client": ["CreativeInventoryScreenForgeMixin"],
   "injectors": {
     "defaultRequire": 1
   }

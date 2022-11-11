@@ -69,6 +69,9 @@ public final class ColorSortingRule<T> implements SortingRule<T> {
       return null;
     }
     if (identifier.getPath().contains(baseColor.asString())) {
+      if (baseColor == DyeColor.BLUE || baseColor == DyeColor.GRAY) {
+        if (identifier.getPath().contains("light_" + baseColor.asString())) return null;
+      }
       return (Iterable<T>) (Iterable) Streams.stream(followingColors)
           .map(DyeColor::asString)
           .map(name -> new Identifier(identifier.getNamespace(), identifier.getPath().replace(baseColor.asString(), name)))

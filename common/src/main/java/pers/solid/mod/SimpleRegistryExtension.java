@@ -10,11 +10,8 @@ import org.jetbrains.annotations.Contract;
 public interface SimpleRegistryExtension {
   static void removeAllCachedEntries() {
     if (Configs.instance.sortingCalculationType == SortingCalculationType.STANDARD) {
-      if (Configs.instance.sortingInfluenceRange == SortingInfluenceRange.REGISTRY) {
-        Registry.REGISTRIES.stream().filter(Predicates.instanceOf(SimpleRegistryExtension.class)).forEach(r -> ((SimpleRegistryExtension) r).removeCachedEntries());
-      } else if (Configs.instance.sortingInfluenceRange == SortingInfluenceRange.INVENTORY_ONLY) {
-        SortingRule.Internal.cachedInventoryItems = null;
-      }
+      Registry.REGISTRIES.stream().filter(Predicates.instanceOf(SimpleRegistryExtension.class)).forEach(r -> ((SimpleRegistryExtension) r).removeCachedEntries());
+      SortingRule.Internal.cachedInventoryItems = null;
     }
   }
 

@@ -51,6 +51,6 @@
   "option.reasonable-sorting.shapes_following_base_blocks.tooltip": "Перенести вариации блоков из мода ExtShape к блокам их материалов. §7If this option has no effect, please check the \"Add to vanilla groups\" option in the configuration of Extended Block Shapes mod.§r",
   "option.reasonable-sorting.describe_shapes": "Допустимые названия: %s。",
   "option.reasonable-sorting.error.invalid_shape_name": "Некорректное название: %s.",
-  "option.reasonable-sorting.block_items_only": "Block items only",
-  "option.reasonable-sorting.block_items_only.tooltip": "When on, only blocks in item forms (such as blocks in the Creative inventory) are affected by options above, and blocks in block forms (such as blocks in the Debug Mode) are not affected."
+  "option.reasonable-sorting.block_items_only": "Avoid affecting block registries",
+  "option.reasonable-sorting.block_items_only.tooltip": "When on, only the item registry, including block items (such as blocks in the Creative inventory) are affected by options above, and block registries (such as blocks in the Debug Mode) are not affected. This can to some extend avoid block mismatch if you are joining a server. This option has no effect if you set 'Sorting Influence Range' to 'Inventory only'."
 }
