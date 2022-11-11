@@ -5,6 +5,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.stream.Stream;
  */
 @FunctionalInterface
 public interface TransferRule {
+  Logger LOGGER = LoggerFactory.getLogger(TransferRule.class);
 
   /**
    * 根据指定的物品以及已经注册的物品组转移规则，返回它转移的物品组的流。注意这个流可能产生重复元素。

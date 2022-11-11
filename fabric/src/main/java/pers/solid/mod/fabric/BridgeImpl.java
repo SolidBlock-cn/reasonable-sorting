@@ -1,8 +1,11 @@
 package pers.solid.mod.fabric;
 
+import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+
+import java.util.Optional;
 
 public class BridgeImpl {
   public static Identifier getItemId(Item item) {
@@ -13,11 +16,15 @@ public class BridgeImpl {
     return Registry.ITEM.get(identifier);
   }
 
-  public static boolean itemIdExists(Identifier identifier) {
-    final boolean b = Registry.ITEM.containsId(identifier);
-    if (!b) {
-      ReasonableSortingFabric.LOGGER.warn("Unidentified item id: {}. This may be because the configuration is loaded before item is registered.", identifier);
-    }
-    return b;
+  public static Block getBlockById(Identifier identifier) {
+    return Registry.BLOCK.get(identifier);
+  }
+
+  public static Identifier getBlockId(Block block) {
+    return Registry.BLOCK.getId(block);
+  }
+
+  public static Optional<Block> getBlockByIdOrEmpty(Identifier identifier) {
+    return Registry.BLOCK.getOrEmpty(identifier);
   }
 }
