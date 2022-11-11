@@ -9,6 +9,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.text.Text;
+import net.minecraft.text.Texts;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.StringUtils;
@@ -77,6 +78,49 @@ public class ConfigScreen {
                 b -> Text.translatable(b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
             .setDefaultValue(true)
             .setSaveConsumer(b -> config.enableSorting = b)
+            .build());
+
+    categorySorting.addEntry(
+        entryBuilder
+            .startEnumSelector(
+                Text.translatable("option.reasonable-sorting.sorting_influence_range"),
+                SortingInfluenceRange.class,
+                config.sortingInfluenceRange)
+            .setTooltip(Text.translatable("option.reasonable-sorting.sorting_influence_range.tooltip").append("\n").append(
+                Texts.join(Arrays.stream(SortingInfluenceRange.values())
+                    .map(v -> Text.literal(" - ").append(v.getName().formatted(Formatting.YELLOW)).append(" - ").append(v.getDescription().formatted(Formatting.GRAY)))
+                    .toList(), Text.literal("\n"))
+            ))
+            .setEnumNameProvider(anEnum -> ((SortingInfluenceRange) anEnum).getName())
+            .setDefaultValue(SortingInfluenceRange.INVENTORY_ONLY)
+            .setSaveConsumer(b -> config.sortingInfluenceRange = b)
+            .build());
+    categorySorting.addEntry(
+        entryBuilder
+            .startEnumSelector(
+                Text.translatable("option.reasonable-sorting.sorting_calculation_type"),
+                SortingCalculationType.class,
+                config.sortingCalculationType)
+            .setTooltip(Text.translatable("option.reasonable-sorting.sorting_calculation_type.tooltip").append("\n").append(
+                Texts.join(Arrays.stream(SortingCalculationType.values())
+                    .map(v -> Text.literal(" - ").append(v.getName().formatted(Formatting.YELLOW)).append(" - ").append(v.getDescription().formatted(Formatting.GRAY)))
+                    .toList(), Text.literal("\n"))
+            ))
+            .setEnumNameProvider(anEnum -> ((SortingCalculationType) anEnum).getName())
+            .setDefaultValue(SortingCalculationType.STANDARD)
+            .setSaveConsumer(b -> config.sortingCalculationType = b)
+            .build());
+
+    categorySorting.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Text.translatable("option.reasonable-sorting.debug_mode"),
+                config.debugMode)
+            .setTooltip(Text.translatable("option.reasonable-sorting.debug_mode.tooltip"))
+            .setYesNoTextSupplier(
+                b -> Text.translatable(b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
+            .setDefaultValue(false)
+            .setSaveConsumer(b -> config.debugMode = b)
             .build());
 
     categorySorting.addEntry(
@@ -179,6 +223,16 @@ public class ConfigScreen {
             .setDefaultValue(true)
             .setTooltip(
                 Text.translatable("option.reasonable-sorting.fence_gate_follows_fence.tooltip"))
+            .build());
+    categorySorting.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                Text.translatable("option.reasonable-sorting.fancy_color_sorting"),
+                config.fancyColorsSorting)
+            .setSaveConsumer(b -> config.fancyColorsSorting = b)
+            .setDefaultValue(true)
+            .setTooltip(
+                Text.translatable("option.reasonable-sorting.fancy_color_sorting.tooltip"))
             .build());
     categorySorting.addEntry(
         entryBuilder
@@ -319,6 +373,29 @@ public class ConfigScreen {
                 list -> {
                   config.regexTransferRules = list;
                   ConfigsHelper.updateCustomRegexTransferRules(list, Configs.CUSTOM_REGEX_TRANSFER_RULE);
+                })
+            .build());
+
+    categoryTransfer.addEntry(
+        entryBuilder
+            .startStrList(
+                Text.translatable("option.reasonable-sorting.custom_tag_transfer_rules"),
+                config.tagTransferRules)
+            .setTooltip(
+                Text.translatable(
+                    "option.reasonable-sorting.custom_tag_transfer_rules.tooltip"))
+            .setExpanded(true)
+            .setInsertInFront(false)
+            .setAddButtonTooltip(
+                Text.translatable("option.reasonable-sorting.custom_transfer_rules.add"))
+            .setRemoveButtonTooltip(
+                Text.translatable("option.reasonable-sorting.custom_transfer_rules.remove"))
+            .setCellErrorSupplier(ConfigsHelper::validateCustomTagTransferRule)
+            .setDefaultValue(Collections.emptyList())
+            .setSaveConsumer(
+                list -> {
+                  config.tagTransferRules = list;
+                  ConfigsHelper.updateCustomTagTransferRules(list, Configs.CUSTOM_TAG_TRANSFER_RULE);
                 })
             .build());
 

@@ -4,62 +4,56 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import pers.solid.mod.Configs;
+import pers.solid.mod.SortingRule;
 import pers.solid.mod.TransferRule;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 @Environment(EnvType.CLIENT)
 @Mixin(CreativeInventoryScreen.class)
 public abstract class CreativeInventoryScreenMixin {
-
-  private ItemStack stack = null;
-
-  @Shadow
-  public abstract void removed();
-
-  /**
-   * 将方法调用中的 <code>stack</code> 存储到此类的私有变量中以供 {@link #renderTooltipMixin} 使用。
-   */
-  @Inject(method = "renderTooltip", at = @At("HEAD"))
-  public void sendStack(MatrixStack matrices, ItemStack stack, int x, int y, CallbackInfo ci) {
-    this.stack = stack;
-  }
-
   /**
    * 在创造模式物品栏的搜索部分，选中物品会显示其物品组。该 mixin 则会使其显示修改后的物品组。修改后的物品组可能为多个，都会显示。
-   *
-   * @param instance 物品所属的原版物品组。
-   * @return 物品所属的物品组所代表的文本。可能是原版的，也有可能是修改后的。
    */
-  @Redirect(
+  @Inject(
       method = "renderTooltip",
-      at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;getDisplayName()Lnet/minecraft/text/Text;"))
-  public Text renderTooltipMixin(ItemGroup instance) {
-    final Collection<ItemGroup> itemGroups =
-        TransferRule.streamTransferredGroupOf(stack.getItem()).toList();
+      at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V", shift = At.Shift.AFTER),
+      slice = @Slice(
+          from = @At(value = "FIELD", target = "Lnet/minecraft/util/Formatting;BLUE:Lnet/minecraft/util/Formatting;"),
+          to = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;getTooltipData()Ljava/util/Optional;")),
+      locals = LocalCapture.CAPTURE_FAILSOFT)
+  public void renderTooltipMixin(MatrixStack matrices, ItemStack stack, int x, int y, CallbackInfo ci, List<Text> list, List<Text> list2, Item item, ItemGroup itemGroup) {
+    final Collection<ItemGroup> itemGroups = TransferRule.streamTransferredGroupOf(stack.getItem()).toList();
     if (Configs.instance.enableGroupTransfer && !itemGroups.isEmpty()) {
       MutableText text = Text.literal("").styled(style -> style.withColor(0x88ccff));
       for (Iterator<ItemGroup> iterator = itemGroups.iterator(); iterator.hasNext(); ) {
-        ItemGroup itemGroup = iterator.next();
-        text.append(itemGroup.getDisplayName());
+        ItemGroup group = iterator.next();
+        text.append(group.getDisplayName());
         if (iterator.hasNext()) {
           text.append(" / ");
         }
       }
-      return Text.literal("").append(text);
+      list2.set(1, text);
     }
-    return instance.getDisplayName();
+  }
+
+  @ModifyVariable(method = "search", at = @At(value = "STORE"))
+  public Iterator<Item> modifiedIteratorInSearch(Iterator<Item> value) {
+    return SortingRule.modifyIteratorInInventory(value, ItemGroup.SEARCH.getName());
   }
 }

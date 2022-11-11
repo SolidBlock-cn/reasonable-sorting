@@ -38,6 +38,9 @@
     "java": ">=17",
     "cloth-config2": ">=5.0.0"
   },
+  "provides": [
+    "reasonable_sorting"
+  ],
   "recommends": {
     "modmenu": "*"
   }

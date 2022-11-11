@@ -2,11 +2,9 @@
 
 如果看不懂英文，可以阅读[中文版](README.md)。
 
-Did you find that, in Creative Mode, it's quite a hard work to find in the creative inventory anything you want, as the sorting of them is so messy?
+Did you find that, in Creative Mode, it's quite a hard work to find in the creative inventory anything you want, as the sorting of them is so messy? Install this mod, and your creative inventory will be beautifully sorted! You will discover that all stairs and slabs follow their base blocks, and fence gates are transferred to decoration blocks and follow their relevant fence. Colorful blocks are sorted in the gradient color order.
 
-This mod adjusts the order that items are iterated in the registry, to adjust the sorting of items. As it's the change on the layer of item registry, it works fine when you view the item list through other mods (like RoughlyEnoughItems).
-
-Besides, this mod allows you to change the item groups to which items belong.
+You may config your custom sorting rules and item group transfer rules.
 
 The mod **depends on Cloth Config mod**, without which this mod cannot work. Besides, for Fabric and Quilt version, **it's recommended to install Mod Menu** to configure.
 
@@ -24,7 +22,26 @@ You can configure this mod through Mod Menu.
 
 **Enable sorting**
 
-ON by default. If OFF, all the sorting works as vanilla, and following configurations will not work. The sorting mainly takes effect on your creative inventory and item lists in mods like Roughly Enough Item (on which this mod does not rely).
+ON by default. If OFF, all the sorting works as vanilla, and following configurations will not work.
+
+**Sorting influence range**
+
+Defines in what cases the mod has influence. If you don't know the meaning, just remain the default value. Supported values:
+
+- Registry: All iterations of the Minecraft's registry will be affected. This may affect more situations, such as mods that list blocks or items. However, it may bring out some instabilities, such as potential registry mismatch when you join servers.
+- Inventory only: Only affect your Creative Mode inventory. Other situations will not be affected by the mod.
+
+**Sorting calculation type**
+
+Defines when to calculate the sorting. If you don't know the meaning, just remain the default value. Supported values:
+
+- Standard: Sorting of content (such as items) is calculated completely when the game starts or the config is loaded, and will be re-calculated when modifying the configs. This is the preferred way because it reduced unnecessary calculation in each iteration. (This option has no effect if your using Forge and meanwhile the value of "Sorting influence range" is "Registry".)
+- Semi real-time: The combination rules of content are calculated when the game starts, the config is loaded, or when modifying configs. However, the sorting result is still calculated in each iteration. It may cause a slight lag when you open your creative inventory.
+- Real-time: The combination rules of content and the sorting result is calculated in each iteration of registry. It may cause a lag when you open your creative inventory.
+
+**Debug mode**
+
+If enabled, more detailed information of the mod will be logged. You may enable it when you're researching this mod or find any problems.
 
 **Enable default item sorting rules**
 
@@ -46,9 +63,15 @@ Take notice that changing item sorting does not affect which item group they bel
 
 ON by default. Makes all fence gate blocks follow their corresponding fence blocks. Requires **Fence gates in decorations** otherwise their still appear in "Redstone" item group and does not take effect.
 
-**Block items only**
+**Fancy color sorting**
 
-OFF by default. When OFF, both blocks and blocks in item forms (aka block items, which are in essence items) are influenced by the sorting rules of this mod. When ON, only block items are affected, while block are not. In other words, when ON, the Creative Inventory is affected by mod, but blocks in Debug Mode are sorted as vanilla behaviour.
+Sort colored blocks and items (such as wool, glazed terracotta, bed, banner) in a gradient order, like what is looks in Minecraft 1.19.3.
+
+**Avoid affecting block registries**
+
+OFF by default. When ON, only the item registry, including block items (such as blocks in the Creative inventory) are affected by options above, and block registries (such as blocks in the Debug Mode) are not affected. This can to some extent avoid block mismatch if you are joining a server. This option has no effect if you set 'Sorting Influence Range' to 'Inventory only'.
+
+Note: If "sorting influence range" is set to "inventory only", this config will take no effect.
 
 ### Item group transfer
 
@@ -77,6 +100,10 @@ Empty by default. Similar to above. Syntax: variant name, space, and the item gr
 **Custom regex transfer rules**
 
 Empty by default. Similar to above. Syntax: regex, space, and the item group to transfer to. For example, `.+?button transportation` transfers to all items which identifier ends with `button` to "Transportations".
+
+**Custom tag transfer rules**
+
+Empty by default. Similar to above. Syntax: tag id, space, and the item group to transfer to. For example, `flowers transportation` will transfer items in `#minecraft:flowers` to "Transportation" item group.
 
 ## Technical details
 

@@ -9,10 +9,11 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.SwordItem;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.ApiStatus;
 import pers.solid.mod.mixin.BlockFamiliesAccessor;
 
 import java.util.Collections;
-import java.util.regex.Pattern;
+import java.util.LinkedHashSet;
 
 /**
  * 本模组内置的一些物品组转移规则。
@@ -57,23 +58,41 @@ public final class TransferRules {
    * 自定义的正则表达式转移规则。
    */
   public static final TransferRule CUSTOM_REGEX_TRANSFER_RULE = item -> {
+    LinkedHashSet<ItemGroup> results = new LinkedHashSet<>();
     final Identifier identifier = Bridge.getItemId(item);
-    for (final Pattern pattern : Configs.CUSTOM_REGEX_TRANSFER_RULE.keySet()) {
-      if (pattern.matcher(identifier.toString()).matches()) return Configs.CUSTOM_REGEX_TRANSFER_RULE.get(pattern);
-    }
-    return null;
+    Configs.CUSTOM_REGEX_TRANSFER_RULE.forEach((pattern, itemGroup) -> {
+      if (pattern.matcher(identifier.toString()).matches()) {
+        results.add(itemGroup);
+      }
+    });
+    return results.isEmpty() ? null : results;
+  };
+  @ApiStatus.AvailableSince("2.0.1")
+  public static final TransferRule CUSTOM_TAG_TRANSFER_RULE = item -> {
+    LinkedHashSet<ItemGroup> results = new LinkedHashSet<>();
+    Configs.CUSTOM_TAG_TRANSFER_RULE.forEach((tag, itemGroup) -> {
+      if (item.getRegistryEntry().isIn(tag)) {
+        results.add(itemGroup);
+      }
+    });
+    return results.isEmpty() ? null : results;
   };
 
   private TransferRules() {
   }
 
   public static void initialize() {
-    TransferRule.addConditionalTransferRule(() -> Configs.instance.buttonsInDecorations, BUTTON_IN_DECORATIONS);
-    TransferRule.addConditionalTransferRule(() -> Configs.instance.fenceGatesInDecorations, FENCE_GATE_IN_DECORATIONS);
-    TransferRule.addConditionalTransferRule(() -> Configs.instance.doorsInDecorations, DOORS_IN_DECORATIONS);
-    TransferRule.addConditionalTransferRule(() -> Configs.instance.swordsInTools, SWORDS_IN_TOOLS);
-    TransferRule.addTransferRule(Configs.CUSTOM_TRANSFER_RULE::get);
-    TransferRule.addConditionalTransferRule(() -> !Configs.CUSTOM_VARIANT_TRANSFER_RULE.isEmpty(), CUSTOM_VARIANT_TRANSFER_RULE);
-    TransferRule.addConditionalTransferRule(() -> !Configs.CUSTOM_REGEX_TRANSFER_RULE.isEmpty(), CUSTOM_REGEX_TRANSFER_RULE);
+    TransferRule.addConditionalTransferRule(() -> Configs.instance.buttonsInDecorations, BUTTON_IN_DECORATIONS, "buttons in decorations");
+    TransferRule.addConditionalTransferRule(() -> Configs.instance.fenceGatesInDecorations, FENCE_GATE_IN_DECORATIONS, "fence gate in decorations");
+    TransferRule.addConditionalTransferRule(() -> Configs.instance.doorsInDecorations, DOORS_IN_DECORATIONS, "doors in decorations");
+    TransferRule.addConditionalTransferRule(() -> Configs.instance.swordsInTools, SWORDS_IN_TOOLS, "swords in tools");
+    TransferRule.addTransferRule(Configs.CUSTOM_TRANSFER_RULE::get, "custom transfer rule");
+    TransferRule.addConditionalTransferRule(() -> !Configs.CUSTOM_VARIANT_TRANSFER_RULE.isEmpty(), CUSTOM_VARIANT_TRANSFER_RULE, "custom variant transfer rule");
+    TransferRule.addConditionalTransferRule(() -> !Configs.CUSTOM_REGEX_TRANSFER_RULE.isEmpty(), CUSTOM_REGEX_TRANSFER_RULE, "custom regex transfer rule");
+    TransferRule.addConditionalTransferRule(() -> !Configs.CUSTOM_TAG_TRANSFER_RULE.isEmpty(), CUSTOM_TAG_TRANSFER_RULE, "custom tag transfer rule");
+
+    if (Configs.instance.debugMode) {
+      TransferRule.LOGGER.info("Initializing Transfer Rules. It may happen before or after the registration of mod items, but should take place before loading Reasonable Sorting Configs.");
+    }
   }
 }

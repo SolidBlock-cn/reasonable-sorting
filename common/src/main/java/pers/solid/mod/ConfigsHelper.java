@@ -5,11 +5,14 @@ import com.google.common.collect.Multimap;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.tag.TagKey;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
@@ -48,7 +51,7 @@ public final class ConfigsHelper {
         .filter(name -> !name.isEmpty())
         .map(Configs.NAME_TO_VARIANT::get)
         .filter(Objects::nonNull)
-        .forEach(Configs.VARIANTS_FOLLOWING_BASE_BLOCKS::add);
+        .forEach(mutableList::add);
   }
 
   @Contract(mutates = "param2")
@@ -63,15 +66,15 @@ public final class ConfigsHelper {
       if (key == null) {
         continue;
       }
-      if (Bridge.itemIdExists(key)) {
-        Configs.CUSTOM_ITEM_SORTING_RULES.putAll(
-            Bridge.getItemById(key),
-            split.stream()
-                .map(Identifier::tryParse)
-                .filter(Bridge::itemIdExists)
-                .map(Bridge::getItemById)
-                .toList());
-      }
+      final Optional<Item> item = Bridge.getItemByIdOrWarn(key, SortingRule.LOGGER);
+      item.ifPresent(value -> mutableMap.putAll(
+          value,
+          split.stream()
+              .map(Identifier::tryParse)
+              .map((Identifier identifier) -> Bridge.getItemByIdOrWarn(identifier, SortingRule.LOGGER))
+              .filter(Optional::isPresent)
+              .map(Optional::get)
+              .toList()));
     }
   }
 
@@ -86,7 +89,7 @@ public final class ConfigsHelper {
         }
         final String[] split2 = split1[1].split("\\s+");
         final Pattern compile = Pattern.compile(split1[0]);
-        Arrays.stream(split2).map(ConfigsHelper::getGroupFromId).filter(Objects::nonNull).forEach(group -> Configs.CUSTOM_REGEX_TRANSFER_RULE.put(compile, group));
+        Arrays.stream(split2).map(ConfigsHelper::getGroupFromId).filter(Objects::nonNull).forEach(group -> mutableMap.put(compile, group));
       } catch (PatternSyntaxException ignored) {
       }
     }
@@ -103,7 +106,28 @@ public final class ConfigsHelper {
       final String[] split2 = split1[1].split("\\s+");
       final BlockFamily.Variant variant = Configs.NAME_TO_VARIANT.get(split1[0]);
       if (variant == null) continue;
-      Arrays.stream(split2).map(ConfigsHelper::getGroupFromId).filter(Objects::nonNull).forEach(group -> Configs.CUSTOM_VARIANT_TRANSFER_RULE.put(variant, group));
+      Arrays.stream(split2).map(ConfigsHelper::getGroupFromId).filter(Objects::nonNull).forEach(group -> mutableMap.put(variant, group));
+
+    }
+  }
+
+  @ApiStatus.AvailableSince("2.0.1")
+  @Contract(mutates = "param2")
+  public static void updateCustomTagTransferRules(List<String> list, Multimap<TagKey<Item>, ItemGroup> mutableMap) {
+    mutableMap.clear();
+    for (String s : list) {
+      final String[] split1 = s.split("\\s+", 2);
+      if (split1.length < 2) {
+        continue;
+      }
+      final String[] split2 = split1[1].split("\\s+");
+      final Identifier id = Identifier.tryParse(StringUtils.removeStart(split1[0], "#"));
+      if (id == null) continue;
+      final TagKey<Item> tag = TagKey.of(Registry.ITEM_KEY, id);
+      Arrays.stream(split2)
+          .map(ConfigsHelper::getGroupFromId)
+          .filter(Objects::nonNull)
+          .forEach(group -> mutableMap.put(tag, group));
 
     }
   }
@@ -118,11 +142,11 @@ public final class ConfigsHelper {
       }
       final String[] split2 = split1[1].split("\\s+");
       final Identifier id = Identifier.tryParse(split1[0]);
-      if (!Bridge.itemIdExists(id)) {
-        continue;
-      }
-      final Item item = Bridge.getItemById(id);
-      Arrays.stream(split2).map(ConfigsHelper::getGroupFromId).filter(Objects::nonNull).forEach(group -> mutableMap.put(item, group));
+      final Optional<Item> item = Bridge.getItemByIdOrWarn(id, TransferRule.LOGGER);
+      item.ifPresent(value -> Arrays.stream(split2)
+          .map(ConfigsHelper::getGroupFromId)
+          .filter(Objects::nonNull)
+          .forEach(group -> mutableMap.put(value, group)));
     }
   }
 
@@ -238,6 +262,27 @@ public final class ConfigsHelper {
                       ? pattern.substring(index + 1)
                       : "")));
       return Optional.of(msg);
+    }
+    return Optional.empty();
+  }
+
+  @ApiStatus.AvailableSince("2.0.1")
+  @Contract(pure = true)
+  public static Optional<Text> validateCustomTagTransferRule(String s) {
+    if (s.isEmpty()) {
+      return Optional.empty();
+    }
+    final String[] split1 = s.split("\\s+");
+    if (split1.length < 2) {
+      return Optional.of(
+          Text.translatable(
+              "option.reasonable-sorting.error.group_name_expected"));
+    }
+    final String id = StringUtils.removeStart(split1[0], "#");
+    if (Identifier.tryParse(id) == null) {
+      return Optional.of(
+          Text.translatable(
+              "option.reasonable-sorting.error.invalid_identifier", id));
     }
     return Optional.empty();
   }
