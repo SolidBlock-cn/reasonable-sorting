@@ -29,7 +29,7 @@
         "pers.solid.mod.quilt..ReasonableSortingQuilt"
       ],
       "modmenu": [
-        "pers.solid.mod.quilt.ReasonableSortingQuilt"
+        "pers.solid.mod.quilt.ConfigScreenQuilt"
       ]
     },
     "depends": [
@@ -42,6 +42,9 @@
         "id": "cloth-config2",
         "version": ">=4.0.0"
       }
+    ],
+    "provides": [
+      "reasonable_sorting"
     ],
     "recommends": [
       "modmenu"

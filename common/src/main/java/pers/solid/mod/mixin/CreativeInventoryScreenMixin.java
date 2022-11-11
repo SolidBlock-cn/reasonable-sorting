@@ -11,7 +11,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -28,9 +27,6 @@ import java.util.stream.Collectors;
 public abstract class CreativeInventoryScreenMixin {
 
   private ItemStack stack = null;
-
-  @Shadow
-  public abstract void removed();
 
   /**
    * 将方法调用中的 <code>stack</code> 存储到此类的私有变量中以供 {@link #renderTooltipMixin} 使用。

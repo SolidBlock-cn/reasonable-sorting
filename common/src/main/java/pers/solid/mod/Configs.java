@@ -14,9 +14,11 @@ import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.tag.Tag;
 import net.minecraft.util.ActionResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
@@ -62,6 +64,8 @@ public class Configs implements ConfigData {
    * @see #regexTransferRules
    */
   public static final Multimap<Pattern, ItemGroup> CUSTOM_REGEX_TRANSFER_RULE = LinkedListMultimap.create();
+  @ApiStatus.AvailableSince("2.0.1")
+  public static final Multimap<Tag<Item>, ItemGroup> CUSTOM_TAG_TRANSFER_RULE = LinkedListMultimap.create();
   /**
    * 对该数组内的变种应用排序，其他变种不受影响。这个字段是静态的，当保存配置时，会根据保存的对应配置项（一般是字符串列表）更新这个 Multimap 的内容。<p>
    * 本字段应当与 {@link Configs#variantsFollowingBaseBlocks} 定义的默认值一致。
@@ -83,6 +87,21 @@ public class Configs implements ConfigData {
    * 是否启用排序。如果该项为 {@code false}，则所有的排序都会按照原版进行。
    */
   public boolean enableSorting = true;
+  /**
+   * 本模组的排序影响的范围。可以仅影响创造模式物品栏，也可以影响整个注册表。
+   */
+  @ApiStatus.AvailableSince("2.1.0")
+  public SortingInfluenceRange sortingInfluenceRange = SortingInfluenceRange.INVENTORY_ONLY;
+  /**
+   * 排序计算类型，指定在哪些情况下计算排序。
+   */
+  @ApiStatus.AvailableSince("2.1.0")
+  public SortingCalculationType sortingCalculationType = SortingCalculationType.STANDARD;
+  /**
+   * 调试模式。如果启用，则在日志中输出更多内容。
+   */
+  @ApiStatus.AvailableSince("2.1.0")
+  public boolean debugMode = false;
   /**
    * 是否启用默认的物品排序规则。
    *
@@ -117,6 +136,13 @@ public class Configs implements ConfigData {
    * @see SortingRules#FENCE_GATE_FOLLOWS_FENCE_ITEM
    */
   public boolean fenceGateFollowsFence = true;
+  /**
+   * 使用更优美的方式排序各个颜色。
+   *
+   * @see SortingRules#COLOR_SORTING_RULE
+   */
+  @ApiStatus.AvailableSince("2.1.0")
+  public boolean fancyColorsSorting = true;
   /**
    * 若开启，则上述规则只影响物品（包括物品形式的方块），不影响方块，也就是说，调试模式下的所有方块仍按照原版方式排序，但是创造模式物品栏里面的方块则依然受影响。
    */
@@ -180,6 +206,14 @@ public class Configs implements ConfigData {
    */
   public List<String> regexTransferRules = new ArrayList<>();
   /**
+   * 自定义物品标签转移规则。注意：在实际排序时，不是取决于此字段，而是取决于 {@link #CUSTOM_TAG_TRANSFER_RULE}。
+   *
+   * @see #CUSTOM_TAG_TRANSFER_RULE
+   * @see ConfigsHelper#updateCustomTagTransferRules
+   */
+  @ApiStatus.AvailableSince("2.1.0")
+  public List<String> tagTransferRules = new ArrayList<>();
+  /**
    * 用于 Extended Block Shapes 模组。没有安装此模组时，此字段仍会正常加载和保存，但是不会显示在配置屏幕中。
    */
   public List<String> shapeTransferRules = new ArrayList<>();
@@ -200,11 +234,15 @@ public class Configs implements ConfigData {
     final ConfigSerializeEvent.Load<Configs> update = (configHolder, configs) -> {
       ConfigsHelper.updateCustomSortingRules(configs.customSortingRules, Configs.CUSTOM_ITEM_SORTING_RULES);
       ConfigsHelper.updateCustomTransferRule(configs.transferRules, Configs.CUSTOM_TRANSFER_RULE);
+      ConfigsHelper.updateCustomTagTransferRules(configs.tagTransferRules, Configs.CUSTOM_TAG_TRANSFER_RULE);
       ConfigsHelper.updateCustomRegexTransferRules(configs.regexTransferRules, Configs.CUSTOM_REGEX_TRANSFER_RULE);
       ConfigsHelper.updateCustomVariantTransferRules(configs.variantTransferRules, Configs.CUSTOM_VARIANT_TRANSFER_RULE);
       ConfigsHelper.updateVariantsFollowingBaseBlocks(configs.variantsFollowingBaseBlocks, Configs.VARIANTS_FOLLOWING_BASE_BLOCKS);
       ExtShapeBridge.INSTANCE.updateShapeList(configs.shapesFollowingBaseBlocks);
       ExtShapeBridge.INSTANCE.updateShapeTransferRules(configs.shapeTransferRules);
+
+      SortingRule.clearValueToFollowersCache();
+      SimpleRegistryExtension.removeAllCachedEntries();
       return ActionResult.PASS;
     };
     CONFIG_HOLDER.registerLoadListener((configHolder, configs) -> {
@@ -220,6 +258,8 @@ public class Configs implements ConfigData {
     CONFIG_HOLDER.registerSaveListener((configHolder, configs) -> {
       Configs.instance = configs;
       LOGGER.info("Saving Reasonable Sorting configs.");
+      SortingRule.clearValueToFollowersCache();
+      SimpleRegistryExtension.removeAllCachedEntries();
       return ActionResult.SUCCESS;
     });
   }

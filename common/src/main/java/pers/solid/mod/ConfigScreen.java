@@ -11,6 +11,7 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -65,6 +66,52 @@ public class ConfigScreen {
         .setDefaultValue(true)
         .setSaveConsumer(b -> config.enableSorting = b)
         .build());
+
+    categorySorting.addEntry(
+        entryBuilder
+            .startEnumSelector(
+                new TranslatableText("option.reasonable-sorting.sorting_influence_range"),
+                SortingInfluenceRange.class,
+                config.sortingInfluenceRange)
+            .setTooltip(new TranslatableText("option.reasonable-sorting.sorting_influence_range.tooltip").append(
+                Util.make(new LiteralText(StringUtils.EMPTY), text -> Arrays.stream(SortingInfluenceRange.values())
+                    .map(v -> new LiteralText("\n - ").append(v.getName().formatted(Formatting.YELLOW)).append(" - ").append(v.getDescription().formatted(Formatting.GRAY)))
+                    .forEach(text::append))
+            ))
+            .setEnumNameProvider(anEnum -> ((SortingInfluenceRange) anEnum).getName())
+            .setDefaultValue(SortingInfluenceRange.INVENTORY_ONLY)
+            .setSaveConsumer(b -> config.sortingInfluenceRange = b)
+            .build());
+    categorySorting.addEntry(
+        entryBuilder
+            .startEnumSelector(
+                new TranslatableText("option.reasonable-sorting.sorting_calculation_type"),
+                SortingCalculationType.class,
+                config.sortingCalculationType)
+            .setTooltip(new TranslatableText("option.reasonable-sorting.sorting_calculation_type.tooltip").append(
+                Util.make(new LiteralText(StringUtils.EMPTY), text -> Arrays.stream(SortingCalculationType.values())
+                    .map(v -> new LiteralText("\n - ")
+                        .append(v.getName().formatted(Formatting.YELLOW))
+                        .append(" - ")
+                        .append(v.getDescription().formatted(Formatting.GRAY)))
+                    .forEach(text::append))
+            ))
+            .setEnumNameProvider(anEnum -> ((SortingCalculationType) anEnum).getName())
+            .setDefaultValue(SortingCalculationType.STANDARD)
+            .setSaveConsumer(b -> config.sortingCalculationType = b)
+            .build());
+
+    categorySorting.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                new TranslatableText("option.reasonable-sorting.debug_mode"),
+                config.debugMode)
+            .setTooltip(new TranslatableText("option.reasonable-sorting.debug_mode.tooltip"))
+            .setYesNoTextSupplier(
+                b -> new TranslatableText(b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
+            .setDefaultValue(false)
+            .setSaveConsumer(b -> config.debugMode = b)
+            .build());
 
     categorySorting.addEntry(
         entryBuilder
@@ -150,6 +197,16 @@ public class ConfigScreen {
         .setDefaultValue(true)
         .setTooltip(new TranslatableText("option.reasonable-sorting.fence_gate_follows_fence.tooltip"))
         .build());
+    categorySorting.addEntry(
+        entryBuilder
+            .startBooleanToggle(
+                new TranslatableText("option.reasonable-sorting.fancy_color_sorting"),
+                config.fancyColorsSorting)
+            .setSaveConsumer(b -> config.fancyColorsSorting = b)
+            .setDefaultValue(true)
+            .setTooltip(
+                new TranslatableText("option.reasonable-sorting.fancy_color_sorting.tooltip"))
+            .build());
     categorySorting.addEntry(
         entryBuilder
             .startBooleanToggle(
@@ -257,6 +314,29 @@ public class ConfigScreen {
           ConfigsHelper.updateCustomRegexTransferRules(list, Configs.CUSTOM_REGEX_TRANSFER_RULE);
         })
         .build());
+
+    categoryTransfer.addEntry(
+        entryBuilder
+            .startStrList(
+                new TranslatableText("option.reasonable-sorting.custom_tag_transfer_rules"),
+                config.tagTransferRules)
+            .setTooltip(
+                new TranslatableText(
+                    "option.reasonable-sorting.custom_tag_transfer_rules.tooltip"))
+            .setExpanded(true)
+            .setInsertInFront(false)
+            .setAddButtonTooltip(
+                new TranslatableText("option.reasonable-sorting.custom_transfer_rules.add"))
+            .setRemoveButtonTooltip(
+                new TranslatableText("option.reasonable-sorting.custom_transfer_rules.remove"))
+            .setCellErrorSupplier(ConfigsHelper::validateCustomTagTransferRule)
+            .setDefaultValue(Collections.emptyList())
+            .setSaveConsumer(
+                list -> {
+                  config.tagTransferRules = list;
+                  ConfigsHelper.updateCustomTagTransferRules(list, Configs.CUSTOM_TAG_TRANSFER_RULE);
+                })
+            .build());
 
     if (ExtShapeBridge.INSTANCE.modHasLoaded()) {
       categoryTransfer

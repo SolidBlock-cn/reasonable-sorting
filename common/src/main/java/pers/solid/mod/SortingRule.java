@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Streams;
+import net.minecraft.item.Item;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.util.registry.SimpleRegistry;
@@ -14,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -35,6 +37,41 @@ public interface SortingRule<T> {
   @ApiStatus.Internal
   Logger LOGGER = LogManager.getLogger(SortingRule.class);
 
+  @SuppressWarnings("unchecked")
+  static <T> Multimap<T, T> getValueToFollowersCache(RegistryKey<? extends Registry<T>> registryKey) {
+    return (Multimap<T, T>) Internal.VALUE_TO_FOLLOWER_CACHES.get(registryKey);
+  }
+
+  static <T> void setValueToFollowersCache(RegistryKey<? extends Registry<T>> registryKey, Multimap<T, T> valueToFollowersCache) {
+    Internal.VALUE_TO_FOLLOWER_CACHES.put(registryKey, valueToFollowersCache);
+  }
+
+  static <T> Multimap<T, T> getOrCreateValueToFollowers(RegistryKey<? extends Registry<T>> registryKey, Collection<T> entries) {
+    Multimap<T, T> valueToFollowersCache = getValueToFollowersCache(registryKey);
+    if (valueToFollowersCache == null || Configs.instance.sortingCalculationType == SortingCalculationType.REAL_TIME) {
+      if (Configs.instance.debugMode) {
+        LOGGER.info("The value-to-followers cache does not exist in registry key {}. It may happen when you start game or open your inventory at first. Creating a new one fo this registry.", registryKey.getValue());
+      }
+      valueToFollowersCache = LinkedListMultimap.create();
+      setValueToFollowersCache(registryKey, valueToFollowersCache);
+      Multimap<T, T> finalValueToFollowersCache = valueToFollowersCache;
+      entries.forEach(value -> finalValueToFollowersCache.putAll(value, SortingRule.streamFollowersOf(SortingRule.getSortingRules(registryKey), value).collect(Collectors.toList())));
+      if (Configs.instance.debugMode && !valueToFollowersCache.isEmpty()) {
+        final T exampleKey = valueToFollowersCache.keys().iterator().next();
+        LOGGER.info("Built value-to-followers cache for registry {} with {} elements, such as {} -> {}.", registryKey.getValue(), valueToFollowersCache.size(), exampleKey, valueToFollowersCache.get(exampleKey));
+      }
+    }
+    return valueToFollowersCache;
+  }
+
+  static void clearValueToFollowersCache() {
+    if (Configs.instance.debugMode) {
+      LOGGER.info("Clearing caches of sorting rules of {} registries.", Internal.VALUE_TO_FOLLOWER_CACHES.size());
+    }
+    Internal.VALUE_TO_FOLLOWER_CACHES.clear();
+  }
+
+
   /**
    * 添加一个规则。迭代注册表时就会应用到此规则。
    *
@@ -45,6 +82,7 @@ public interface SortingRule<T> {
   @SuppressWarnings({"unchecked", "rawtypes"})
   static <T> void addSortingRule(RegistryKey<? extends Registry<T>> registryKey, SortingRule<T> rule) {
     ((Multimap<RegistryKey<? extends Registry<T>>, SortingRule<T>>) (Multimap) Internal.RULES).put(registryKey, rule);
+    SimpleRegistryExtension.removeAllCachedEntries();
   }
 
   /**
@@ -90,9 +128,9 @@ public interface SortingRule<T> {
    * @see SimpleRegistry#stream()
    * @see pers.solid.mod.mixin.SimpleRegistryMixin
    */
-  static <T> Stream<T> streamOfRegistry(
+  static <T> @Nullable Stream<T> streamOfRegistry(
       RegistryKey<? extends Registry<T>> registryKey,
-      List<T> rawIdToEntry) {
+      Collection<T> entries) {
     LinkedHashSet<T> iterated = new LinkedHashSet<>();
     final Collection<SortingRule<T>> ruleSets = getSortingRules(registryKey);
 
@@ -105,32 +143,21 @@ public interface SortingRule<T> {
 
     // 被确认跟随在另一对象之后，不因直接在一级迭代产生，而应在一级迭代产生其他对象时产生的对象。
     // 一级迭代时，就应该忽略这些对象。
-    // 本集合仅用于检测对象是否存在，故不考虑顺序。
-    final Set<T> combinationFollowers = new HashSet<>();
 
     // 本集合的键为被跟随的对象，值为跟随者它的对象。
-    final Multimap<T, T> valueToFollowers = LinkedListMultimap.create();
-
-    // 初次直接迭代内部元素。
-    for (T entry : rawIdToEntry) {
-      final T value = entry;
-      streamFollowersOf(ruleSets, value).forEach(follower -> {
-        valueToFollowers.put(value, follower);
-        combinationFollowers.add(follower);
-      });
-    }
+    final Multimap<T, T> valueToFollowers = getOrCreateValueToFollowers(registryKey, entries);
 
     // 结果流的第一部分。先将内容连同其跟随者都迭代一次，已经迭代过的不重复迭代。但是，这部分可能会丢下一些元素。
-    final Stream<T> firstStream = rawIdToEntry.stream()
-        .filter(o -> !combinationFollowers.contains(o))
+    final Stream<T> firstStream = entries.stream()
+        .filter(o -> !valueToFollowers.containsValue(o))
         .flatMap(o -> oneAndItsFollowers(o, valueToFollowers))
         .filter(o -> !iterated.contains(o))
         .peek(iterated::add);
 
     // 第一次未迭代完成的，在第二次迭代。
-    final Stream<T> secondStream = rawIdToEntry.stream()
+    final Stream<T> secondStream = entries.stream()
         .filter((x -> !iterated.contains(x)))
-        .peek(o -> LOGGER.info("Object {} not iterated in the first iteration. Iterated in the second iteration.", o));
+        .peek(o -> LOGGER.info("Object {} not iterated in the first iteration or {}. Iterated in the second iteration.", o, registryKey.getValue()));
 
     return Stream.concat(firstStream, secondStream);
   }
@@ -167,7 +194,15 @@ public interface SortingRule<T> {
      * <p>当然，每个注册表可以指定多个规则，这多个规则集就会合并。
      */
     @ApiStatus.Internal
-    public static final
+    private static final
     Multimap<RegistryKey<?>, SortingRule<?>> RULES = HashMultimap.create();
+    private static final
+    Map<RegistryKey<?>, Multimap<?, ?>> VALUE_TO_FOLLOWER_CACHES = new HashMap<>();
+    /**
+     * <p>用于物品栏迭代物品迭代时，缓存的物品列表。
+     * <p>当配置中的排序影响范围为注册表时，这个字段不会使用。只有当排序影响范围为 {@linkplain SortingInfluenceRange#INVENTORY_ONLY} 时，且排序计算类型为 {@linkplain SortingCalculationType#STANDARD} 时，这个字段才会使用。
+     * <p>当游戏初始化时、加载或更改配置时，这个字段会被设为 {@code null}，当下一次打开物品栏时，这个字段就会被赋值。
+     */
+    public static @Nullable Iterable<Item> cachedInventoryItems;
   }
 }

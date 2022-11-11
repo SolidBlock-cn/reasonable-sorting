@@ -39,6 +39,9 @@
   "breaks": {
     "minecraft": ">=1.17"
   },
+  "provides": [
+    "reasonable_sorting"
+  ],
   "recommends": {
     "modmenu": "*"
   }

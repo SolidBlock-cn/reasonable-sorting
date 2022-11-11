@@ -4,8 +4,7 @@
   "package": "pers.solid.mod.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "CreativeInventoryScreenMixin",
-    "ItemMixin",
+    "ItemGroupMixin", "ItemMixin",
     "SimpleRegistryMixin"
   ],
   "client": [

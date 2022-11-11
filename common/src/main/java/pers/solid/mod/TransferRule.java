@@ -3,6 +3,8 @@ package pers.solid.mod;
 import com.google.common.collect.Streams;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,6 +20,7 @@ import java.util.stream.Stream;
  */
 @FunctionalInterface
 public interface TransferRule {
+  Logger LOGGER = LogManager.getLogger(TransferRule.class);
 
   /**
    * 根据指定的物品以及已经注册的物品组转移规则，返回它转移的物品组的流。注意这个流可能产生重复元素。
