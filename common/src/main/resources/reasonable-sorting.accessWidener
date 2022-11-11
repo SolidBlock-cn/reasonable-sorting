@@ -8,3 +8,4 @@ mutable field net/minecraft/item/ItemGroup$EntriesImpl parentTabStacks Lnet/mine
 mutable field net/minecraft/item/ItemGroup$EntriesImpl searchTabStacks Lnet/minecraft/item/ItemStackSet;
 mutable field net/minecraft/item/ItemGroup$EntriesImpl group Lnet/minecraft/item/ItemGroup;
 mutable field net/minecraft/item/ItemGroup$EntriesImpl enabledFeatures Lnet/minecraft/resource/featuretoggle/FeatureSet;
+accessible method net/minecraft/item/ItemGroups updateEntries (Lnet/minecraft/resource/featuretoggle/FeatureSet;Z)V

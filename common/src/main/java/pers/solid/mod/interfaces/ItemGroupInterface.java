@@ -24,7 +24,10 @@ public interface ItemGroupInterface {
 
     public default ItemStackSet setDisplayStacks(ItemStackSet set) { return null; };
     public default ItemStackSet setSearchTabStacks(ItemStackSet set){ return null; };
+
+    //
     public default void setNeedsUpdate(boolean update) { };
+    public default boolean getNeedsUpdate() { return false; };
 
     //
     public static boolean itemInGroup(Item item, ItemGroup itemGroup, boolean hasPermission) {
@@ -105,6 +108,18 @@ public interface ItemGroupInterface {
 
         return removedArray;
     }
+
+    //
+    public default void forceUpdate() {
+        if (this.getNeedsUpdate()) {
+            this.setCachedParentTabStacks(null);
+            this.setCachedParentTabStacks(null);
+            //this.setDisplayStacks(null);
+            //this.setSearchTabStacks(null);
+            this.setNeedsUpdate(false);
+        }
+    }
+
     public static ItemGroup putBefore(ArrayList<ItemGroup> arr, ItemGroup beforeOf, ItemGroup el) {
         int new_index = arr.indexOf(beforeOf);
         int old_index = arr.indexOf(el);
@@ -200,6 +215,22 @@ public interface ItemGroupInterface {
                 }
             });
         }
+    }
+
+    //
+    public static void forceUpdateAll() {
+        var player = MinecraftClient.getInstance().player;
+        var currentFeatureSet = (player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
+        var permission = player.hasPermissionLevel(1);
+
+        // re-make a cache and entries
+        ItemGroups.getGroups().stream().forEach((instance) -> {
+            ((ItemGroupInterface)instance).setNeedsUpdate(true);
+            ((ItemGroupInterface)instance).forceUpdate();
+        });
+
+        //
+        ItemGroups.updateEntries(currentFeatureSet, permission);
     }
 
     public default ItemStackSet getDisplayStacks() {

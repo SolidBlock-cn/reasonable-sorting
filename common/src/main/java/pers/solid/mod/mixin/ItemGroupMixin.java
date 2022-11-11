@@ -23,7 +23,12 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
     //
     @Unique ItemStackSet cachedSearchTabStacks = null;
     @Unique ItemStackSet cachedParentTabStacks = null;
-    @Unique boolean avoidMixin = false;
+
+    @Unique boolean needsUpdate = false;
+
+    //
+    @Unique @Override public boolean getNeedsUpdate() { return needsUpdate; };
+    @Unique @Override public void setNeedsUpdate(boolean N) { needsUpdate = N; };
 
     //
     @Unique @Override public ItemStackSet getCachedSearchTabStacks(boolean needsUpdate, boolean hasPermissions) {
@@ -46,8 +51,10 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
         cir.cancel();
     }
 
+    //
     @Redirect(method = "updateEntries", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup$EntryCollector;accept(Lnet/minecraft/resource/featuretoggle/FeatureSet;Lnet/minecraft/item/ItemGroup$Entries;Z)V"))
     public void onItemAdd(ItemGroup.EntryCollector instance, FeatureSet featureSet, ItemGroup.Entries entries, boolean b) {
+        this.forceUpdate();
         instance.accept(featureSet, entries, b);
     }
 

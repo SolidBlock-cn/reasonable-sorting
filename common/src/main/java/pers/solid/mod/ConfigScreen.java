@@ -38,11 +38,7 @@ public class ConfigScreen {
       var player = MinecraftClient.getInstance().player;
       var currentFeatureSet = (player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
       if (player != null) {
-          ItemGroups.getGroups().stream().forEachOrdered((g) -> {
-              if (!(g == ItemGroups.INVENTORY || g == ItemGroups.SEARCH || g == ItemGroups.HOTBAR)) {
-                  ((ItemGroupInterface) g).setNeedsUpdate(true);
-              }
-          });
+          ItemGroupInterface.forceUpdateAll();
       }
   }
 
@@ -56,7 +52,10 @@ public class ConfigScreen {
     final Configs config = Configs.CONFIG_HOLDER.getConfig();
     ConfigBuilder builder = ConfigBuilder.create()
         .setParentScreen(previousScreen)
-        .setSavingRunnable(Configs.CONFIG_HOLDER::save)
+        .setSavingRunnable(()->{
+            Configs.CONFIG_HOLDER.save();
+            ConfigScreen.resetGroups();
+        })
         .setTitle(Text.translatable("title.reasonable-sorting.config"));
 
     // TODO! Optimize updating!
@@ -92,7 +91,7 @@ public class ConfigScreen {
             .setDefaultValue(true)
             .setSaveConsumer(b -> {
                 config.enableSorting = b;
-                ConfigScreen.resetGroups();
+
             })
             .build());
 
@@ -109,7 +108,6 @@ public class ConfigScreen {
             .setDefaultValue(true)
             .setSaveConsumer(b -> {
                 config.enableDefaultItemSortingRules = b;
-                ConfigScreen.resetGroups();
             })
             .build());
 
@@ -133,7 +131,6 @@ public class ConfigScreen {
                 list -> {
                   config.customSortingRules = formatted(list);
                   ConfigsHelper.updateCustomSortingRules(list, Configs.CUSTOM_ITEM_SORTING_RULES);
-                  ConfigScreen.resetGroups();
                 })
             .build());
 
@@ -161,7 +158,6 @@ public class ConfigScreen {
                 s -> {
                     config.variantsFollowingBaseBlocks = s;
                     ConfigsHelper.updateVariantsFollowingBaseBlocks(s, Configs.VARIANTS_FOLLOWING_BASE_BLOCKS);
-                    ConfigScreen.resetGroups();
                 })
             .build());
 
@@ -188,7 +184,6 @@ public class ConfigScreen {
                   s3 -> {
                     config.shapesFollowingBaseBlocks = s3;
                     ExtShapeBridge.INSTANCE.updateShapeList(s3);
-                    ConfigScreen.resetGroups();
                   })
               .build());
     }
@@ -200,7 +195,6 @@ public class ConfigScreen {
                 config.fenceGateFollowsFence)
             .setSaveConsumer(b -> {
                 config.fenceGateFollowsFence = b;
-                ConfigScreen.resetGroups();
             })
             .setDefaultValue(true)
             .setTooltip(
@@ -213,7 +207,6 @@ public class ConfigScreen {
                 config.blockItemsOnly)
             .setSaveConsumer(b -> {
                 config.blockItemsOnly = b;
-                ConfigScreen.resetGroups();
             })
             .setDefaultValue(false)
             .setTooltip(
@@ -239,7 +232,6 @@ public class ConfigScreen {
                 b -> Text.translatable(b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
             .setSaveConsumer(b -> {
                 config.enableGroupTransfer = b;
-                ConfigScreen.resetGroups();
             })
             .build());
 
@@ -251,7 +243,6 @@ public class ConfigScreen {
             .setDefaultValue(false)
             .setSaveConsumer(b -> {
                 config.buttonsInDecorations = b;
-                ConfigScreen.resetGroups();
             })
             .build());
 
@@ -264,7 +255,6 @@ public class ConfigScreen {
               .setDefaultValue(false)
               .setSaveConsumer(b -> {
                   config.transferSystemItems = b;
-                  ConfigScreen.resetGroups();
               })
               .build());*/
 
@@ -276,7 +266,6 @@ public class ConfigScreen {
             .setDefaultValue(true)
             .setSaveConsumer(b -> {
                 config.fenceGatesInDecorations = b;
-                ConfigScreen.resetGroups();
             })
             .build());
     categoryTransfer.addEntry(
@@ -287,7 +276,6 @@ public class ConfigScreen {
             .setDefaultValue(false)
             .setSaveConsumer(b -> {
                 config.swordsInTools = b;
-                ConfigScreen.resetGroups();
             })
             .build());
     categoryTransfer.addEntry(
@@ -298,7 +286,6 @@ public class ConfigScreen {
             .setDefaultValue(false)
             .setSaveConsumer(b -> {
                 config.doorsInDecorations = b;
-                ConfigScreen.resetGroups();
             })
             .build());
 
@@ -332,7 +319,6 @@ public class ConfigScreen {
                 list -> {
                     config.transferRules = list;
                     ConfigsHelper.updateCustomTransferRule(list, Configs.CUSTOM_TRANSFER_RULE);
-                    ConfigScreen.resetGroups();
                 })
             .build());
 
@@ -356,7 +342,6 @@ public class ConfigScreen {
                 list -> {
                     config.variantTransferRules = list;
                     ConfigsHelper.updateCustomVariantTransferRules(list, Configs.CUSTOM_VARIANT_TRANSFER_RULE);
-                    ConfigScreen.resetGroups();
                 })
             .build());
 
@@ -380,7 +365,6 @@ public class ConfigScreen {
                 list -> {
                     config.regexTransferRules = list;
                     ConfigsHelper.updateCustomRegexTransferRules(list, Configs.CUSTOM_REGEX_TRANSFER_RULE);
-                    ConfigScreen.resetGroups();
                 })
             .build());
 
@@ -407,7 +391,6 @@ public class ConfigScreen {
                       list -> {
                             config.shapeTransferRules = list;
                             ExtShapeBridge.INSTANCE.updateShapeTransferRules(list);
-                            ConfigScreen.resetGroups();
                       })
                   .build())
           .addEntry(
@@ -423,7 +406,6 @@ public class ConfigScreen {
                   .setSaveConsumer(
                       b -> {
                           config.baseBlocksInBuildingBlocks = b;
-                          ConfigScreen.resetGroups();
                       })
                   .build());
     }
