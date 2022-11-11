@@ -51,5 +51,27 @@
   "option.reasonable-sorting.custom_shape_transfer_rules": "自定义形状转移规则",
   "option.reasonable-sorting.custom_shape_transfer_rules.tooltip": "将扩展方块形状模组中特定形状的方块转移至其他组。",
   "option.reasonable-sorting.base_blocks_in_building_blocks": "基础方块移至建筑方块",
-  "option.reasonable-sorting.base_blocks_in_building_blocks.tooltip": "将扩展方块形状模组中的部分基础方块，比如蜜脾、菌光体，移至建筑方块。"
+  "option.reasonable-sorting.base_blocks_in_building_blocks.tooltip": "将扩展方块形状模组中的部分基础方块，比如蜜脾、菌光体，移至建筑方块。",
+  "option.reasonable-sorting.sorting_influence_range": "排序影响范围",
+  "option.reasonable-sorting.sorting_influence_range.tooltip": "决定了本模组在哪些情况下会影响内容排序。如果不明白意思，直接使用默认值即可。",
+  "option.reasonable-sorting.sorting_calculation_type": "排序计算类型",
+  "option.reasonable-sorting.sorting_calculation_type.tooltip": "决定了本模组在哪些情况下计算排序。如果不明白意思，直接使用默认值即可。",
+  "option.reasonable-sorting.debug_mode": "调试模式",
+  "option.reasonable-sorting.debug_mode.tooltip": "如果启用，那么模组会在日志中输出更多信息。如果你需要研究模组原理或者遇到任何问题，可以启用此选项。",
+  "option.reasonable-sorting.fancy_color_sorting": "美观颜色排序",
+  "option.reasonable-sorting.fancy_color_sorting.tooltip": "以渐变顺序排序带有颜色的方块和物品（如羊毛、带釉陶瓦、床、旗帜），就像Minecraft 1.19.3中的那样。",
+  "option.reasonable-sorting.custom_tag_transfer_rules": "自定义标签转移规则",
+  "option.reasonable-sorting.custom_tag_transfer_rules.tooltip": "每一行是一个标签名称和物品组名称，如 \u00a7eflowers building_blocks\u00a7r。",
+
+  "sortingInfluenceRange.registry": "注册表",
+  "sortingInfluenceRange.registry.description": "Minecraft注册表的所有遍历过程都会受到影响。这将会影响更多情况，例如一些可以列举所有方块或者物品的模组。但是，这有可能造成不稳定性，例如加入服务器时可能出现注册表不匹配的情况。",
+  "sortingInfluenceRange.inventory_only": "仅物品栏",
+  "sortingInfluenceRange.inventory_only.description": "仅影响创造模式物品栏。其他情况不会受到此模组的影响。",
+
+  "sortingCalculationType.standard": "标准",
+  "sortingCalculationType.standard.description": "内容（例如物品）的排序会在游戏开始时以及配置加载时计算一次，当配置被更改时会重新计算。这是推荐的方式，因为可以减少每次迭代中的不必要的计算。（如果您使用Forge，且“排序影响范围”设为“注册表”，那么这个选项将不会生效。）",
+  "sortingCalculationType.semi_real_time": "半实时",
+  "sortingCalculationType.semi_real_time.description": "内容组合规则会在游戏开始时、配置加载时、配置更改时计算。但是，排序结果仍会在每次迭代中计算。这可能会造成每次打开创造模式物品栏时出现略微卡顿。",
+  "sortingCalculationType.real_time": "实时",
+  "sortingCalculationType.real_time.description": "组合规则以及排序结果都会在每次注册表迭代时计算。这可能会造成每次打开物品栏时出现卡顿。"
 }

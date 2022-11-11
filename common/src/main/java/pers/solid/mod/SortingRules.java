@@ -1,6 +1,7 @@
 package pers.solid.mod;
 
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -8,6 +9,7 @@ import net.minecraft.block.FenceBlock;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.util.DyeColor;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -68,6 +70,24 @@ public final class SortingRules {
    * {@link #FENCE_GATE_FOLLOWS_FENCE} 对应的物品规则，影响方块物品。
    */
   public static final SortingRule<Item> FENCE_GATE_FOLLOWS_FENCE_ITEM = new BlockItemRule(FENCE_GATE_FOLLOWS_FENCE);
+  public static final ColorSortingRule<Block> COLOR_SORTING_RULE = new ColorSortingRule<>(DyeColor.WHITE, ImmutableList.of(
+      DyeColor.LIGHT_GRAY,
+      DyeColor.GRAY,
+      DyeColor.BLACK,
+      DyeColor.BROWN,
+      DyeColor.RED,
+      DyeColor.ORANGE,
+      DyeColor.YELLOW,
+      DyeColor.LIME,
+      DyeColor.GREEN,
+      DyeColor.CYAN,
+      DyeColor.LIGHT_BLUE,
+      DyeColor.BLUE,
+      DyeColor.PURPLE,
+      DyeColor.MAGENTA,
+      DyeColor.PINK
+  ));
+  public static final ColorSortingRule<Item> COLOR_SORTING_RULE_ITEM = new ColorSortingRule<>(COLOR_SORTING_RULE.baseColor(), COLOR_SORTING_RULE.followingColors());
 
   private SortingRules() {
   }
@@ -77,9 +97,13 @@ public final class SortingRules {
     SortingRule.addSortingRule(Registry.ITEM_KEY, Configs.CUSTOM_ITEM_SORTING_RULES::get);
     SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> Configs.instance.enableDefaultItemSortingRules && !Configs.instance.blockItemsOnly, DEFAULT_BLOCK_SORTING_RULE::get);
     SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> Configs.instance.enableDefaultItemSortingRules, DEFAULT_ITEM_SORTING_RULE::get);
-    SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> !Configs.VARIANTS_FOLLOWING_BASE_BLOCKS.isEmpty() && !Configs.instance.blockItemsOnly, VARIANT_FOLLOWS_BASE);
-    SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> !Configs.VARIANTS_FOLLOWING_BASE_BLOCKS.isEmpty(), VARIANT_FOLLOWS_BASE_ITEM);
     SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> Configs.instance.fenceGateFollowsFence && !Configs.instance.blockItemsOnly, FENCE_GATE_FOLLOWS_FENCE);
     SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> Configs.instance.fenceGateFollowsFence, FENCE_GATE_FOLLOWS_FENCE_ITEM);
+    SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> Configs.instance.fancyColorsSorting && !Configs.instance.blockItemsOnly, COLOR_SORTING_RULE);
+    SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> Configs.instance.fancyColorsSorting, COLOR_SORTING_RULE_ITEM);
+    SortingRule.addConditionalSortingRule(Registry.BLOCK_KEY, () -> !Configs.VARIANTS_FOLLOWING_BASE_BLOCKS.isEmpty() && !Configs.instance.blockItemsOnly, VARIANT_FOLLOWS_BASE);
+    SortingRule.addConditionalSortingRule(Registry.ITEM_KEY, () -> !Configs.VARIANTS_FOLLOWING_BASE_BLOCKS.isEmpty(), VARIANT_FOLLOWS_BASE_ITEM);
+
+    SortingRule.LOGGER.info("Initializing Sorting Rules. It may happen before or after the registration of mod items, but should take place before loading Reasonable Sorting Configs.");
   }
 }

@@ -21,7 +21,7 @@ public class ExtShapeBridgeImpl {
    */
   public static void setValue(Supplier<ExtShapeBridge> bridge) {
     if (valueSupplier != null) {
-      ReasonableSortingForge.LOGGER.warn("The ExtShapeBridgeEvent seems to have posted multime times! The value {} will override the existing value {}.", valueSupplier, bridge);
+      ReasonableSortingForge.LOGGER.warn("The ExtShapeBridgeEvent seems to have posted multiple times! The value {} will override the existing value {}.", valueSupplier, bridge);
     } else {
       ReasonableSortingForge.LOGGER.info("Receiving ExtShapeBridge object.");
     }
