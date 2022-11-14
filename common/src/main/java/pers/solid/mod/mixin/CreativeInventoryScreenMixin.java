@@ -34,13 +34,13 @@ public abstract class CreativeInventoryScreenMixin {
       method = "renderTooltip",
       at = @At(value = "INVOKE", target = "Ljava/util/List;add(ILjava/lang/Object;)V", shift = At.Shift.AFTER),
       slice = @Slice(
-          from = @At(value = "FIELD", target = "Lnet/minecraft/util/Formatting;BLUE:Lnet/minecraft/util/Formatting;"),
+          from = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;getDisplayName()Lnet/minecraft/text/Text;"),
           to = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;getTooltipData()Ljava/util/Optional;")),
       locals = LocalCapture.CAPTURE_FAILSOFT)
-  public void renderTooltipMixin(MatrixStack matrices, ItemStack stack, int x, int y, CallbackInfo ci, List<Text> list, List<Text> list2, Item item, ItemGroup itemGroup) {
+  protected void renderTooltipMixin(MatrixStack matrices, ItemStack stack, int x, int y, CallbackInfo ci, List<Text> list, List<Text> list2) {
     final Collection<ItemGroup> itemGroups = TransferRule.streamTransferredGroupOf(stack.getItem()).toList();
     if (Configs.instance.enableGroupTransfer && !itemGroups.isEmpty()) {
-      MutableText text = Text.literal("").styled(style -> style.withColor(0x88ccff));
+      MutableText text = Text.empty().styled(style -> style.withColor(0x88ccff));
       for (Iterator<ItemGroup> iterator = itemGroups.iterator(); iterator.hasNext(); ) {
         ItemGroup group = iterator.next();
         text.append(group.getDisplayName());
