@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraftforge.registries.ForgeRegistry;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,6 +14,7 @@ import pers.solid.mod.Configs;
 import pers.solid.mod.SortingInfluenceRange;
 import pers.solid.mod.SortingRule;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
@@ -24,15 +26,18 @@ public abstract class ForgeRegistryMixin<V> {
   @Shadow
   public abstract RegistryKey<Registry<V>> getRegistryKey();
 
+  @Shadow
+  public abstract @Nullable RegistryKey<V> getKey(int id);
+
   @Inject(method = "iterator", at = @At("RETURN"), remap = false, cancellable = true)
   private void reasonableSortedIterator(CallbackInfoReturnable<Iterator<V>> cir) {
     if (!Configs.instance.enableSorting || Configs.instance.sortingInfluenceRange != SortingInfluenceRange.REGISTRY) {
       return;
     }
-    final Stream<V> stream = SortingRule.streamOfRegistry(getRegistryKey(), ImmutableList.copyOf(cir.getReturnValue()));
-    if (stream != null) {
+    final Collection<SortingRule<V>> sortingRules = SortingRule.getSortingRules(getRegistryKey());
+    if (!sortingRules.isEmpty()) {
+      final Stream<V> stream = SortingRule.streamOfRegistry(getRegistryKey(), ImmutableList.copyOf(cir.getReturnValue()), sortingRules);
       cir.setReturnValue(stream.iterator());
-      cir.cancel();
     }
   }
 }

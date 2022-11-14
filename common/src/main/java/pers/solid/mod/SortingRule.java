@@ -50,7 +50,7 @@ public interface SortingRule<T> {
     Multimap<T, T> valueToFollowersCache = getValueToFollowersCache(registryKey);
     if (valueToFollowersCache == null || Configs.instance.sortingCalculationType == SortingCalculationType.REAL_TIME) {
       if (Configs.instance.debugMode) {
-        LOGGER.info("The value-to-followers cache does not exist in registry key {}. It may happen when you start game or open your inventory at first. Creating a new one fo this registry.", registryKey.getValue());
+        LOGGER.info("The value-to-followers cache does not exist in registry key {}. It may happen when you start game or open your inventory at first. Creating a new one for this registry.", registryKey.getValue());
       }
       valueToFollowersCache = LinkedListMultimap.create();
       setValueToFollowersCache(registryKey, valueToFollowersCache);
@@ -193,7 +193,7 @@ public interface SortingRule<T> {
   }
 
   /**
-   * 替换一个普通注册表的流，以通过其迭代器应用排序规则。
+   * 替换一个普通注册表的流，以通过其迭代器应用排序规则。当没有适用的规则时，返回 {@code null}。
    *
    * @see SimpleRegistry#iterator()
    * @see SimpleRegistry#stream()
@@ -202,15 +202,20 @@ public interface SortingRule<T> {
   static <T> @Nullable Stream<T> streamOfRegistry(
       RegistryKey<? extends Registry<T>> registryKey,
       Collection<T> entries) {
-    LinkedHashSet<T> iterated = new LinkedHashSet<>();
     final Collection<SortingRule<T>> ruleSets = getSortingRules(registryKey);
 
     if (ruleSets.isEmpty()) {
       // 如果没有为此注册表设置规则，那么直接返回 null，在 mixin 中表示依然按照原版的迭代方式迭代。
       return null;
-    } else {
-      LOGGER.info("{} sorting rules found in the iteration of {}.", ruleSets.size(), registryKey.getValue());
     }
+
+    return streamOfRegistry(registryKey, entries, ruleSets);
+  }
+
+
+  static @NotNull <T> Stream<T> streamOfRegistry(RegistryKey<? extends Registry<T>> registryKey, Collection<T> entries, Collection<SortingRule<T>> sortingRules) {
+    LOGGER.info("{} sorting rules found in the iteration of {}.", sortingRules.size(), registryKey.getValue());
+    LinkedHashSet<T> iterated = new LinkedHashSet<>();
 
     // 被确认跟随在另一对象之后，不因直接在一级迭代产生，而应在一级迭代产生其他对象时产生的对象。
     // 一级迭代时，就应该忽略这些对象。
@@ -265,15 +270,19 @@ public interface SortingRule<T> {
           LOGGER.info("Calculating the sorting in the creative inventory or {}. It may cause a slight lag, but will no longer happen until you modify configs.", name);
         }
         // 如果排序计算类型为实时或者半实时，或者计算类型为标准但是 cachedInventoryItems 为 null，那么迭代一次其中的内容。
-        final Stream<Item> stream = streamOfRegistry(Registry.ITEM_KEY, Lists.newArrayList(value));
+        final Collection<SortingRule<Item>> sortingRules = getSortingRules(Registry.ITEM_KEY);
+        if (sortingRules.isEmpty()) {
+          return value;
+        }
+        final Stream<Item> stream = streamOfRegistry(Registry.ITEM_KEY, Lists.newArrayList(value), sortingRules);
         if (Configs.instance.sortingCalculationType == SortingCalculationType.STANDARD) {
           // 如果为 standard，保存这次迭代的结果，下次直接使用。
-          final List<Item> list = stream == null ? ImmutableList.copyOf(value) : stream.toList();
+          final List<Item> list = stream.toList();
           Internal.cachedInventoryItems = list;
           return list.iterator();
         } else {
           // 如果为 real-time 或 semi-real-time，则直接返回这个流的迭代器，或者原来的迭代器。
-          return stream == null ? value : stream.iterator();
+          return stream.iterator();
         }
       } else {
         if (Configs.instance.debugMode) {
