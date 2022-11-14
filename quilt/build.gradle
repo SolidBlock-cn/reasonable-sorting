@@ -37,12 +37,8 @@ dependencies {
 
     modApi("me.shedaniel.cloth:cloth-config-fabric:${rootProject.cloth_config_version}") {
         exclude(group: "net.fabricmc.fabric-api")
-        exclude(module: "fabric-loader")
     }
-    modImplementation("com.terraformersmc:modmenu:${rootProject.modmenu_version}") {
-        exclude(group: "net.fabricmc.fabric-api")
-        exclude(module: "fabric-loader")
-    }
+    modImplementation("com.terraformersmc:modmenu:${rootProject.modmenu_version}")
 
     modApi "org.quiltmc.quilted-fabric-api:quilted-fabric-api:${rootProject.quilt_fabric_api_version}"
 

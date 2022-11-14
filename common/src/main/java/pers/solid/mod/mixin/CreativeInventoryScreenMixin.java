@@ -5,7 +5,9 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
+import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import pers.solid.mod.Configs;
 import pers.solid.mod.TransferRule;
 
@@ -44,11 +47,10 @@ public abstract class CreativeInventoryScreenMixin {
    * @return 物品所属的物品组所代表的文本。可能是原版的，也有可能是修改后的。
    */
   @Redirect(
-      method = "renderTooltip",
-      at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;getDisplayName()Lnet/minecraft/text/Text;"))
+          method = "renderTooltip",
+          at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemGroup;getDisplayName()Lnet/minecraft/text/Text;"))
   public Text renderTooltipMixin(ItemGroup instance) {
-    final Collection<ItemGroup> itemGroups =
-        TransferRule.streamTransferredGroupOf(stack.getItem()).toList();
+    final Collection<ItemGroup> itemGroups = TransferRule.streamTransferredGroupOf(stack.getItem(), instance).toList();
     if (Configs.instance.enableGroupTransfer && !itemGroups.isEmpty()) {
       MutableText text = Text.literal("").styled(style -> style.withColor(0x88ccff));
       for (Iterator<ItemGroup> iterator = itemGroups.iterator(); iterator.hasNext(); ) {
@@ -62,4 +64,5 @@ public abstract class CreativeInventoryScreenMixin {
     }
     return instance.getDisplayName();
   }
+  
 }

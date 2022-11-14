@@ -3,13 +3,17 @@ package pers.solid.mod;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemGroups;
+import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.apache.commons.lang3.StringUtils;
+import pers.solid.mod.interfaces.ItemGroupInterface;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,6 +34,14 @@ public class ConfigScreen {
     return newList;
   }
 
+  public static void resetGroups() {
+      var player = MinecraftClient.getInstance().player;
+      var currentFeatureSet = (player != null ? player.networkHandler.getEnabledFeatures() : FeatureFlags.FEATURE_MANAGER.getFeatureSet());
+      if (player != null) {
+          ItemGroupInterface.forceUpdateAll();
+      }
+  }
+
   /**
    * 模组配置屏幕创建。
    *
@@ -40,9 +52,13 @@ public class ConfigScreen {
     final Configs config = Configs.CONFIG_HOLDER.getConfig();
     ConfigBuilder builder = ConfigBuilder.create()
         .setParentScreen(previousScreen)
-        .setSavingRunnable(Configs.CONFIG_HOLDER::save)
+        .setSavingRunnable(()->{
+            Configs.CONFIG_HOLDER.save();
+            ConfigScreen.resetGroups();
+        })
         .setTitle(Text.translatable("title.reasonable-sorting.config"));
 
+    // TODO! Optimize updating!
     ConfigEntryBuilder entryBuilder = builder.entryBuilder();
     ConfigCategory categorySorting =
         builder.getOrCreateCategory(Text.translatable("category.reasonable-sorting.sorting"));
@@ -73,7 +89,10 @@ public class ConfigScreen {
             .setYesNoTextSupplier(
                 b -> Text.translatable(b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
             .setDefaultValue(true)
-            .setSaveConsumer(b -> config.enableSorting = b)
+            .setSaveConsumer(b -> {
+                config.enableSorting = b;
+
+            })
             .build());
 
     categorySorting.addEntry(
@@ -87,7 +106,9 @@ public class ConfigScreen {
             .setYesNoTextSupplier(
                 b -> Text.translatable(b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
             .setDefaultValue(true)
-            .setSaveConsumer(b -> config.enableDefaultItemSortingRules = b)
+            .setSaveConsumer(b -> {
+                config.enableDefaultItemSortingRules = b;
+            })
             .build());
 
     categorySorting.addEntry(
@@ -135,8 +156,8 @@ public class ConfigScreen {
             .setErrorSupplier(ConfigsHelper::validateVariantFollowsBaseBlocks)
             .setSaveConsumer(
                 s -> {
-                  config.variantsFollowingBaseBlocks = s;
-                  ConfigsHelper.updateVariantsFollowingBaseBlocks(s, Configs.VARIANTS_FOLLOWING_BASE_BLOCKS);
+                    config.variantsFollowingBaseBlocks = s;
+                    ConfigsHelper.updateVariantsFollowingBaseBlocks(s, Configs.VARIANTS_FOLLOWING_BASE_BLOCKS);
                 })
             .build());
 
@@ -172,7 +193,9 @@ public class ConfigScreen {
             .startBooleanToggle(
                 Text.translatable("option.reasonable-sorting.fence_gate_follows_fence"),
                 config.fenceGateFollowsFence)
-            .setSaveConsumer(b -> config.fenceGateFollowsFence = b)
+            .setSaveConsumer(b -> {
+                config.fenceGateFollowsFence = b;
+            })
             .setDefaultValue(true)
             .setTooltip(
                 Text.translatable("option.reasonable-sorting.fence_gate_follows_fence.tooltip"))
@@ -182,7 +205,9 @@ public class ConfigScreen {
             .startBooleanToggle(
                 Text.translatable("option.reasonable-sorting.block_items_only"),
                 config.blockItemsOnly)
-            .setSaveConsumer(b -> config.blockItemsOnly = b)
+            .setSaveConsumer(b -> {
+                config.blockItemsOnly = b;
+            })
             .setDefaultValue(false)
             .setTooltip(
                 Text.translatable("option.reasonable-sorting.block_items_only.tooltip"))
@@ -205,7 +230,9 @@ public class ConfigScreen {
                 Text.translatable("option.reasonable-sorting.enable_group_transfer.tooltip"))
             .setYesNoTextSupplier(
                 b -> Text.translatable(b ? "text.reasonable-sorting.enabled" : "text.reasonable-sorting.disabled"))
-            .setSaveConsumer(b -> config.enableGroupTransfer = b)
+            .setSaveConsumer(b -> {
+                config.enableGroupTransfer = b;
+            })
             .build());
 
     categoryTransfer.addEntry(
@@ -214,15 +241,32 @@ public class ConfigScreen {
                 Text.translatable("option.reasonable-sorting.buttons_in_decorations"),
                 config.buttonsInDecorations)
             .setDefaultValue(false)
-            .setSaveConsumer(b -> config.buttonsInDecorations = b)
+            .setSaveConsumer(b -> {
+                config.buttonsInDecorations = b;
+            })
             .build());
+
+    /*
+      categoryTransfer.addEntry(
+          entryBuilder
+              .startBooleanToggle(
+                      Text.translatable("option.reasonable-sorting.system_dedicated"),
+                      config.transferSystemItems)
+              .setDefaultValue(false)
+              .setSaveConsumer(b -> {
+                  config.transferSystemItems = b;
+              })
+              .build());*/
+
     categoryTransfer.addEntry(
         entryBuilder
             .startBooleanToggle(
                 Text.translatable("option.reasonable-sorting.fence_gates_in_decorations"),
                 config.fenceGatesInDecorations)
             .setDefaultValue(true)
-            .setSaveConsumer(b -> config.fenceGatesInDecorations = b)
+            .setSaveConsumer(b -> {
+                config.fenceGatesInDecorations = b;
+            })
             .build());
     categoryTransfer.addEntry(
         entryBuilder
@@ -230,7 +274,9 @@ public class ConfigScreen {
                 Text.translatable("option.reasonable-sorting.swords_in_tools"),
                 config.swordsInTools)
             .setDefaultValue(false)
-            .setSaveConsumer(b -> config.swordsInTools = b)
+            .setSaveConsumer(b -> {
+                config.swordsInTools = b;
+            })
             .build());
     categoryTransfer.addEntry(
         entryBuilder
@@ -238,15 +284,19 @@ public class ConfigScreen {
                 Text.translatable("option.reasonable-sorting.doors_in_decorations"),
                 config.doorsInDecorations)
             .setDefaultValue(false)
-            .setSaveConsumer(b -> config.doorsInDecorations = b)
+            .setSaveConsumer(b -> {
+                config.doorsInDecorations = b;
+            })
             .build());
 
+    // DANGER! Renaming getName to getDisplayName
     categoryTransfer.addEntry(
         entryBuilder
             .startTextDescription(
                 Text.translatable(
                     "option.reasonable-sorting.describe_item_groups",
-                    Text.literal(Arrays.stream(ItemGroup.GROUPS).map(ItemGroup::getName).collect(Collectors.joining(" ")))
+                    //Text.literal(Arrays.stream(ItemGroups.GROUPS).map(ItemGroup::getName).collect(Collectors.joining(" ")))
+                        Text.literal(ItemGroups.getGroups().stream().map((itemGroup)->{ return itemGroup.getDisplayName().getString().replaceAll(" ", "_").toLowerCase(); }).collect(Collectors.joining(" ")))
                         .formatted(Formatting.YELLOW)))
             .build());
 
@@ -267,8 +317,8 @@ public class ConfigScreen {
             .setDefaultValue(Collections.emptyList())
             .setSaveConsumer(
                 list -> {
-                  config.transferRules = list;
-                  ConfigsHelper.updateCustomTransferRule(list, Configs.CUSTOM_TRANSFER_RULE);
+                    config.transferRules = list;
+                    ConfigsHelper.updateCustomTransferRule(list, Configs.CUSTOM_TRANSFER_RULE);
                 })
             .build());
 
@@ -290,9 +340,8 @@ public class ConfigScreen {
             .setDefaultValue(Collections.emptyList())
             .setSaveConsumer(
                 list -> {
-                  config.variantTransferRules = list;
-                  ConfigsHelper.updateCustomVariantTransferRules(
-                      list, Configs.CUSTOM_VARIANT_TRANSFER_RULE);
+                    config.variantTransferRules = list;
+                    ConfigsHelper.updateCustomVariantTransferRules(list, Configs.CUSTOM_VARIANT_TRANSFER_RULE);
                 })
             .build());
 
@@ -314,8 +363,8 @@ public class ConfigScreen {
             .setDefaultValue(Collections.emptyList())
             .setSaveConsumer(
                 list -> {
-                  config.regexTransferRules = list;
-                  ConfigsHelper.updateCustomRegexTransferRules(list, Configs.CUSTOM_REGEX_TRANSFER_RULE);
+                    config.regexTransferRules = list;
+                    ConfigsHelper.updateCustomRegexTransferRules(list, Configs.CUSTOM_REGEX_TRANSFER_RULE);
                 })
             .build());
 
@@ -340,8 +389,8 @@ public class ConfigScreen {
                   .setCellErrorSupplier(ConfigsHelper::validateCustomShapeTransferRule)
                   .setSaveConsumer(
                       list -> {
-                        config.shapeTransferRules = list;
-                        ExtShapeBridge.INSTANCE.updateShapeTransferRules(list);
+                            config.shapeTransferRules = list;
+                            ExtShapeBridge.INSTANCE.updateShapeTransferRules(list);
                       })
                   .build())
           .addEntry(
@@ -355,7 +404,9 @@ public class ConfigScreen {
                       Text.translatable(
                           "option.reasonable-sorting.base_blocks_in_building_blocks.tooltip"))
                   .setSaveConsumer(
-                      b -> config.baseBlocksInBuildingBlocks = b)
+                      b -> {
+                          config.baseBlocksInBuildingBlocks = b;
+                      })
                   .build());
     }
 

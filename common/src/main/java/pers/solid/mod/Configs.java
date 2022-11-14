@@ -15,10 +15,15 @@ import net.minecraft.block.Block;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,10 +78,8 @@ public class Configs implements ConfigData {
   public static final ConfigHolder<Configs> CONFIG_HOLDER = AutoConfig.register(Configs.class, GsonConfigSerializer::new);
 
   /*
-
   ===== SORTING PART =====
-
-   */
+  */
 
   /**
    * <h2>排序部分</h2>
@@ -197,7 +200,6 @@ public class Configs implements ConfigData {
   public static void loadAndUpdate() {
     // 初始化时先手动设置，之后在每次更新和保存时，都会在 listener 中自动更新这个字段的值。
     Configs.instance = CONFIG_HOLDER.getConfig();
-
     final ConfigSerializeEvent.Load<Configs> update = (configHolder, configs) -> {
       ConfigsHelper.updateCustomSortingRules(configs.customSortingRules, Configs.CUSTOM_ITEM_SORTING_RULES);
       ConfigsHelper.updateCustomTransferRule(configs.transferRules, Configs.CUSTOM_TRANSFER_RULE);

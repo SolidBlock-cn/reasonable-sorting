@@ -3,9 +3,12 @@ package pers.solid.mod;
 import com.google.common.collect.Streams;
 import net.minecraft.block.Block;
 import net.minecraft.data.family.BlockFamily;
+import net.minecraft.item.BlockItem;
 import org.jetbrains.annotations.Nullable;
 import pers.solid.mod.mixin.BlockFamiliesAccessor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -22,12 +25,19 @@ public record BaseToVariantRule(Predicate<Block> blockPredicate, Iterable<BlockF
    * @param block 可能是基础方块的方块。
    * @return 由方块对应的变种组成的流。若方块不是基础方块，则返回 null。
    * @see BlockFamily
+   *
+   * Final verdict: needs from block relation, which has been in 1.19.2.
+   * Currently, supports only from block relation-ship. Use custom transfer and sorting rules.
    */
   @Override
   public @Nullable Iterable<Block> getFollowers(Block block) {
     if (!blockPredicate.test(block)) return null;
-    final @Nullable BlockFamily blockFamily = BlockFamiliesAccessor.getBaseBlocksToFamilies().get(block);
-    if (blockFamily == null) return null;
-    return Streams.stream(variants).map(blockFamily::getVariant).filter(Objects::nonNull)::iterator;
+    var variants_ = new ArrayList<BlockFamily.Variant>(Streams.stream(variants).toList());
+    var registry = BlockFamiliesAccessor.getBaseBlocksToFamilies();
+    var blockFamily = registry.get(block); if (blockFamily == null) return null;
+
+    // also, don't repeat!
+    var finalBlockFamily = blockFamily;
+    return variants_.stream().map((V)->{ return finalBlockFamily.getVariant(V); }).filter(Objects::nonNull)::iterator;
   }
 }

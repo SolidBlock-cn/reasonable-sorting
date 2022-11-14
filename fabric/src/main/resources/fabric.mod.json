@@ -25,15 +25,14 @@
       "pers.solid.mod.fabric.ConfigScreenFabric"
     ]
   },
-  "mixins": [
-    "reasonable-sorting.mixins.json"
-  ],
+  "mixins": ["reasonable-sorting.mixins.json"],
   "depends": {
     "fabricloader": ">=0.11.3",
     "fabric": "*",
     "minecraft": [
       ">=1.19-beta.1",
-      ">=1.19"
+      ">=1.19",
+      "22w45a"
     ],
     "java": ">=17",
     "cloth-config2": ">=5.0.0"

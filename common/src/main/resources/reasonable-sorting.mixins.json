@@ -3,7 +3,7 @@
   "minVersion": "0.8",
   "package": "pers.solid.mod.mixin",
   "compatibilityLevel": "JAVA_17",
-  "mixins": ["BlockFamiliesAccessor", "ItemMixin", "SimpleRegistryMixin"],
+  "mixins": ["BlockFamiliesAccessor", "ItemGroupEntriesImplMixin", "ItemGroupEntriesMixin", "ItemGroupEntriesImplAccessor", "ItemGroupMixin", "ItemGroupsMixin", "ItemGroupAccessor"],
   "client": [
     "CreativeInventoryScreenMixin"
   ],

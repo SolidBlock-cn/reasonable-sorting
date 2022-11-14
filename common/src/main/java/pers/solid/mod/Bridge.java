@@ -3,6 +3,7 @@ package pers.solid.mod;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registries;
 import net.minecraft.util.registry.Registry;
 
 /**
@@ -11,16 +12,16 @@ import net.minecraft.util.registry.Registry;
 public class Bridge {
   @ExpectPlatform
   public static Identifier getItemId(Item item) {
-    return Registry.ITEM.getId(item);
+    return Registries.ITEM.getId(item);
   }
 
   @ExpectPlatform
   public static Item getItemById(Identifier identifier) {
-    return Registry.ITEM.get(identifier);
+    return Registries.ITEM.get(identifier);
   }
 
   @ExpectPlatform
   public static boolean itemIdExists(Identifier identifier) {
-    return Registry.ITEM.containsId(identifier);
+    return Registries.ITEM.containsId(identifier);
   }
 }

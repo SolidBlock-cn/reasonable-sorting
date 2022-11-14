@@ -2,10 +2,15 @@ package pers.solid.mod;
 
 import com.google.common.collect.Iterables;
 import net.minecraft.block.Block;
+import net.minecraft.data.family.BlockFamily;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import pers.solid.mod.interfaces.ItemGroupInterface;
+import pers.solid.mod.mixin.BlockFamiliesAccessor;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 /**
@@ -19,11 +24,17 @@ public record BlockItemRule(SortingRule<Block> rule) implements SortingRule<Item
    *
    * @param leadingObj 可能是方块物品的物品。
    * @return 对应的方块排序规则返回的结果（方块集合）对应的物品集合。
+   *
+   * Final verdict: needs from block relation, which has been in 1.19.2.
+   * Currently, supports only from block relation-ship. Use custom transfer and sorting rules.
    */
   @Override
   public @Nullable Iterable<Item> getFollowers(Item leadingObj) {
-    if (!(leadingObj instanceof BlockItem blockItem)) return null;
-    final Iterable<Block> followers = rule.getFollowers(blockItem.getBlock());
-    return followers == null ? null : Iterables.filter(Iterables.transform(followers, Block::asItem), Objects::nonNull);
+    if (!(leadingObj instanceof BlockItem)) return null;
+
+    //
+    final Iterable<Block> followers = rule.getFollowers(((BlockItem)leadingObj).getBlock());
+    return (followers == null ? null : Iterables.filter(Iterables.transform(followers, (IB)->{ var I = IB.asItem(); return I!=leadingObj ? I : null; }), Objects::nonNull));
   }
+
 }

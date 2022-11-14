@@ -1,0 +1,11 @@
+accessWidener   v1  named
+#accessible method net/minecraft/client/font/Font renderText (Ljava/lang/String;FFIZLcom/mojang/math/Matrix4f;Lnet/minecraft/client/renderer/MultiBufferSource;ZII)F
+#accessible field net/minecraft/client/gui/widget/ButtonWidget onPress Lnet/minecraft/client/gui/widget/ButtonWidget$OnPress;
+#mutable field net/minecraft/client/gui/widget/ButtonWidget onPress Lnet/minecraft/client/gui/widget/ButtonWidget$OnPress;
+accessible class net/minecraft/item/ItemGroup$Entries
+accessible class net/minecraft/item/ItemGroup$EntriesImpl
+mutable field net/minecraft/item/ItemGroup$EntriesImpl parentTabStacks Lnet/minecraft/item/ItemStackSet;
+mutable field net/minecraft/item/ItemGroup$EntriesImpl searchTabStacks Lnet/minecraft/item/ItemStackSet;
+mutable field net/minecraft/item/ItemGroup$EntriesImpl group Lnet/minecraft/item/ItemGroup;
+mutable field net/minecraft/item/ItemGroup$EntriesImpl enabledFeatures Lnet/minecraft/resource/featuretoggle/FeatureSet;
+accessible method net/minecraft/item/ItemGroups updateEntries (Lnet/minecraft/resource/featuretoggle/FeatureSet;Z)V

@@ -1,12 +1,15 @@
 pluginManagement {
     repositories {
-        maven { url "https://bmclapi2.bangbang93.com/maven/" }
+        maven { url "https://piston-meta.mojang.com/" }
+        //maven { url "https://bmclapi2.bangbang93.com/" } // BROKEN!
         maven { url "https://maven.fabricmc.net/" }
         maven { url "https://maven.architectury.dev/" }
         maven { url "https://maven.minecraftforge.net/" }
+        maven { url "https://maven.minecraftforge.net/" }
+        maven { url "https://repository.hanbings.io/proxy/" }
         gradlePluginPortal()
     }
 }
 
-include "common", "fabric", "forge", "quilt"
+include "common", "fabric"
 rootProject.name = "reasonable-sorting"
