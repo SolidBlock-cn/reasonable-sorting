@@ -20,6 +20,9 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
 
     @Shadow private ItemStackSet searchTabStacks;
     @Shadow private ItemStackSet displayStacks;
+
+    @Shadow public abstract ItemStackSet getSearchTabStacks();
+
     //
     @Unique ItemStackSet cachedSearchTabStacks = null;
     @Unique ItemStackSet cachedParentTabStacks = null;
@@ -44,10 +47,11 @@ public abstract class ItemGroupMixin implements ItemGroupInterface {
      * 判断物品是否在转移规则中指定的组中的任意一个。如果转移规则没有此物品，则按照原版进行。
      */
 
-    // will no works anymore
+    //
     @Inject(method = "contains", at = @At("HEAD"), cancellable = true)
     public void isInMixin(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-        cir.setReturnValue(ItemGroupInterface.itemStackInGroup(stack, (ItemGroup)(Object)this, null, true));
+        //cir.setReturnValue(ItemGroupInterface.itemStackInGroup(stack, (ItemGroup)(Object)this, null, true));
+        cir.setReturnValue(this.getSearchTabStacks().contains(stack));
         cir.cancel();
     }
 
